@@ -1,11 +1,8 @@
-// TODO Work with higher opengl versions
 // TODO check if x64 is bettter
 
-// TODO rename shader files
 // TODO create camera class
 // TODO create renderer class
 
-// TODO check opengl errors
 
 #include <GL/glew.h>
 #include <GL/freeglut.h>
@@ -46,9 +43,13 @@ void render();
 
 // Initial function
 int main(int argc, char* argv[])
-{
+{	
 	// Initialize GLUT
 	glutInit(&argc, argv);
+
+	// Create context
+	glutInitContextVersion(3, 3);
+	glutInitContextProfile(GLUT_CORE_PROFILE);
 
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH);
 
@@ -59,6 +60,7 @@ int main(int argc, char* argv[])
 	glutReshapeWindow(Globals::WIDTH, Globals::HEIGHT);
 
 	// Initialize Glew
+	glewExperimental = GL_TRUE;
 	GLenum err = glewInit();
 	if (GLEW_OK != err)
 	{
