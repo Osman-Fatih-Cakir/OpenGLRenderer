@@ -10,4 +10,10 @@ public:
 	static int HEIGHT;
 
 	static void Log(std::string text);
+
+	enum Projection_Type
+	{
+		PERSPECTIVE,
+		ORTOGRAPHIC
+	};
 };

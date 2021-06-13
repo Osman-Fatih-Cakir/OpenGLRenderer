@@ -1,6 +1,4 @@
-// TODO check if x64 is bettter
 
-// TODO create camera class
 // TODO create renderer class
 
 
@@ -10,6 +8,7 @@
 #include <gtc/matrix_transform.hpp>
 #include <iostream>
 
+#include <Camera.h>
 #include <Globals.h>
 #include <Mesh.h>
 #include <shaders.h>
@@ -20,25 +19,14 @@ typedef glm::vec3 vec3;
 typedef glm::vec4 vec4;
 typedef glm::vec2 vec2;
 
+Camera* camera;
+
 Mesh* monkey;
-GLuint phong_shader_program;
-
-struct Camera
-{
-	vec3 eye;
-	vec3 up;
-	vec3 center;
-
-	mat4 projection;
-	mat4 view;
-
-	GLuint loc_projection;
-	GLuint loc_view;
-}camera;
+GLuint shader_program;
 
 void init();
-void init_phong_shaders(const char* vs, const char* fs);
-void init_camera(float fovy, float aspect, float near, float far);
+void init_shaders(const char* vs, const char* fs);
+void init_camera(vec3 eye, vec3 center, vec3 up, GLuint program);
 void render();
 
 // Initial function
@@ -68,11 +56,17 @@ int main(int argc, char* argv[])
 		return 1;
 	}
 
-	init();
-
 	// Function bindings
 	glutDisplayFunc(render);
 
+	//
+	//// Main function that prepares the scene and program
+	//
+	init();
+
+	//
+	//// Start update loop
+	//
 	glutMainLoop();
 
 	return 0;
@@ -87,37 +81,31 @@ void init()
 	Globals::Log("Monkey mesh has been loaded.");
 
 	// Initialize shaders
-	init_phong_shaders("shaders/vs.glsl", "shaders/fs.glsl");
-	Globals::Log("Phong shaders has been compiled.");
+	init_shaders("shaders/vs.glsl", "shaders/fs.glsl");
+	Globals::Log("Shaders has been compiled.");
 
 	// Set camera parameters
 	init_camera(
-		60.f,
-		Globals::WIDTH / Globals::HEIGHT,
-		0.01f,
-		100.f
+		vec3(0.f, 0.f, -5.f), // Eye
+		vec3(0.f, 1.f, 0.f), // Up
+		vec3(0.f, 0.f, 0.f), // Center
+		shader_program
 	);
 	Globals::Log("Camera parameters has been set.");
 }
 
-// Initialize the phong shading shaders
-void init_phong_shaders(const char* vs, const char* fs)
+// Initialize the shading shaders
+void init_shaders(const char* vs, const char* fs)
 {
 	GLuint vertex_shader = initshaders(GL_VERTEX_SHADER, vs);
 	GLuint fragment_shader = initshaders(GL_FRAGMENT_SHADER, fs);
-	phong_shader_program = initprogram(vertex_shader, fragment_shader);
+	shader_program = initprogram(vertex_shader, fragment_shader);
 }
 
-// Initialize camera parameters
-// fovy is degree (not radians)
-void init_camera(float fovy, float aspect, float _near, float _far)
+// Initialize camera
+void init_camera(vec3 eye, vec3 up, vec3 center, GLuint program)
 {
-	camera.eye = vec3(0.f, 0.f, -5.f);
-	camera.up = vec3(0.f, 1.f, 0.f);
-	camera.center = vec3(0.f, 0.f, 0.f);
-
-	camera.projection = glm::perspective(glm::radians(fovy), aspect, _near, _far);
-	camera.view = glm::lookAt(camera.eye, camera.center, camera.up);
+	camera = new Camera(eye, up, center, Globals::PERSPECTIVE);
 }
 
 // Renders the scene
@@ -130,17 +118,17 @@ void render()
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 	glClearColor(0.9f, 0.9f, 0.9f, 1.f);
 
-	// Phong shading shader
-	glUseProgram(phong_shader_program);
+	// Shading shader
+	glUseProgram(shader_program);
 
 	// Draw camera
-	GLuint loc_proj = glGetUniformLocation(phong_shader_program, "projection");
-	GLuint loc_view = glGetUniformLocation(phong_shader_program, "view");
-	glUniformMatrix4fv(loc_proj, 1, GL_FALSE, &(camera.projection)[0][0]);
-	glUniformMatrix4fv(loc_view, 1, GL_FALSE, &(camera.view)[0][0]);
+	GLuint loc_proj = glGetUniformLocation(shader_program, "projection");
+	GLuint loc_view = glGetUniformLocation(shader_program, "view");
+	glUniformMatrix4fv(loc_proj, 1, GL_FALSE, &(camera->get_projection_matrix())[0][0]);
+	glUniformMatrix4fv(loc_view, 1, GL_FALSE, &(camera->get_view_matrix())[0][0]);
 	
 	// Draw_model
-	GLuint loc_model = glGetUniformLocation(phong_shader_program, "model");
+	GLuint loc_model = glGetUniformLocation(shader_program, "model");
 	glUniformMatrix4fv(loc_model, 1, GL_FALSE, &(mat4(1.f))[0][0]);
 	glBindVertexArray(monkey->get_VAO());
 	glDrawArrays(GL_TRIANGLES, 0, monkey->get_triangle_count() * 3);
