@@ -6,7 +6,7 @@
 #include <GL/glew.h>
 #include <GL/glut.h>
 
-#include <shaders.h>
+#include <init_shaders.h>
 
 using namespace std;
 

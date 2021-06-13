@@ -147,13 +147,13 @@
     <ClCompile Include="Globals.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Mesh.cpp" />
-    <ClCompile Include="shaders.cpp" />
+    <ClCompile Include="init_shaders.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Camera.h" />
     <ClInclude Include="Globals.h" />
     <ClInclude Include="Mesh.h" />
-    <ClInclude Include="shaders.h" />
+    <ClInclude Include="init_shaders.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\fs.glsl" />

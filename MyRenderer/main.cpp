@@ -1,4 +1,10 @@
 
+// TODO implement deferred shading
+// TODO After that, check what I need
+
+
+// TODO create uniform classes
+// TODO create shader classes
 // TODO create renderer class
 
 
@@ -11,7 +17,7 @@
 #include <Camera.h>
 #include <Globals.h>
 #include <Mesh.h>
-#include <shaders.h>
+#include <init_shaders.h>
 
 typedef glm::mat3 mat3;
 typedef glm::mat4 mat4;
@@ -24,6 +30,7 @@ Camera* camera;
 Mesh* monkey;
 GLuint shader_program;
 
+void Init_Glut_and_Glew(int argc, char* argv[]);
 void init();
 void init_shaders(const char* vs, const char* fs);
 void init_camera(vec3 eye, vec3 center, vec3 up, GLuint program);
@@ -32,6 +39,24 @@ void render();
 // Initial function
 int main(int argc, char* argv[])
 {	
+	Init_Glut_and_Glew(argc, argv);
+
+	//
+	//// Main function that prepares the scene and program
+	//
+	init();
+
+	//
+	//// Start update loop
+	//
+	glutMainLoop();
+
+	return 0;
+}
+
+// Initialize glut and glew
+void Init_Glut_and_Glew(int argc, char* argv[])
+{
 	// Initialize GLUT
 	glutInit(&argc, argv);
 
@@ -53,25 +78,12 @@ int main(int argc, char* argv[])
 	if (GLEW_OK != err)
 	{
 		std::cout << "Unable to initalize Glew ! " << std::endl;
-		return 1;
+		return;
 	}
 
 	// Function bindings
 	glutDisplayFunc(render);
-
-	//
-	//// Main function that prepares the scene and program
-	//
-	init();
-
-	//
-	//// Start update loop
-	//
-	glutMainLoop();
-
-	return 0;
 }
-
 
 // Initialize the parameters
 void init()
@@ -86,7 +98,7 @@ void init()
 
 	// Set camera parameters
 	init_camera(
-		vec3(0.f, 0.f, -5.f), // Eye
+		vec3(0.f, 2.f, -5.f), // Eye
 		vec3(0.f, 1.f, 0.f), // Up
 		vec3(0.f, 0.f, 0.f), // Center
 		shader_program
@@ -109,9 +121,6 @@ void init_camera(vec3 eye, vec3 up, vec3 center, GLuint program)
 }
 
 // Renders the scene
-/*
-* TODO There will be a renderer class instead of this spaghetti code
-*/
 void render()
 {
 

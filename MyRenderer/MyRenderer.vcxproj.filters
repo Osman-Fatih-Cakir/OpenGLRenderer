@@ -24,7 +24,7 @@
     <ClCompile Include="Mesh.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="shaders.cpp">
+    <ClCompile Include="init_shaders.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Camera.cpp">
@@ -38,7 +38,7 @@
     <ClInclude Include="Mesh.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="shaders.h">
+    <ClInclude Include="init_shaders.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Camera.h">
