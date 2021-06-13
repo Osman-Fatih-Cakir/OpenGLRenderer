@@ -48,5 +48,9 @@
   <ItemGroup>
     <None Include="shaders\vs.glsl" />
     <None Include="shaders\fs.glsl" />
+    <None Include="shaders\gBuffer_vs.glsl" />
+    <None Include="shaders\gbuffer_fs.glsl" />
+    <None Include="shaders\deferred_shading_vs.glsl" />
+    <None Include="shaders\deferred_shading_fs.glsl" />
   </ItemGroup>
 </Project>
