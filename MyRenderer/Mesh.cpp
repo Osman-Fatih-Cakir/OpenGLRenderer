@@ -81,7 +81,7 @@ GLuint Mesh::load_obj_mesh(std::string path)
 			vertex.z = (GLfloat)vertex.z;
 			temp_vertices.push_back(vertex);
 		}
-		else if(strcmp(head, "vn") == 0) // Normals
+		else if (strcmp(head, "vn") == 0) // Normals
 		{
 			vec3 normal;
 			fscanf(obj_file, "%f %f %f\n", &normal.x, &normal.y, &normal.z);
@@ -108,7 +108,7 @@ GLuint Mesh::load_obj_mesh(std::string path)
 			// Vertices, normals an tex coordinates should be loaded from this far
 			// We arrange the data in the correct format and store
 			unsigned int ver_index[3], tex_coord_index[3], norm_index[3];
-			int matches = fscanf(obj_file, "%d/%d/%d %d/%d/%d %d/%d/%d\n", 
+			int matches = fscanf(obj_file, "%d/%d/%d %d/%d/%d %d/%d/%d\n",
 				&ver_index[0], &tex_coord_index[0], &norm_index[0],
 				&ver_index[1], &tex_coord_index[1], &norm_index[1],
 				&ver_index[2], &tex_coord_index[2], &norm_index[2]
@@ -141,7 +141,7 @@ GLuint Mesh::load_obj_mesh(std::string path)
 		normals.push_back(normal);
 		tex_coords.push_back(tex_coord);
 	}
-	
+
 	// Then, generate buffers using data
 	GLuint vao = gen_obj_buffers(vertices, normals, tex_coords);
 

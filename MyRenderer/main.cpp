@@ -1,16 +1,4 @@
 
-// TODO Check TODOs
-// TODO Combine deferred shading with forward rendering
-// TODO After that, check what I need
-
-
-// TODO create uniform classes
-// TODO create shader classes
-// TODO light, renderer
-// TODO PBR
-
-// TODO rename meshes instead of "sphere"
-
 #include <GL/glew.h>
 #include <GL/freeglut.h>
 #include <glm.hpp>
@@ -32,24 +20,29 @@ typedef glm::vec2 vec2;
 float old_time = 0.f;
 float cur_time = 0.f;
 
-const int light_count = 4;
+const int light_count = 8;
 struct Light
 {
 	vec3 position;
 	vec3 color;
+	float radius;
+	float linear;
+	float quadratic;
 }lights[light_count];
 
 // Camera
 Camera* camera;
 
 // Meshes
-int sphere_count = 9;
+int sphere_count = 16;
 std::vector<Mesh*> spheres;
+std::vector<Mesh*> light_meshes;
+
+// VAOs
 GLuint quad_VAO;
 
 // Shader programs
-GLuint deferred_shading_program;
-GLuint gBuffer_program;
+GLuint gBuffer_program, deferred_shading_program, deferred_unlit_meshes_program;
 
 // Framebuffers
 GLuint gBuffer;
@@ -138,7 +131,7 @@ void init()
 
 	// Set camera parameters
 	init_camera(
-		vec3(0.f, 1.f, -4.f), // Eye
+		vec3(11.f, 6.f, 11.f), // Eye
 		vec3(0.f, 1.f, 0.f), // Up
 		vec3(0.f, 0.f, 0.f) // Center
 	);
@@ -159,16 +152,16 @@ void init()
 // Initailize spheres
 void init_spheres()
 {
-	vec3 cords[9] = {
-		vec3(1.f, 1.f, 0.f), vec3(1.f, 0.f, 0.f), vec3(1.f, -1.f, 0.f),
-		vec3(0.f, 1.f, 0.f), vec3(0.f, 0.f, 0.f), vec3(0.f, -1.f, 0.f),
-		vec3(-1.f, 1.f, 0.f), vec3(-1.f, 0.f, 0.f), vec3(-1.f, -1.f, 0.f)
+	vec3 cords[16] = {
+		vec3(6.f, 0.f, 6.f), vec3(6.f, 0.f, 2.f), vec3(6.f, 0.f, -2.f), vec3(6.f, 0.f, -6.f),
+		vec3(2.f, 0.f, 6.f), vec3(2.f, 0.f, 2.f), vec3(2.f, 0.f, -2.f), vec3(2.f, 0.f, -6.f),
+		vec3(-2.f, 0.f, 6.f), vec3(-2.f, 0.f, 2.f), vec3(-2.f, 0.f, -2.f), vec3(-2.f, 0.f, -6.f),
+		vec3(-6.f, 0.f, 6.f), vec3(-6.f, 0.f, 2.f), vec3(-6.f, 0.f, -2.f), vec3(-6.f, 0.f, -6.f)
 	};
 	for (int i = 0; i < sphere_count; i++)
 	{
-		Mesh* sphere = new Mesh("mesh/monkey.obj");
+		Mesh* sphere = new Mesh("mesh/sphere.obj");
 		sphere->translate_mesh(cords[i]);
-		sphere->scale_mesh(vec3(0.4, 0.4, 0.4));
 		spheres.push_back(sphere);
 	}
 }
@@ -181,10 +174,15 @@ void init_shaders()
 	GLuint fragment_shader = initshaders(GL_FRAGMENT_SHADER, "shaders/gbuffer_fs.glsl");
 	gBuffer_program = initprogram(vertex_shader, fragment_shader);
 
-	// deferred lightinh shaders
+	// Deferred lighting shaders
 	vertex_shader = initshaders(GL_VERTEX_SHADER, "shaders/deferred_shading_vs.glsl");
 	fragment_shader = initshaders(GL_FRAGMENT_SHADER, "shaders/deferred_shading_fs.glsl");
 	deferred_shading_program = initprogram(vertex_shader, fragment_shader);
+
+	// Deferred unlit meshes shaders
+	vertex_shader = initshaders(GL_VERTEX_SHADER, "shaders/deferred_unlit_meshes_vs.glsl");
+	fragment_shader = initshaders(GL_FRAGMENT_SHADER, "shaders/deferred_unlit_meshes_fs.glsl");
+	deferred_unlit_meshes_program = initprogram(vertex_shader, fragment_shader);
 }
 
 // Initialize camera
@@ -273,17 +271,40 @@ void init_gBuffer()
 // Initialize light paramters
 void init_lights()
 {
+	srand((unsigned int)time(NULL));
+
 	// Light positions
-	vec3 poses[light_count] = {
-		vec3(2.f, 0.f, 0.f), vec3(-2.f, 0.f, 0.f), vec3(0.f, 2.f, 0.f), vec3(0.f, -2.f, 0.f)
-	};
-	vec3 colors[light_count] = {
-		vec3(1.f, 1.f, 1.f), vec3(1.f, 0.f, 0.f), vec3(0.f, 1.f, 0.f), vec3(0.f, 0.f, 1.f)
-	};
 	for (int i = 0; i < light_count; i++)
 	{
-		lights[i].position = poses[i];
-		lights[i].color = colors[i];
+		// Set positions of the lights
+		lights[i].position = vec3(
+			((rand() % 100) / 100.f) * 20.f - 10.f,
+			((rand() % 100) / 100.f) * 3.f + 1.f,
+			((rand() % 100) / 100.f) * 20.f - 10.f
+		);
+		// Set colors of the lights
+		lights[i].color = vec3(
+			((rand() % 100) / 200.f) + 0.5f,
+			((rand() % 100) / 200.f) + 0.5f,
+			((rand() % 100) / 200.f) + 0.5f
+		);
+		// Draw a mesh for represent a light
+		Mesh* light_mesh = new Mesh("mesh/cube.obj");
+		light_mesh->translate_mesh(lights[i].position);
+		light_mesh->scale_mesh(vec3(0.1f, 0.1f, 0.1f));
+		light_meshes.push_back(light_mesh);
+
+		// Calculate light radius
+		float constant = 1.0;
+		float linear = 0.7;
+		float quadratic = 1.8;
+		float lightMax = std::fmaxf(std::fmaxf(lights[i].color.r, lights[i].color.g), lights[i].color.b);
+		float radius = (-linear + std::sqrtf(linear * linear - 4 * quadratic * (constant - (256.0 / 5.0) * lightMax)))
+			/ (2 * quadratic);
+		lights[i].radius = radius;
+
+		lights[i].linear = 0.2f;
+		lights[i].linear = 0.7f;
 	}
 }
 
@@ -298,7 +319,7 @@ void render()
 	glBindFramebuffer(GL_FRAMEBUFFER, gBuffer);
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-	glClearColor(0.9f, 0.9f, 0.9f, 1.f);
+	glClearColor(0.f, 0.f, 0.f, 1.f);
 
 	// gBuffer program
 	glUseProgram(gBuffer_program);
@@ -308,8 +329,7 @@ void render()
 	float delta = cur_time - old_time;
 	old_time = cur_time;
 
-	// Rotate things constantly
-	camera->camera_rotate(vec3(0.f, 1.f, 0.f), delta * 0.001);
+	camera->camera_rotate(vec3(0.f, 1.f, 0.f), delta / 35000);
 
 	// Draw camera
 	GLuint loc_proj = glGetUniformLocation(gBuffer_program, "projection_matrix");
@@ -371,13 +391,55 @@ void render()
 		light_array_str = "lights[" + std::to_string(i) + "].color";
 		loc_lights_pos = glGetUniformLocation(deferred_shading_program, (GLchar*)light_array_str.c_str());
 		glUniform3fv(loc_lights_pos, 1, &(lights[i].color)[0]);
+
+		light_array_str = "lights[" + std::to_string(i) + "].radius";
+		GLuint loc_light_r = glGetUniformLocation(deferred_shading_program, (GLchar*)light_array_str.c_str());
+		glUniform1f(loc_light_r, (GLfloat)lights[i].radius);
+
+		light_array_str = "lights[" + std::to_string(i) + "].linear";
+		GLuint loc_light_l = glGetUniformLocation(deferred_shading_program, (GLchar*)light_array_str.c_str());
+		glUniform1f(loc_light_l, (GLfloat)lights[i].linear);
+
+		light_array_str = "lights[" + std::to_string(i) + "].quadratic";
+		GLuint loc_light_q = glGetUniformLocation(deferred_shading_program, (GLchar*)light_array_str.c_str());
+		glUniform1f(loc_light_q, (GLfloat)lights[i].quadratic);
 	}
 
-	// Draw quad with gBuffer data (as texture)
+	// Draw quad using gBuffer color data
 	glBindVertexArray(quad_VAO);
 	glDrawArrays(GL_TRIANGLES, 0, 6);
 	glBindVertexArray(0);
 	
+	// 3. Pass: Draw light meshes (The meshes that are not lit but in the same scene with other meshes)
+	
+	// Attach depth buffer to default framebuffer
+	glBindFramebuffer(GL_FRAMEBUFFER, gBuffer);
+	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0); // Write to default framebuffer
+	glBlitFramebuffer(0, 0, Globals::WIDTH, Globals::HEIGHT, 0, 0, Globals::WIDTH, Globals::HEIGHT, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+
+	// Start forward rendering program
+	glUseProgram(deferred_unlit_meshes_program);
+
+	// Draw camera
+	loc_proj = glGetUniformLocation(deferred_unlit_meshes_program, "projection_matrix");
+	loc_view = glGetUniformLocation(deferred_unlit_meshes_program, "view_matrix");
+	loc_model_matrix = glGetUniformLocation(deferred_unlit_meshes_program, "model_matrix");
+	GLuint loc_color = glGetUniformLocation(deferred_unlit_meshes_program, "light_color");
+	glUniformMatrix4fv(loc_proj, 1, GL_FALSE, &(camera->get_projection_matrix())[0][0]);
+	glUniformMatrix4fv(loc_view, 1, GL_FALSE, &(camera->get_view_matrix())[0][0]);
+
+	// Draw light meshes
+	for (int i = 0; i < light_count; i++)
+	{
+		glUniformMatrix4fv(loc_model_matrix, 1, GL_FALSE, &(light_meshes[i]->get_model_matrix())[0][0]);
+		glUniform3fv(loc_color, 1, &(lights[i].color)[0]);
+		glBindVertexArray(light_meshes[i]->get_VAO());
+		glDrawArrays(GL_TRIANGLES, 0, light_meshes[i]->get_triangle_count() * 3);
+		glBindVertexArray(0);
+	}
+
 	// Error check
 	GLuint err = glGetError(); if (err) fprintf(stderr, "%s\n", gluErrorString(err));
 	

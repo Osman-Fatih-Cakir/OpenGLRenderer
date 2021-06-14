@@ -16,7 +16,6 @@ typedef glm::vec4 vec4;
 typedef glm::vec2 vec2;
 
 // This class will be changed when importing models is available
-// For now it holds a model that is chosen and hardcoded
 class Mesh
 {
 public:
