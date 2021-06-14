@@ -4,8 +4,12 @@
 // Constructor
 Mesh::Mesh(std::string path)
 {
-	VAO = load_monkey(path);
+	VAO = load_obj_mesh(path);
 	Globals::Log("Loaded file: " + path);
+
+	// Set model and normal matrices
+	model_matrix = mat4(1.f);
+	normal_matrix = glm::transpose(glm::inverse(model_matrix));
 }
 
 GLuint Mesh::get_VAO()
@@ -18,9 +22,26 @@ unsigned int Mesh::get_triangle_count()
 	return triangle_count;
 }
 
+// Getters and setters
+mat4 Mesh::get_model_matrix()
+{
+	return model_matrix;
+}
+void Mesh::set_model_matrix(mat4 mat)
+{
+	model_matrix = mat;
+}
+mat4 Mesh::get_normal_matrix()
+{
+	return normal_matrix;
+}
+void Mesh::set_normal_matrix(mat4 mat)
+{
+	normal_matrix = mat;
+}
 
 // Loads the mesh from specified path
-GLuint Mesh::load_monkey(std::string path)
+GLuint Mesh::load_obj_mesh(std::string path)
 {
 	std::vector<vec3> vertices;
 	std::vector<vec2> tex_coords;
@@ -122,13 +143,13 @@ GLuint Mesh::load_monkey(std::string path)
 	}
 	
 	// Then, generate buffers using data
-	GLuint vao = gen_monkey_buffers(vertices, normals, tex_coords);
+	GLuint vao = gen_obj_buffers(vertices, normals, tex_coords);
 
 	return vao;
 }
 
 // Generates buffers from mesh data
-GLuint Mesh::gen_monkey_buffers(std::vector<vec3>& vertices, std::vector<vec3>& normals, std::vector<vec2>& tex_coords)
+GLuint Mesh::gen_obj_buffers(std::vector<vec3>& vertices, std::vector<vec3>& normals, std::vector<vec2>& tex_coords)
 {
 	GLuint VAO;
 	glGenVertexArrays(1, &VAO);
@@ -162,4 +183,26 @@ GLuint Mesh::gen_monkey_buffers(std::vector<vec3>& vertices, std::vector<vec3>& 
 	glBindVertexArray(0); // Prevent further modifications
 
 	return VAO;
+}
+
+// Translate mesh
+void Mesh::translate_mesh(vec3 tra)
+{
+	model_matrix = glm::translate(model_matrix, tra);
+	normal_matrix = glm::transpose(glm::inverse(model_matrix));
+}
+
+// Rotate mesh
+// angle is degree (not radians)
+void Mesh::rotate_mesh(vec3 rot, GLfloat angle)
+{
+	model_matrix = glm::rotate(model_matrix, glm::radians(angle),  rot);
+	normal_matrix = glm::transpose(glm::inverse(model_matrix));
+}
+
+// Scale mesh
+void Mesh::scale_mesh(vec3 scale)
+{
+	model_matrix = glm::scale(model_matrix, scale);
+	normal_matrix = glm::transpose(glm::inverse(model_matrix));
 }

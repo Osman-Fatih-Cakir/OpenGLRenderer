@@ -8,17 +8,17 @@ out vec3 fFragPos;
 out vec2 fTexCoord;
 out vec3 fNormal;
 
-uniform mat4 projection;
-uniform mat4 view;
-uniform mat4 model;
+uniform mat4 projection_matrix;
+uniform mat4 view_matrix;
+uniform mat4 model_matrix;
+uniform mat4 normal_matrix;
 
 void main()
 {
-    gl_Position = projection * view * model * vec4(vPos, 1.0);
+    gl_Position = projection_matrix * view_matrix * model_matrix * vec4(vPos, 1.0);
 
     // I use world coordinates for light calculations
-    fFragPos = (model * vec4(vPos, 1.0)).xyz;
+    fFragPos = (model_matrix * vec4(vPos, 1.0)).xyz;
     fTexCoord = vTexCoord;
-    // TODO calculate normal matrix in C++ and send it here
-    fNormal = transpose(inverse(mat3(model))) * vNormal; // Multiply the normal with normal matrix
+    fNormal = normalize(mat3(normal_matrix) * vNormal); // Multiply the normal with normal matrix
 }

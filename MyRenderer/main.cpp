@@ -1,12 +1,13 @@
 
-// TODO implement deferred shading
-// TODO delete default vs/fs.glsl shaders
+// TODO Check TODOs
+// TODO Combine deferred shading with forward rendering
 // TODO After that, check what I need
 
 
 // TODO create uniform classes
 // TODO create shader classes
 // TODO light, renderer
+// TODO PBR
 
 
 #include <GL/glew.h>
@@ -26,7 +27,6 @@ typedef glm::vec3 vec3;
 typedef glm::vec4 vec4;
 typedef glm::vec2 vec2;
 
-
 const int light_count = 4;
 struct Light
 {
@@ -38,7 +38,8 @@ struct Light
 Camera* camera;
 
 // Meshes
-Mesh* monkey;
+int sphere_count = 9;
+std::vector<Mesh*> spheres;
 GLuint quad_VAO;
 
 // Shader programs
@@ -53,6 +54,7 @@ GLuint gPosition, gNormal, gAlbedoSpec;
 
 void Init_Glut_and_Glew(int argc, char* argv[]);
 void init();
+void init_spheres();
 void init_shaders();
 void init_camera(vec3 eye, vec3 center, vec3 up);
 void init_quad();
@@ -107,8 +109,10 @@ void Init_Glut_and_Glew(int argc, char* argv[])
 		std::cout << "Unable to initalize Glew ! " << std::endl;
 		return;
 	}
-
+	
+	// Enable depth test
 	glEnable(GL_DEPTH_TEST);
+	// Cull backfaces
 	glEnable(GL_CULL_FACE);
 	glCullFace(GL_BACK);
 	
@@ -121,15 +125,15 @@ void Init_Glut_and_Glew(int argc, char* argv[])
 void init()
 {
 	Globals::Log("*****************Start************************");
-	// Load monkey mesh
-	monkey = new Mesh("monkey/monkey.obj");
+	// Load sphere mesh
+	init_spheres();
 
 	// Initialize shaders
 	init_shaders();
 
 	// Set camera parameters
 	init_camera(
-		vec3(0.f, 0.f, -5.f), // Eye
+		vec3(0.f, 1.f, -4.f), // Eye
 		vec3(0.f, 1.f, 0.f), // Up
 		vec3(0.f, 0.f, 0.f) // Center
 	);
@@ -142,6 +146,23 @@ void init()
 
 	// Initialize lights
 	init_lights();
+}
+
+// Initailize spheres
+void init_spheres()
+{
+	vec3 cords[9] = {
+		vec3(1.f, 1.f, 0.f), vec3(1.f, 0.f, 0.f), vec3(1.f, -1.f, 0.f),
+		vec3(0.f, 1.f, 0.f), vec3(0.f, 0.f, 0.f), vec3(0.f, -1.f, 0.f),
+		vec3(-1.f, 1.f, 0.f), vec3(-1.f, 0.f, 0.f), vec3(-1.f, -1.f, 0.f)
+	};
+	for (int i = 0; i < sphere_count; i++)
+	{
+		Mesh* sphere = new Mesh("mesh/sphere.obj");
+		sphere->translate_mesh(cords[i]);
+		sphere->scale_mesh(vec3(0.4, 0.4, 0.4));
+		spheres.push_back(sphere);
+	}
 }
 
 // Initialize and compiling shaders
@@ -275,17 +296,22 @@ void render()
 	glUseProgram(gBuffer_program);
 
 	// Draw camera
-	GLuint loc_proj = glGetUniformLocation(gBuffer_program, "projection");
-	GLuint loc_view = glGetUniformLocation(gBuffer_program, "view");
+	GLuint loc_proj = glGetUniformLocation(gBuffer_program, "projection_matrix");
+	GLuint loc_view = glGetUniformLocation(gBuffer_program, "view_matrix");
 	glUniformMatrix4fv(loc_proj, 1, GL_FALSE, &(camera->get_projection_matrix())[0][0]);
 	glUniformMatrix4fv(loc_view, 1, GL_FALSE, &(camera->get_view_matrix())[0][0]);
 	
-	// Draw_model
-	GLuint loc_model = glGetUniformLocation(gBuffer_program, "model");
-	glUniformMatrix4fv(loc_model, 1, GL_FALSE, &(mat4(1.f))[0][0]);
-	glBindVertexArray(monkey->get_VAO());
-	glDrawArrays(GL_TRIANGLES, 0, monkey->get_triangle_count() * 3);
-	glBindVertexArray(0);
+	// Draw spheres
+	GLuint loc_model_matrix = glGetUniformLocation(gBuffer_program, "model_matrix");
+	GLuint loc_normal_matrix = glGetUniformLocation(gBuffer_program, "normal_matrix");
+	for (int i = 0; i < sphere_count; i++)
+	{
+		glUniformMatrix4fv(loc_model_matrix, 1, GL_FALSE, &(spheres[i]->get_model_matrix())[0][0]);
+		glUniformMatrix4fv(loc_normal_matrix, 1, GL_FALSE, &(spheres[i]->get_normal_matrix())[0][0]);
+		glBindVertexArray(spheres[i]->get_VAO());
+		glDrawArrays(GL_TRIANGLES, 0, spheres[i]->get_triangle_count() * 3);
+		glBindVertexArray(0);
+	}
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	

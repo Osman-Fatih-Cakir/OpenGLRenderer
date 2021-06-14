@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 #include <glm.hpp>
+#include <gtc/matrix_transform.hpp>
 
 #include <Globals.h>
 
@@ -25,13 +26,29 @@ public:
 	GLuint get_VAO();
 	unsigned int get_triangle_count();
 
+	// Translate mesh
+	void translate_mesh(vec3 tra);
+	// Rotate mesh
+	void rotate_mesh(vec3 rot, GLfloat angle);
+	// Scale mesh
+	void scale_mesh(vec3 scale);
+
+	// Getters and setters
+	mat4 get_model_matrix();
+	void set_model_matrix(mat4 mat);
+	mat4 get_normal_matrix();
+	void set_normal_matrix(mat4 mat);
+
 private:
 
 	GLuint VAO;
 	unsigned int triangle_count = 0;
 
+	mat4 model_matrix;
+	mat4 normal_matrix;
+
 	// Loads the mesh from specified path
-	GLuint load_monkey(std::string path);
+	GLuint load_obj_mesh(std::string path);
 	// Generates the mesh buffers
-	GLuint gen_monkey_buffers(std::vector<vec3> &positions, std::vector<vec3> &normals, std::vector<vec2> &tex_coords);
+	GLuint gen_obj_buffers(std::vector<vec3> &positions, std::vector<vec3> &normals, std::vector<vec2> &tex_coords);
 };

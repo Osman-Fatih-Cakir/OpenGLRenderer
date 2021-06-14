@@ -14,7 +14,7 @@ void main()
 	// Fragment position
 	gPosition = fFragPos;
 	// Fragment normal
-	gNormal = normalize(fNormal); // TODO Carry normalize to vertex shader
+	gNormal = fNormal;
 	// Diffuse
 	gAlbedoSpec.rgb = vec3(0.9, 0.9, 0.9);
 	// Specular (float number)
