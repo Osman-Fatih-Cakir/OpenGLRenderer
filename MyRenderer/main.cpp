@@ -9,6 +9,7 @@
 // TODO light, renderer
 // TODO PBR
 
+// TODO rename meshes instead of "sphere"
 
 #include <GL/glew.h>
 #include <GL/freeglut.h>
@@ -26,6 +27,10 @@ typedef glm::mat4 mat4;
 typedef glm::vec3 vec3;
 typedef glm::vec4 vec4;
 typedef glm::vec2 vec2;
+
+// Timing
+float old_time = 0.f;
+float cur_time = 0.f;
 
 const int light_count = 4;
 struct Light
@@ -146,6 +151,9 @@ void init()
 
 	// Initialize lights
 	init_lights();
+
+	// Get delta time
+	old_time = glutGet(GLUT_ELAPSED_TIME);
 }
 
 // Initailize spheres
@@ -158,7 +166,7 @@ void init_spheres()
 	};
 	for (int i = 0; i < sphere_count; i++)
 	{
-		Mesh* sphere = new Mesh("mesh/sphere.obj");
+		Mesh* sphere = new Mesh("mesh/monkey.obj");
 		sphere->translate_mesh(cords[i]);
 		sphere->scale_mesh(vec3(0.4, 0.4, 0.4));
 		spheres.push_back(sphere);
@@ -248,7 +256,7 @@ void init_gBuffer()
 	// Tell OpenGL which color attachments we'll use (of this framebuffer) for rendering 
 	GLuint attachments[3] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 };
 	glDrawBuffers(3, attachments);
-	/*
+	
 	// Create and attach depth buffer (renderbuffer)
 	GLuint rbo_depth;
 	glGenRenderbuffers(1, &rbo_depth);
@@ -258,7 +266,7 @@ void init_gBuffer()
 	// Check if framebuffer is complete
 	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
 		Globals::Log("Framebuffer not complete!");
-	*/
+	
 	glBindFramebuffer(GL_FRAMEBUFFER, 0); // Prevent further modification
 }
 
@@ -282,9 +290,6 @@ void init_lights()
 // Renders the scene
 void render()
 {
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-	glClearColor(0.9f, 0.9f, 0.9f, 1.f);
-
 	//
 	//// 1. GBuffer Pass: Generate geometry/color data into gBuffers
 	//
@@ -292,8 +297,19 @@ void render()
 	// Bind framebuffer to gBuffer
 	glBindFramebuffer(GL_FRAMEBUFFER, gBuffer);
 
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+	glClearColor(0.9f, 0.9f, 0.9f, 1.f);
+
 	// gBuffer program
 	glUseProgram(gBuffer_program);
+
+	// Get delta time
+	cur_time = glutGet(GLUT_ELAPSED_TIME);
+	float delta = cur_time - old_time;
+	old_time = cur_time;
+
+	// Rotate things constantly
+	camera->camera_rotate(vec3(0.f, 1.f, 0.f), delta * 0.001);
 
 	// Draw camera
 	GLuint loc_proj = glGetUniformLocation(gBuffer_program, "projection_matrix");
@@ -312,6 +328,10 @@ void render()
 		glDrawArrays(GL_TRIANGLES, 0, spheres[i]->get_triangle_count() * 3);
 		glBindVertexArray(0);
 	}
+
+	// Attach depth buffer to default framebuffer
+	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0); // Write to default framebuffer
+	glBlitFramebuffer(0, 0, Globals::WIDTH, Globals::HEIGHT, 0, 0, Globals::WIDTH, Globals::HEIGHT, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	

@@ -37,6 +37,18 @@ void Camera::camera_lookAt(vec3 eye, vec3 up, vec3 center)
 	view_matrix = glm::lookAt(eye, center, up);
 }
 
+// Camera translate
+void Camera::camera_translate(vec3 tra)
+{
+	view_matrix = glm::translate(view_matrix, tra);
+}
+
+// Camera rotate
+void Camera::camera_rotate(vec3 rot, float angle)
+{
+	view_matrix = glm::rotate(view_matrix, angle, rot);
+}
+
 //
 //// Getters and setters
 //

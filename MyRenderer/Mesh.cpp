@@ -194,7 +194,7 @@ void Mesh::translate_mesh(vec3 tra)
 
 // Rotate mesh
 // angle is degree (not radians)
-void Mesh::rotate_mesh(vec3 rot, GLfloat angle)
+void Mesh::rotate_mesh(vec3 rot, float angle)
 {
 	model_matrix = glm::rotate(model_matrix, glm::radians(angle),  rot);
 	normal_matrix = glm::transpose(glm::inverse(model_matrix));

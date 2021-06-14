@@ -29,7 +29,7 @@ public:
 	// Translate mesh
 	void translate_mesh(vec3 tra);
 	// Rotate mesh
-	void rotate_mesh(vec3 rot, GLfloat angle);
+	void rotate_mesh(vec3 rot, float angle);
 	// Scale mesh
 	void scale_mesh(vec3 scale);
 

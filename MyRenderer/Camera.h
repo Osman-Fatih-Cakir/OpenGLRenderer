@@ -33,6 +33,10 @@ public:
 	// Look at function
 	void camera_lookAt(vec3 eye, vec3 center, vec3 up);
 
+	// Camera transformation
+	void camera_translate(vec3 tra);
+	void camera_rotate(vec3 rot, float angle);
+
 	// Getters and setters
 	Globals::Projection_Type get_projection_type;
 	mat4 get_projection_matrix();
