@@ -1,7 +1,7 @@
 # OpenGLRenderer
 An OpenGL renderer.
 
-(Not tested on another device)
+In order to run on Visual Studio, make the solution platform to x86.
 
 Techniques that I used so far:
 - Deferred shading
