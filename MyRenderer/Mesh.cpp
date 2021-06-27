@@ -14,8 +14,8 @@ Mesh::Mesh(std::string path, const char* texture_path)
 	Globals::Log("Loaded file: " + path);
 
 	// Set model and normal matrices
-	model_matrix = mat4(1.f);
-	normal_matrix = glm::transpose(glm::inverse(model_matrix));
+	Mesh::model_matrix = mat4(1.f);
+	Mesh::normal_matrix = glm::transpose(glm::inverse(model_matrix));
 
 	// Load texture
 	if (std::strcmp(texture_path, "NONE") != 0)

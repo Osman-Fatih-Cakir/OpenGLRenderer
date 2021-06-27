@@ -37,6 +37,7 @@ Camera* camera;
 int sphere_count = 16;
 std::vector<Mesh*> spheres;
 std::vector<Mesh*> light_meshes;
+std::vector<Mesh*> planes;
 
 // VAOs
 GLuint quad_VAO;
@@ -53,7 +54,7 @@ GLuint gPosition, gNormal, gAlbedoSpec;
 void Init_Glut_and_Glew(int argc, char* argv[]);
 void init();
 void resize_window(int w, int h);
-void init_spheres();
+void init_meshes();
 void init_shaders();
 void init_camera(vec3 eye, vec3 center, vec3 up);
 void init_quad();
@@ -126,7 +127,7 @@ void init()
 {
 	Globals::Log("*****************Start************************");
 	// Load sphere mesh
-	init_spheres();
+	init_meshes();
 
 	// Initialize shaders
 	init_shaders();
@@ -163,8 +164,9 @@ void resize_window(int w, int h)
 }
 
 // Initailize spheres
-void init_spheres()
+void init_meshes()
 {
+	// Scene meshes
 	vec3 cords[16] = {
 		vec3(6.f, 0.f, 6.f), vec3(6.f, 0.f, 2.f), vec3(6.f, 0.f, -2.f), vec3(6.f, 0.f, -6.f),
 		vec3(2.f, 0.f, 6.f), vec3(2.f, 0.f, 2.f), vec3(2.f, 0.f, -2.f), vec3(2.f, 0.f, -6.f),
@@ -173,10 +175,16 @@ void init_spheres()
 	};
 	for (int i = 0; i < sphere_count; i++)
 	{
-		Mesh* sphere = new Mesh("mesh/cube.obj", "mesh/brick.jpg");
-		sphere->translate_mesh(cords[i]);
-		spheres.push_back(sphere);
+		Mesh* mesh = new Mesh("mesh/cube.obj", "mesh/brick.jpg");
+		mesh->translate_mesh(cords[i]);
+		spheres.push_back(mesh);
 	}
+
+	// Floor
+	Mesh* plane = new Mesh("mesh/plane.obj", "mesh/wood.png");
+	plane->translate_mesh(vec3(0.f, -1.f, 0.f));
+	plane->scale_mesh(vec3(10.f, 1.f, 10.f));
+	planes.push_back(plane);
 }
 
 // Initialize and compiling shaders
@@ -342,7 +350,7 @@ void render()
 	float delta = cur_time - old_time;
 	old_time = cur_time;
 
-	camera->camera_rotate(vec3(0.f, 1.f, 0.f), delta / 35000);
+	camera->camera_rotate(vec3(0.f, 1.f, 0.f), delta / 25000);
 
 	// Draw camera
 	GLuint loc_proj = glGetUniformLocation(gBuffer_program, "projection_matrix");
@@ -350,7 +358,7 @@ void render()
 	glUniformMatrix4fv(loc_proj, 1, GL_FALSE, &(camera->get_projection_matrix())[0][0]);
 	glUniformMatrix4fv(loc_view, 1, GL_FALSE, &(camera->get_view_matrix())[0][0]);
 	
-	// Draw spheres
+	// Draw scene meshes
 	GLuint loc_model_matrix = glGetUniformLocation(gBuffer_program, "model_matrix");
 	GLuint loc_normal_matrix = glGetUniformLocation(gBuffer_program, "normal_matrix");
 	for (int i = 0; i < sphere_count; i++)
@@ -364,6 +372,20 @@ void render()
 		glActiveTexture(GL_TEXTURE0 + 0);
 		glBindTexture(GL_TEXTURE_2D, spheres[i]->get_texture_id());
 		glDrawArrays(GL_TRIANGLES, 0, spheres[i]->get_triangle_count() * 3);
+		glBindVertexArray(0);
+	}
+	// Draw planes
+	for (int i = 0; i < planes.size(); i++)
+	{
+		glUniformMatrix4fv(loc_model_matrix, 1, GL_FALSE, &(planes[i]->get_model_matrix())[0][0]);
+		glUniformMatrix4fv(loc_normal_matrix, 1, GL_FALSE, &(planes[i]->get_normal_matrix())[0][0]);
+		glBindVertexArray(planes[i]->get_VAO());
+		// Bind the texture
+		GLuint loc_diff_texture = glGetUniformLocation(deferred_shading_program, "diffuse");
+		glUniform1i(loc_diff_texture, 0);
+		glActiveTexture(GL_TEXTURE0 + 0);
+		glBindTexture(GL_TEXTURE_2D, planes[i]->get_texture_id());
+		glDrawArrays(GL_TRIANGLES, 0, planes[i]->get_triangle_count() * 3);
 		glBindVertexArray(0);
 	}
 
