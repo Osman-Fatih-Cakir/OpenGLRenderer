@@ -1,5 +1,8 @@
 #include "Camera.h"
 
+#include <gtc/matrix_transform.hpp>
+
+
 Camera::Camera(vec3 _eye, vec3 _up, vec3 _center, Globals::Projection_Type proj_type)
 {
 	eye = _eye;
@@ -9,6 +12,8 @@ Camera::Camera(vec3 _eye, vec3 _up, vec3 _center, Globals::Projection_Type proj_
 	set_camera_projection(proj_type); // Set projection matrix
 	camera_lookAt(eye, up, center); // Set view matrix
 }
+
+Camera::~Camera() {};
 
 void Camera::set_camera_projection(Globals::Projection_Type proj_type)
 {
@@ -52,6 +57,10 @@ void Camera::camera_rotate(vec3 rot, float angle)
 //
 //// Getters and setters
 //
+Globals::Projection_Type Camera::get_projection_type()
+{
+	return projection_type;
+}
 mat4 Camera::get_projection_matrix()
 {
 	return projection_matrix;

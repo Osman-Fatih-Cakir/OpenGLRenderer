@@ -3,7 +3,6 @@
 #include <GL/glew.h>
 #include <GL/freeglut.h>
 #include <glm.hpp>
-#include <gtc/matrix_transform.hpp>
 
 #include "Globals.h"
 
@@ -18,8 +17,9 @@ class Camera
 {
 public:
 
-	// Constructor
+	// Constructor and destructor
 	Camera(vec3 _eye, vec3 _up, vec3 _center, Globals::Projection_Type proj_type);
+	~Camera();
 
 	// Calculate camera attributes
 	void set_camera_projection(Globals::Projection_Type proj_type);
@@ -38,7 +38,7 @@ public:
 	void camera_rotate(vec3 rot, float angle);
 
 	// Getters and setters
-	Globals::Projection_Type get_projection_type;
+	Globals::Projection_Type get_projection_type();
 	mat4 get_projection_matrix();
 	void set_projection_matrix(mat4 mat);
 	mat4 get_view_matrix();

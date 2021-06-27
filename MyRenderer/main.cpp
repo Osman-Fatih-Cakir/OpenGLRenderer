@@ -52,6 +52,7 @@ GLuint gPosition, gNormal, gAlbedoSpec;
 
 void Init_Glut_and_Glew(int argc, char* argv[]);
 void init();
+void resize_window(int w, int h);
 void init_spheres();
 void init_shaders();
 void init_camera(vec3 eye, vec3 center, vec3 up);
@@ -86,7 +87,7 @@ void Init_Glut_and_Glew(int argc, char* argv[])
 	glutInit(&argc, argv);
 
 	// Create context
-	glutInitContextVersion(3, 3);
+	glutInitContextVersion(4, 5);
 	glutInitContextProfile(GLUT_CORE_PROFILE);
 
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH);
@@ -116,6 +117,7 @@ void Init_Glut_and_Glew(int argc, char* argv[])
 	
 
 	// Function bindings
+	glutReshapeFunc(resize_window);
 	glutDisplayFunc(render);
 }
 
@@ -146,7 +148,18 @@ void init()
 	init_lights();
 
 	// Get delta time
-	old_time = glutGet(GLUT_ELAPSED_TIME);
+	old_time = (float)glutGet(GLUT_ELAPSED_TIME);
+}
+
+// Resize window
+void resize_window(int w, int h)
+{
+	// Prevent from zero division
+	if (h == 0) h = 1;
+
+	// Recalculate camera projection matrix
+	camera->set_camera_projection(Globals::PERSPECTIVE);
+	glViewport(0, 0, w, h); // Set the viewport
 }
 
 // Initailize spheres
@@ -160,7 +173,7 @@ void init_spheres()
 	};
 	for (int i = 0; i < sphere_count; i++)
 	{
-		Mesh* sphere = new Mesh("mesh/sphere.obj");
+		Mesh* sphere = new Mesh("mesh/cube.obj", "mesh/brick.jpg");
 		sphere->translate_mesh(cords[i]);
 		spheres.push_back(sphere);
 	}
@@ -289,17 +302,17 @@ void init_lights()
 			((rand() % 100) / 200.f) + 0.5f
 		);
 		// Draw a mesh for represent a light
-		Mesh* light_mesh = new Mesh("mesh/cube.obj");
+		Mesh* light_mesh = new Mesh("mesh/cube.obj", "NONE");
 		light_mesh->translate_mesh(lights[i].position);
 		light_mesh->scale_mesh(vec3(0.1f, 0.1f, 0.1f));
 		light_meshes.push_back(light_mesh);
 
 		// Calculate light radius
-		float constant = 1.0;
-		float linear = 0.7;
-		float quadratic = 1.8;
+		float constant = 1.0f;
+		float linear = 0.7f;
+		float quadratic = 1.8f;
 		float lightMax = std::fmaxf(std::fmaxf(lights[i].color.r, lights[i].color.g), lights[i].color.b);
-		float radius = (-linear + std::sqrtf(linear * linear - 4 * quadratic * (constant - (256.0 / 5.0) * lightMax)))
+		float radius = (float)(-linear + std::sqrtf(linear * linear - 4 * quadratic * (constant - (256.0 / 5.0) * lightMax)))
 			/ (2 * quadratic);
 		lights[i].radius = radius;
 
@@ -325,7 +338,7 @@ void render()
 	glUseProgram(gBuffer_program);
 
 	// Get delta time
-	cur_time = glutGet(GLUT_ELAPSED_TIME);
+	cur_time = (float)glutGet(GLUT_ELAPSED_TIME);
 	float delta = cur_time - old_time;
 	old_time = cur_time;
 
@@ -345,6 +358,11 @@ void render()
 		glUniformMatrix4fv(loc_model_matrix, 1, GL_FALSE, &(spheres[i]->get_model_matrix())[0][0]);
 		glUniformMatrix4fv(loc_normal_matrix, 1, GL_FALSE, &(spheres[i]->get_normal_matrix())[0][0]);
 		glBindVertexArray(spheres[i]->get_VAO());
+		// Bind the texture
+		GLuint loc_diff_texture = glGetUniformLocation(deferred_shading_program, "diffuse");
+		glUniform1i(loc_diff_texture, 0);
+		glActiveTexture(GL_TEXTURE0 + 0);
+		glBindTexture(GL_TEXTURE_2D, spheres[i]->get_texture_id());
 		glDrawArrays(GL_TRIANGLES, 0, spheres[i]->get_triangle_count() * 3);
 		glBindVertexArray(0);
 	}

@@ -2,10 +2,8 @@
 
 #include <GL/glew.h>
 #include <GL/freeglut.h>
-#include <string>
 #include <vector>
 #include <glm.hpp>
-#include <gtc/matrix_transform.hpp>
 
 #include <Globals.h>
 
@@ -19,11 +17,15 @@ typedef glm::vec2 vec2;
 class Mesh
 {
 public:
-	// Constructor
-	Mesh(std::string path);
+	// Constructor and destructor
+	Mesh(std::string path, const char* texture_path);
+	~Mesh();
 
 	GLuint get_VAO();
 	unsigned int get_triangle_count();
+
+	// Load the texture
+	GLuint load_texture(const char* path);
 
 	// Translate mesh
 	void translate_mesh(vec3 tra);
@@ -37,10 +39,13 @@ public:
 	void set_model_matrix(mat4 mat);
 	mat4 get_normal_matrix();
 	void set_normal_matrix(mat4 mat);
+	GLuint get_texture_id();
+	void set_texture_id(GLuint _id);
 
 private:
 
 	GLuint VAO;
+	GLuint texture_id;
 	unsigned int triangle_count = 0;
 
 	mat4 model_matrix;

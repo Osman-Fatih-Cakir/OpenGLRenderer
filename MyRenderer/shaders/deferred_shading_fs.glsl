@@ -31,13 +31,13 @@ void main()
 	float spec = texture(gAlbedoSpec, fTexCoord).a;
 
 	// Calculate the lighting using Blinn-Phong
-	vec3 Ambient = diffuse * 0.1;
+	vec3 Ambient = diffuse * 0.005;
 	vec3 view_dir = normalize(viewer_pos - frag_pos);
 
 	vec3 lighting = vec3(0.0);
 	for (int i = 0; i < NUMBER_OF_LIGHTS; i++) // Calculate lighting for all lights
 	{
-		/* Should be tested with a big scene
+		/* Should be tested with a bigger scene
 		// If the fragment is not inside the light radious, no need to make calculation for that light
 		if (length(lights[i].position - frag_pos) > lights[i].radius)
 			continue;

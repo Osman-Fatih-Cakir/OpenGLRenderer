@@ -1,8 +1,14 @@
 
 #include "Mesh.h"
 
+#define STB_IMAGE_IMPLEMENTATION
+#include <stb_image.h> // Image loading library for load texture images
+#include <cstring>
+#include <gtc/matrix_transform.hpp>
+#include <string>
+
 // Constructor
-Mesh::Mesh(std::string path)
+Mesh::Mesh(std::string path, const char* texture_path)
 {
 	VAO = load_obj_mesh(path);
 	Globals::Log("Loaded file: " + path);
@@ -10,7 +16,20 @@ Mesh::Mesh(std::string path)
 	// Set model and normal matrices
 	model_matrix = mat4(1.f);
 	normal_matrix = glm::transpose(glm::inverse(model_matrix));
+
+	// Load texture
+	if (std::strcmp(texture_path, "NONE") != 0)
+	{
+		texture_id = load_texture(texture_path);
+	}
+	else
+	{
+		texture_id = -1;
+	}
 }
+
+// Destructor
+Mesh::~Mesh() {};
 
 GLuint Mesh::get_VAO()
 {
@@ -38,6 +57,47 @@ mat4 Mesh::get_normal_matrix()
 void Mesh::set_normal_matrix(mat4 mat)
 {
 	normal_matrix = mat;
+}
+GLuint Mesh::get_texture_id()
+{
+	return texture_id;
+}
+void Mesh::set_texture_id(GLuint _id)
+{
+	texture_id = _id;
+}
+
+GLuint Mesh::load_texture(const char* path)
+{
+	GLuint textureID;
+	glGenTextures(1, &textureID);
+
+	int width, height, nrComponents;
+	unsigned char* image = stbi_load(path, &width, &height, &nrComponents, 0);
+	if (image)
+	{
+		GLenum format;
+		if (nrComponents == 1) format = GL_RED;
+		else if (nrComponents == 3) format = GL_RGB;
+		else if (nrComponents == 4) format = GL_RGBA;
+
+		glBindTexture(GL_TEXTURE_2D, textureID);
+		glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, image);
+		glGenerateMipmap(GL_TEXTURE_2D);
+
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+		stbi_image_free(image);
+	}
+	else
+	{
+		std::cout << "Texture failed to load at path: " << path << std::endl;
+	}
+
+	return textureID;
 }
 
 // Loads the mesh from specified path

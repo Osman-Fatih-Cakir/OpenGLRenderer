@@ -1,4 +1,4 @@
-#version 330 core
+#version 450
 
 layout(location = 0) out vec3 gPosition;
 layout(location = 1) out vec3 gNormal;
@@ -8,7 +8,7 @@ in vec2 fTexCoord;
 in vec3 fFragPos;
 in vec3 fNormal;
 
-
+uniform sampler2D diffuse;
 
 void main()
 {
@@ -17,7 +17,7 @@ void main()
 	// Fragment normal
 	gNormal = fNormal;
 	// Diffuse
-	gAlbedoSpec.rgb = vec3(0.5, 0.5, 0.5);
+	gAlbedoSpec.rgb = texture(diffuse, fTexCoord).rgb;//vec3(0.5, 0.5, 0.5);
 	// Specular (float number)
 	gAlbedoSpec.a = 0.5;
 }
