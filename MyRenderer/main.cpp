@@ -28,7 +28,16 @@ struct Light
 	float radius;
 	float linear;
 	float quadratic;
-}lights[light_count];
+}lights[light_count]; // TODO change the name as "point_lights"
+
+
+const int direct_light_count = 1;
+struct Direct_Light
+{
+	vec3 direction;
+	vec3 color;
+	float intensity;
+}direct_lights[direct_light_count];
 
 // Camera
 Camera* camera;
@@ -292,6 +301,9 @@ void init_gBuffer()
 // Initialize light paramters
 void init_lights()
 {
+	//
+	//// Point lights 
+	//
 	srand((unsigned int)time(NULL));
 
 	// Light positions
@@ -327,7 +339,15 @@ void init_lights()
 		lights[i].linear = 0.2f;
 		lights[i].linear = 0.7f;
 	}
+
+	//
+	//// Directional lights
+	//
+	direct_lights[0].color = vec3(1.0f, 1.0f, 1.0f);
+	direct_lights[0].direction = vec3(0.0f, -1.0f, -1.0f);
+	direct_lights[0].intensity = 1.0f;
 }
+
 
 // Renders the scene
 void render()
@@ -350,7 +370,7 @@ void render()
 	float delta = cur_time - old_time;
 	old_time = cur_time;
 
-	camera->camera_rotate(vec3(0.f, 1.f, 0.f), delta / 25000);
+	camera->camera_rotate(vec3(0.f, 1.f, 0.f), delta / 1000); // Camera rotation smoothly
 
 	// Draw camera
 	GLuint loc_proj = glGetUniformLocation(gBuffer_program, "projection_matrix");
@@ -421,7 +441,7 @@ void render()
 	glBindTexture(GL_TEXTURE_2D, gNormal);
 	glActiveTexture(GL_TEXTURE0 + 2);
 	glBindTexture(GL_TEXTURE_2D, gAlbedoSpec);
-	// Bind light uniforms
+	// Bind point light uniforms
 	for (int i = 0; i < light_count; i++)
 	{
 		std::string light_array_str = "lights[" + std::to_string(i) + "].position";
@@ -443,6 +463,21 @@ void render()
 		light_array_str = "lights[" + std::to_string(i) + "].quadratic";
 		GLuint loc_light_q = glGetUniformLocation(deferred_shading_program, (GLchar*)light_array_str.c_str());
 		glUniform1f(loc_light_q, (GLfloat)lights[i].quadratic);
+	}
+	// Bind directional light uniforms
+	for (int i = 0; i < direct_light_count; i++)
+	{
+		std::string light_array_str = "direct_lights[" + std::to_string(i) + "].color";
+		GLuint loc_lights_pos = glGetUniformLocation(deferred_shading_program, (GLchar*)light_array_str.c_str());
+		glUniform3fv(loc_lights_pos, 1, &(direct_lights[i].color)[0]);
+
+		light_array_str = "direct_lights[" + std::to_string(i) + "].direction";
+		loc_lights_pos = glGetUniformLocation(deferred_shading_program, (GLchar*)light_array_str.c_str());
+		glUniform3fv(loc_lights_pos, 1, &(direct_lights[i].direction)[0]);
+
+		light_array_str = "direct_lights[" + std::to_string(i) + "].intensity";
+		loc_lights_pos = glGetUniformLocation(deferred_shading_program, (GLchar*)light_array_str.c_str());
+		glUniform1f(loc_lights_pos, direct_lights[i].intensity);
 	}
 
 	// Draw quad using gBuffer color data
@@ -469,7 +504,7 @@ void render()
 	GLuint loc_color = glGetUniformLocation(deferred_unlit_meshes_program, "light_color");
 	glUniformMatrix4fv(loc_proj, 1, GL_FALSE, &(camera->get_projection_matrix())[0][0]);
 	glUniformMatrix4fv(loc_view, 1, GL_FALSE, &(camera->get_view_matrix())[0][0]);
-
+	/*
 	// Draw light meshes
 	for (int i = 0; i < light_count; i++)
 	{
@@ -479,7 +514,7 @@ void render()
 		glDrawArrays(GL_TRIANGLES, 0, light_meshes[i]->get_triangle_count() * 3);
 		glBindVertexArray(0);
 	}
-
+	*/
 	// Error check
 	GLuint err = glGetError(); if (err) fprintf(stderr, "%s\n", gluErrorString(err));
 	

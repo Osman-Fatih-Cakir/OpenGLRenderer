@@ -16,9 +16,19 @@ struct Light
 	float radius;
 	float linear;
 	float quadratic;
-};
-const int NUMBER_OF_LIGHTS = 8; // Max light count // TODO number of lights hardcoded
+};// TODO change names as "point lights"
+const int NUMBER_OF_LIGHTS = 8; // TODO number of lights is hardcoded
 uniform Light lights[NUMBER_OF_LIGHTS];
+
+struct Direct_Light
+{
+	vec3 direction;
+	vec3 color;
+	float intensity;
+};
+const int NUMBER_OF_DIRECT_LIGHTS = 1; // TODO hardcoded
+uniform Direct_Light direct_lights[NUMBER_OF_DIRECT_LIGHTS];
+
 
 uniform vec3 viewer_pos;
 
@@ -30,18 +40,21 @@ void main()
 	vec3 diffuse = texture(gAlbedoSpec, fTexCoord).rgb;
 	float spec = texture(gAlbedoSpec, fTexCoord).a;
 
-	// Calculate the lighting using Blinn-Phong
 	vec3 Ambient = diffuse * 0.005;
+	// Calculate the lighting using Blinn-Phong
 	vec3 view_dir = normalize(viewer_pos - frag_pos);
 
 	vec3 lighting = vec3(0.0);
+
+	/*
+	// Point light calculations
 	for (int i = 0; i < NUMBER_OF_LIGHTS; i++) // Calculate lighting for all lights
 	{
-		/* Should be tested with a bigger scene
-		// If the fragment is not inside the light radious, no need to make calculation for that light
-		if (length(lights[i].position - frag_pos) > lights[i].radius)
-			continue;
-		*/
+		// Should be tested with a bigger scene
+		//// If the fragment is not inside the light radious, no need to make calculation for that light
+		//if (length(lights[i].position - frag_pos) > lights[i].radius)
+		//	continue;
+		
 
 		// Diffuse
 		vec3 light_dir = normalize(lights[i].position - frag_pos);
@@ -49,7 +62,7 @@ void main()
 		
 		// Specular
 		vec3 halfway = normalize(light_dir + view_dir);
-		float specular = pow(max(dot(normal, halfway), 0), 4.0); // TODO shineness hardcoded(16.0)
+		float specular = pow(max(dot(normal, halfway), 0), 4.0); // TODO shineness is hardcoded
 		vec3 Specular = specular * lights[i].color * spec;
 
 		// Attenuation
@@ -58,8 +71,26 @@ void main()
 		Diffuse *= attenuation;
 		Specular *= attenuation;
 
-		lighting += Diffuse + Specular + Ambient;
+		lighting += Diffuse + Specular;
 	}
+	*/
+
+	// Directional light calculations
+	for (int i = 0; i < NUMBER_OF_DIRECT_LIGHTS; i++)
+	{
+		// Diffuse
+		vec3 light_dir = normalize(-direct_lights[i].direction);
+		vec3 Diffuse = max(dot(normal, light_dir), 0.0) * diffuse * direct_lights[i].color;
+
+		// Specular
+		vec3 halfway = normalize(light_dir + view_dir);
+		float specular = pow(max(dot(normal, halfway), 0), 4.0); // TODO shineness is hardcoded
+		vec3 Specular = specular * lights[i].color * spec;
+
+		lighting += Diffuse + Specular;
+	}
+
+	lighting += Ambient; // Add ambient light at the end
 
 	OutColor = vec4(lighting, 1.0);
 }
