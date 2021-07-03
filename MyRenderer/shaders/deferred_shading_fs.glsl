@@ -3,6 +3,7 @@
 out vec4 OutColor;
 
 in vec2 fTexCoord;
+in vec4 fPos_light_space;
 
 uniform sampler2D gPosition;
 uniform sampler2D gNormal;
@@ -24,13 +25,45 @@ struct Direct_Light
 {
 	vec3 direction;
 	vec3 color;
+
+	mat4 light_space_matrix;
+	sampler2D directional_shadow_map;
+
 	float intensity;
 };
 const int NUMBER_OF_DIRECT_LIGHTS = 1; // TODO hardcoded
 uniform Direct_Light direct_lights[NUMBER_OF_DIRECT_LIGHTS];
 
-
 uniform vec3 viewer_pos;
+
+// Returns shadow value for directional light, (1.0: shadow, 0.0: non-shadow) 
+float directional_shadow_calculation(int light_index, vec4 _fPos_light_space, float bias)
+{
+	// Perspective divide
+	vec3 proj_coord = _fPos_light_space.xyz / _fPos_light_space.w;
+
+	// Transform to [1,0] range
+	proj_coord = proj_coord * 0.5 + 0.5;
+
+	// Get closest value from light perspective
+	float closest_depth = texture(direct_lights[light_index].directional_shadow_map, proj_coord.xy).r;
+
+	// Get depth of current fragment from lights perspective
+	float current_depth = proj_coord.z;
+
+	// Check if the fragment is in the shadow or not
+	float shadow = 0.0;
+
+	// TODO add pcf
+	shadow = current_depth - bias > closest_depth ? 1.0 : 0.0;
+
+	if (proj_coord.z > 1.0) // Out of projection borders
+	{
+		shadow = 0.0;
+	}
+
+	return shadow;
+}
 
 void main()
 {
@@ -46,7 +79,7 @@ void main()
 
 	vec3 lighting = vec3(0.0);
 
-	/*
+	
 	// Point light calculations
 	for (int i = 0; i < NUMBER_OF_LIGHTS; i++) // Calculate lighting for all lights
 	{
@@ -73,8 +106,8 @@ void main()
 
 		lighting += Diffuse + Specular;
 	}
-	*/
-
+	
+	
 	// Directional light calculations
 	for (int i = 0; i < NUMBER_OF_DIRECT_LIGHTS; i++)
 	{
@@ -87,8 +120,16 @@ void main()
 		float specular = pow(max(dot(normal, halfway), 0), 4.0); // TODO shineness is hardcoded
 		vec3 Specular = specular * lights[i].color * spec;
 
-		lighting += Diffuse + Specular;
+		// Calculate shadow
+		float shadow = 0.0;
+		// TODO add point shadow
+		vec4 fPos_light_space = direct_lights[i].light_space_matrix * vec4(frag_pos, 1.0);
+		float dir_bias = 0.0;//max(0.0 * (1.0 - dot(normal, light_dir)), 0.0);
+		shadow = directional_shadow_calculation(i, fPos_light_space, dir_bias);
+
+		lighting += (Diffuse + Specular) * direct_lights[i].intensity * (1.0 - shadow);
 	}
+
 
 	lighting += Ambient; // Add ambient light at the end
 

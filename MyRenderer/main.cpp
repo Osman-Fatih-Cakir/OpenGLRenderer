@@ -16,10 +16,12 @@ typedef glm::vec3 vec3;
 typedef glm::vec4 vec4;
 typedef glm::vec2 vec2;
 
+
 // Timing
 float old_time = 0.f;
 float cur_time = 0.f;
 
+// TODO add point light intensity
 const int light_count = 8;
 struct Light
 {
@@ -30,12 +32,16 @@ struct Light
 	float quadratic;
 }lights[light_count]; // TODO change the name as "point_lights"
 
-
 const int direct_light_count = 1;
 struct Direct_Light
 {
 	vec3 direction;
 	vec3 color;
+
+	mat4 projection_matrix;
+	mat4 view_matrix;
+	mat4 space_matrix;
+
 	float intensity;
 }direct_lights[direct_light_count];
 
@@ -52,16 +58,17 @@ std::vector<Mesh*> planes;
 GLuint quad_VAO;
 
 // Shader programs
-GLuint gBuffer_program, deferred_shading_program, deferred_unlit_meshes_program;
+GLuint gBuffer_program, deferred_shading_program, deferred_unlit_meshes_program, depth_program;
 
 // Framebuffers
-GLuint gBuffer;
+GLuint gBuffer, depth_map_fbo;
 
 // Textures
-GLuint gPosition, gNormal, gAlbedoSpec;
+GLuint gPosition, gNormal, gAlbedoSpec, depth_map;
 
 void Init_Glut_and_Glew(int argc, char* argv[]);
 void init();
+void keyboard(unsigned char key, int x, int y);
 void resize_window(int w, int h);
 void init_meshes();
 void init_shaders();
@@ -69,6 +76,7 @@ void init_camera(vec3 eye, vec3 center, vec3 up);
 void init_quad();
 void init_gBuffer();
 void init_lights();
+void init_depth_map();
 
 void render();
 
@@ -121,13 +129,10 @@ void Init_Glut_and_Glew(int argc, char* argv[])
 	
 	// Enable depth test
 	glEnable(GL_DEPTH_TEST);
-	// Cull backfaces
-	glEnable(GL_CULL_FACE);
-	glCullFace(GL_BACK);
-	
 
 	// Function bindings
 	glutReshapeFunc(resize_window);
+	glutKeyboardFunc(keyboard);
 	glutDisplayFunc(render);
 }
 
@@ -135,11 +140,12 @@ void Init_Glut_and_Glew(int argc, char* argv[])
 void init()
 {
 	Globals::Log("*****************Start************************");
-	// Load sphere mesh
-	init_meshes();
 
 	// Initialize shaders
 	init_shaders();
+
+	// Load sphere mesh
+	init_meshes();
 
 	// Set camera parameters
 	init_camera(
@@ -157,8 +163,16 @@ void init()
 	// Initialize lights
 	init_lights();
 
+	// Initialize depth maps
+	init_depth_map();
+
 	// Get delta time
 	old_time = (float)glutGet(GLUT_ELAPSED_TIME);
+}
+
+// Keyboard inputs
+void keyboard(unsigned char key, int x, int y)
+{
 }
 
 // Resize window
@@ -213,6 +227,11 @@ void init_shaders()
 	vertex_shader = initshaders(GL_VERTEX_SHADER, "shaders/deferred_unlit_meshes_vs.glsl");
 	fragment_shader = initshaders(GL_FRAGMENT_SHADER, "shaders/deferred_unlit_meshes_fs.glsl");
 	deferred_unlit_meshes_program = initprogram(vertex_shader, fragment_shader);
+
+	// Depth shaders
+	vertex_shader = initshaders(GL_VERTEX_SHADER, "shaders/depth_vs.glsl");
+	fragment_shader = initshaders(GL_FRAGMENT_SHADER, "shaders/depth_fs.glsl");
+	depth_program = initprogram(vertex_shader, fragment_shader);
 }
 
 // Initialize camera
@@ -344,10 +363,81 @@ void init_lights()
 	//// Directional lights
 	//
 	direct_lights[0].color = vec3(1.0f, 1.0f, 1.0f);
-	direct_lights[0].direction = vec3(0.0f, -1.0f, -1.0f);
-	direct_lights[0].intensity = 1.0f;
+	direct_lights[0].direction = vec3(-1.0f, -1.0f, -1.0f);
+	direct_lights[0].intensity = 0.7f;
+	direct_lights[0].projection_matrix = glm::ortho(-20.f, 20.f, -20.f, 20.f, 0.1f, 1000.f);
+	direct_lights[0].view_matrix = glm::lookAt(vec3(16,20,16), vec3(0,0,0), vec3(0,1,0));
+	direct_lights[0].space_matrix = direct_lights[0].projection_matrix * direct_lights[0].view_matrix;
 }
 
+// Initialize depth map framebuffer (texture)
+void init_depth_map()
+{
+	//
+	//// Directional light depth
+	//
+	glGenFramebuffers(1, &depth_map_fbo);
+	
+	// Create 2D depth texture for store depths
+	glGenTextures(1, &depth_map);
+	glBindTexture(GL_TEXTURE_2D, depth_map);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, 1024, 1024, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+	float borderColor[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+	glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
+
+	// Attach depth texture as FBO's depth buffer
+	glBindFramebuffer(GL_FRAMEBUFFER, depth_map_fbo);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depth_map, 0);
+	// Set both to "none" because there is no need for color attachment
+	glDrawBuffer(GL_NONE);
+	glReadBuffer(GL_NONE);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+// Draw the scene
+// isLit: "True" if the scene is going to be lit and normal calculations will occur, otherwise "false"
+void draw_scene(GLuint program, bool isLit)
+{
+
+	// Draw scene meshes
+	GLuint loc_model_matrix = glGetUniformLocation(program, "model_matrix");
+	GLuint loc_normal_matrix;
+	if (isLit) // Check if we need normal matrix
+		loc_normal_matrix = glGetUniformLocation(program, "normal_matrix");
+	for (int i = 0; i < sphere_count; i++)
+	{
+		glUniformMatrix4fv(loc_model_matrix, 1, GL_FALSE, &(spheres[i]->get_model_matrix())[0][0]);
+		if (isLit) // Check if we need normal matrix
+			glUniformMatrix4fv(loc_normal_matrix, 1, GL_FALSE, &(spheres[i]->get_normal_matrix())[0][0]);
+		glBindVertexArray(spheres[i]->get_VAO());
+		// Bind the texture
+		GLuint loc_diff_texture = glGetUniformLocation(deferred_shading_program, "diffuse");
+		glUniform1i(loc_diff_texture, 0);
+		glActiveTexture(GL_TEXTURE0 + 0);
+		glBindTexture(GL_TEXTURE_2D, spheres[i]->get_texture_id());
+		glDrawArrays(GL_TRIANGLES, 0, spheres[i]->get_triangle_count() * 3);
+		glBindVertexArray(0);
+	}
+	// Draw planes
+	for (int i = 0; i < planes.size(); i++)
+	{
+		glUniformMatrix4fv(loc_model_matrix, 1, GL_FALSE, &(planes[i]->get_model_matrix())[0][0]);
+		if (isLit)
+			glUniformMatrix4fv(loc_normal_matrix, 1, GL_FALSE, &(planes[i]->get_normal_matrix())[0][0]);
+		glBindVertexArray(planes[i]->get_VAO());
+		// Bind the texture
+		GLuint loc_diff_texture = glGetUniformLocation(deferred_shading_program, "diffuse");
+		glUniform1i(loc_diff_texture, 0);
+		glActiveTexture(GL_TEXTURE0 + 0);
+		glBindTexture(GL_TEXTURE_2D, planes[i]->get_texture_id());
+		glDrawArrays(GL_TRIANGLES, 0, planes[i]->get_triangle_count() * 3);
+		glBindVertexArray(0);
+	}
+}
 
 // Renders the scene
 void render()
@@ -355,7 +445,7 @@ void render()
 	//
 	//// 1. GBuffer Pass: Generate geometry/color data into gBuffers
 	//
-	
+
 	// Bind framebuffer to gBuffer
 	glBindFramebuffer(GL_FRAMEBUFFER, gBuffer);
 
@@ -370,55 +460,54 @@ void render()
 	float delta = cur_time - old_time;
 	old_time = cur_time;
 
-	camera->camera_rotate(vec3(0.f, 1.f, 0.f), delta / 1000); // Camera rotation smoothly
+	camera->camera_rotate(vec3(0.f, 1.f, 0.f), delta / 10000); // Camera rotation smoothly
 
 	// Draw camera
 	GLuint loc_proj = glGetUniformLocation(gBuffer_program, "projection_matrix");
 	GLuint loc_view = glGetUniformLocation(gBuffer_program, "view_matrix");
 	glUniformMatrix4fv(loc_proj, 1, GL_FALSE, &(camera->get_projection_matrix())[0][0]);
 	glUniformMatrix4fv(loc_view, 1, GL_FALSE, &(camera->get_view_matrix())[0][0]);
-	
-	// Draw scene meshes
-	GLuint loc_model_matrix = glGetUniformLocation(gBuffer_program, "model_matrix");
-	GLuint loc_normal_matrix = glGetUniformLocation(gBuffer_program, "normal_matrix");
-	for (int i = 0; i < sphere_count; i++)
-	{
-		glUniformMatrix4fv(loc_model_matrix, 1, GL_FALSE, &(spheres[i]->get_model_matrix())[0][0]);
-		glUniformMatrix4fv(loc_normal_matrix, 1, GL_FALSE, &(spheres[i]->get_normal_matrix())[0][0]);
-		glBindVertexArray(spheres[i]->get_VAO());
-		// Bind the texture
-		GLuint loc_diff_texture = glGetUniformLocation(deferred_shading_program, "diffuse");
-		glUniform1i(loc_diff_texture, 0);
-		glActiveTexture(GL_TEXTURE0 + 0);
-		glBindTexture(GL_TEXTURE_2D, spheres[i]->get_texture_id());
-		glDrawArrays(GL_TRIANGLES, 0, spheres[i]->get_triangle_count() * 3);
-		glBindVertexArray(0);
-	}
-	// Draw planes
-	for (int i = 0; i < planes.size(); i++)
-	{
-		glUniformMatrix4fv(loc_model_matrix, 1, GL_FALSE, &(planes[i]->get_model_matrix())[0][0]);
-		glUniformMatrix4fv(loc_normal_matrix, 1, GL_FALSE, &(planes[i]->get_normal_matrix())[0][0]);
-		glBindVertexArray(planes[i]->get_VAO());
-		// Bind the texture
-		GLuint loc_diff_texture = glGetUniformLocation(deferred_shading_program, "diffuse");
-		glUniform1i(loc_diff_texture, 0);
-		glActiveTexture(GL_TEXTURE0 + 0);
-		glBindTexture(GL_TEXTURE_2D, planes[i]->get_texture_id());
-		glDrawArrays(GL_TRIANGLES, 0, planes[i]->get_triangle_count() * 3);
-		glBindVertexArray(0);
-	}
+
+	// Cull backfaces
+	glEnable(GL_CULL_FACE);
+	glCullFace(GL_BACK);
+	draw_scene(gBuffer_program, true);
+	glDisable(GL_CULL_FACE);
 
 	// Attach depth buffer to default framebuffer
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0); // Write to default framebuffer
 	glBlitFramebuffer(0, 0, Globals::WIDTH, Globals::HEIGHT, 0, 0, Globals::WIDTH, Globals::HEIGHT, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-	
+
+	//
+	//// Shadow pass: Get the depth map of the scene
+	//
+
+	glViewport(0, 0, 1024, 1024); // Use shadow resolutions
+	glBindFramebuffer(GL_FRAMEBUFFER, depth_map_fbo);
+	glClear(GL_DEPTH_BUFFER_BIT);
+
+	glUseProgram(depth_program);
+	// Directional light shadows
+	for (int i = 0; i < direct_light_count; i++)
+	{
+		glUniformMatrix4fv(glGetUniformLocation(depth_program, "projection_matrix"), 1, GL_FALSE, &(direct_lights[0].projection_matrix)[0][0]);
+		glUniformMatrix4fv(glGetUniformLocation(depth_program, "view_matrix"), 1, GL_FALSE, &(direct_lights[0].view_matrix)[0][0]);
+		
+		glEnable(GL_CULL_FACE);
+		glCullFace(GL_FRONT);
+		draw_scene(depth_program, false);
+		glDisable(GL_CULL_FACE);
+	}
+
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
 	//
 	//// 2. Lighting Pass: Calculate lighting pixel by pixel using gBuffer
 	//
 
+	glViewport(0, 0, Globals::WIDTH, Globals::HEIGHT);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	// Deferred shader program
@@ -478,14 +567,26 @@ void render()
 		light_array_str = "direct_lights[" + std::to_string(i) + "].intensity";
 		loc_lights_pos = glGetUniformLocation(deferred_shading_program, (GLchar*)light_array_str.c_str());
 		glUniform1f(loc_lights_pos, direct_lights[i].intensity);
+
+		light_array_str = "direct_lights[" + std::to_string(i) + "].directional_shadow_map";
+		loc_lights_pos = glGetUniformLocation(deferred_shading_program, (GLchar*)light_array_str.c_str());
+		glUniform1i(loc_lights_pos, 3);
+		glActiveTexture(GL_TEXTURE0 + 3);
+		glBindTexture(GL_TEXTURE_2D, depth_map);
+		
+		light_array_str = "direct_lights[" + std::to_string(i) + "].light_space_matrix";
+		loc_lights_pos = glGetUniformLocation(deferred_shading_program, (GLchar*)light_array_str.c_str());
+		glUniformMatrix4fv(loc_lights_pos, 1, GL_FALSE, &(direct_lights[0].space_matrix)[0][0]);
 	}
 
 	// Draw quad using gBuffer color data
 	glBindVertexArray(quad_VAO);
 	glDrawArrays(GL_TRIANGLES, 0, 6);
 	glBindVertexArray(0);
-	
-	// 3. Pass: Draw light meshes (The meshes that are not lit but in the same scene with other meshes)
+
+	//
+	//// 3. Pass: Draw light meshes (The meshes that are not lit but in the same scene with other meshes)
+	//
 	
 	// Attach depth buffer to default framebuffer
 	glBindFramebuffer(GL_FRAMEBUFFER, gBuffer);
@@ -493,18 +594,17 @@ void render()
 	glBlitFramebuffer(0, 0, Globals::WIDTH, Globals::HEIGHT, 0, 0, Globals::WIDTH, Globals::HEIGHT, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-
 	// Start forward rendering program
 	glUseProgram(deferred_unlit_meshes_program);
 
 	// Draw camera
 	loc_proj = glGetUniformLocation(deferred_unlit_meshes_program, "projection_matrix");
 	loc_view = glGetUniformLocation(deferred_unlit_meshes_program, "view_matrix");
-	loc_model_matrix = glGetUniformLocation(deferred_unlit_meshes_program, "model_matrix");
+	GLuint loc_model_matrix = glGetUniformLocation(deferred_unlit_meshes_program, "model_matrix");
 	GLuint loc_color = glGetUniformLocation(deferred_unlit_meshes_program, "light_color");
 	glUniformMatrix4fv(loc_proj, 1, GL_FALSE, &(camera->get_projection_matrix())[0][0]);
 	glUniformMatrix4fv(loc_view, 1, GL_FALSE, &(camera->get_view_matrix())[0][0]);
-	/*
+	
 	// Draw light meshes
 	for (int i = 0; i < light_count; i++)
 	{
@@ -514,7 +614,7 @@ void render()
 		glDrawArrays(GL_TRIANGLES, 0, light_meshes[i]->get_triangle_count() * 3);
 		glBindVertexArray(0);
 	}
-	*/
+	
 	// Error check
 	GLuint err = glGetError(); if (err) fprintf(stderr, "%s\n", gluErrorString(err));
 	
