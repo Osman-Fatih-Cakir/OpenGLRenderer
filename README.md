@@ -5,8 +5,7 @@ In order to run on Visual Studio, make the solution platform to x86.
 
 Techniques that I used so far:
 - Deferred shading
-- Directional light shadows
-- Point light shadows
+- Shadowmaps for directional and point lights
 
 Note:
 In this project, my goal is to build a renderer using OpenGL. I will try to learn and implement common realtime computer graphics techniques.

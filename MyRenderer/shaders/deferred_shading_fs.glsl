@@ -19,6 +19,7 @@ struct Light
 	float radius;
 	float linear;
 	float quadratic;
+	float intensity;
 
 };// TODO change names as "point lights"
 const int NUMBER_OF_LIGHTS = 8; // TODO number of lights is hardcoded
@@ -48,17 +49,22 @@ float directional_shadow_calculation(int light_index, vec4 _fPos_light_space, fl
 	// Transform to [1,0] range
 	proj_coord = proj_coord * 0.5 + 0.5;
 
-	// Get closest value from light perspective
-	float closest_depth = texture(direct_lights[light_index].directional_shadow_map, proj_coord.xy).r;
-
 	// Get depth of current fragment from lights perspective
 	float current_depth = proj_coord.z;
 
-	// Check if the fragment is in the shadow or not
 	float shadow = 0.0;
 
-	// TODO add pcf
-	shadow = current_depth - bias > closest_depth ? 1.0 : 0.0;
+	// Soft shadows (PCF)
+	vec2 texel_size = 1.0 / textureSize(direct_lights[light_index].directional_shadow_map, 0);
+	for (int i = -1; i <= 1; i++)
+	{
+		for (int j = -1; j <= 1; j++)
+		{
+			float pcf_depth = texture(direct_lights[light_index].directional_shadow_map, proj_coord.xy + vec2(i, j) * texel_size).r;
+			shadow += current_depth - bias > pcf_depth ? 1.0 : 0.0;
+		}
+	}
+	shadow /= 9.0;
 
 	if (proj_coord.z > 1.0) // Out of projection borders
 	{
@@ -72,14 +78,32 @@ float directional_shadow_calculation(int light_index, vec4 _fPos_light_space, fl
 float point_shadow_calculation(int light_index, vec3 _fPos, float bias)
 {
 	vec3 light_to_frag = _fPos - lights[light_index].position;
-	// Multiply the depth value with "far" variable to make the range between [0, far] instead of [0,1]
-	float closest_depth = texture(lights[light_index].point_shadow_map, light_to_frag).r * lights[light_index].far;
 
 	float current_depth = length(light_to_frag);
 
 	float shadow = 0.0;
-	// TODO add pcf
-	shadow = current_depth - bias > closest_depth ? 1.0 : 0.0;
+
+	// Soft shadows (PCF)
+	vec3 sample_offset_directions[20] = vec3[] // The directions
+	(
+		vec3(1, 1, 1), vec3(1, -1, 1), vec3(-1, -1, 1), vec3(-1, 1, 1),
+		vec3(1, 1, -1), vec3(1, -1, -1), vec3(-1, -1, -1), vec3(-1, 1, -1),
+		vec3(1, 1, 0), vec3(1, -1, 0), vec3(-1, -1, 0), vec3(-1, 1, 0),
+		vec3(1, 0, 1), vec3(-1, 0, 1), vec3(1, 0, -1), vec3(-1, 0, -1),
+		vec3(0, 1, 1), vec3(0, -1, 1), vec3(0, -1, -1), vec3(0, 1, -1)
+	);
+
+	float radius = 0.008;
+
+	for (int i = 0; i < 20; i++)
+	{
+		float pcf_depth = texture(lights[light_index].point_shadow_map, light_to_frag + sample_offset_directions[i] * radius).r;
+		pcf_depth *= lights[light_index].far;
+		if (current_depth - bias > pcf_depth)
+			shadow += 1.0;
+	}
+
+	shadow /= 20.f;
 
 	return shadow;
 }
@@ -142,7 +166,7 @@ void main()
 		Specular *= attenuation;
 
 		float shadow = point_shadow_calculation(i, frag_pos, 0.0);
-		lighting += (Diffuse + Specular) * (1.0 - shadow);
+		lighting += (Diffuse + Specular) * (1.0 - shadow) * lights[i].intensity;
 	}
 	
 	lighting += Ambient; // Add ambient light at the end

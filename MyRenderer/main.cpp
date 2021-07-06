@@ -20,7 +20,6 @@ typedef glm::vec2 vec2;
 float old_time = 0.f;
 float cur_time = 0.f;
 
-// TODO add point light intensity
 const int light_count = 8;
 struct Light
 {
@@ -35,6 +34,7 @@ struct Light
 	float radius;
 	float linear;
 	float quadratic;
+	float intensity;
 }lights[light_count]; // TODO change the name as "point_lights"
 
 const int direct_light_count = 1;
@@ -384,6 +384,7 @@ void init_lights()
 		float radius = (float)(-lights[i].linear + std::sqrtf(lights[i].linear * lights[i].linear - 4 * lights[i].quadratic * (constant - (256.0 / 5.0) * lightMax)))
 			/ (2 * lights[i].quadratic);
 		lights[i].radius = radius;
+		lights[i].intensity = 1.0f;
 
 		// Space matrices
 		
@@ -582,7 +583,7 @@ void render()
 	// Point light shadows
 	for (int i = 0; i < light_count; i++)
 	{
-		glViewport(0, 0, 1026, 1024); // Use shadow resolutions
+		glViewport(0, 0, 1024, 1024); // Use shadow resolutions
 		glBindFramebuffer(GL_FRAMEBUFFER, lights[i].depth_cubemap_fbo);
 		glClear(GL_DEPTH_BUFFER_BIT);
 		
@@ -595,8 +596,7 @@ void render()
 
 		glEnable(GL_CULL_FACE);
 		glCullFace(GL_FRONT);
-		//draw_scene(point_depth_program, false);
-		//////////////////////////////////////////////////////////////
+
 		// Draw scene meshes
 		GLuint loc_model_matrix = glGetUniformLocation(point_depth_program, "model");
 		for (int i = 0; i < sphere_count; i++)
@@ -614,7 +614,7 @@ void render()
 			glDrawArrays(GL_TRIANGLES, 0, planes[i]->get_triangle_count() * 3);
 			glBindVertexArray(0);
 		}
-		//////////////////////////////////////////////////////////////
+
 		glDisable(GL_CULL_FACE);
 
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -680,7 +680,12 @@ void render()
 		glUniform1i(loc_light_cubemap, 3 + i);
 		glActiveTexture(GL_TEXTURE0 + 3 + i);
 		glBindTexture(GL_TEXTURE_CUBE_MAP, lights[i].depth_cubemap);
-		last = 3 + i + 1;
+
+		light_array_str = "lights[" + std::to_string(i) + "].intensity";
+		GLuint loc_light_int = glGetUniformLocation(deferred_shading_program, (GLchar*)light_array_str.c_str());
+		glUniform1f(loc_light_int, (GLfloat)lights[i].intensity);
+
+		last = 3 + i + 1; // TODO change the name of the variable
 	}
 
 	// Bind directional light uniforms
