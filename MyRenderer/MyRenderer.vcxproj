@@ -165,6 +165,9 @@
     <None Include="shaders\depth_fs.glsl" />
     <None Include="shaders\gbuffer_fs.glsl" />
     <None Include="shaders\gBuffer_vs.glsl" />
+    <None Include="shaders\point_depth_fs.glsl" />
+    <None Include="shaders\point_depth_gs.glsl" />
+    <None Include="shaders\point_depth_vs.glsl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
