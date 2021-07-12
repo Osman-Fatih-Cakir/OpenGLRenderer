@@ -9,6 +9,7 @@
 #include <Globals.h>
 #include <Mesh.h>
 #include <init_shaders.h>
+#include <DirectionalLight.h>
 
 typedef glm::mat3 mat3;
 typedef glm::mat4 mat4;
@@ -39,20 +40,7 @@ struct Point_Light
 }point_lights[point_light_count];
 
 const int direct_light_count = 1;
-struct Direct_Light
-{
-	vec3 direction;
-	vec3 color;
-
-	mat4 projection_matrix;
-	mat4 view_matrix;
-	mat4 space_matrix;
-
-	GLuint depth_map;
-	GLuint depth_map_fbo;
-
-	float intensity;
-}direct_lights[direct_light_count];
+std::vector<DirectionalLight> direct_lights;
 
 // Camera
 Camera* camera;
@@ -393,12 +381,16 @@ void init_lights()
 	//
 	//// Directional lights
 	//
-	direct_lights[0].color = vec3(1.0f, 1.0f, 1.0f);
-	direct_lights[0].direction = vec3(-1.0f, -1.0f, -1.0f);
-	direct_lights[0].intensity = 0.5f;
-	direct_lights[0].projection_matrix = glm::ortho(-20.f, 20.f, -20.f, 20.f, 0.1f, 1000.f);
-	direct_lights[0].view_matrix = glm::lookAt(vec3(16,20,16), vec3(0,0,0), vec3(0,1,0));
-	direct_lights[0].space_matrix = direct_lights[0].projection_matrix * direct_lights[0].view_matrix;
+
+	for (int i = 0; i < direct_light_count; i++)
+	{
+		DirectionalLight light = DirectionalLight(vec3(-1.0f, -1.0f, -1.0f), vec3(1.0f, 1.0f, 1.0f));
+		light.intensity = 0.5f;
+		mat4 proj_mat = glm::ortho(-20.f, 20.f, -20.f, 20.f, 0.1f, 1000.f);
+		mat4 view_mat = glm::lookAt(vec3(16, 20, 16), vec3(0, 0, 0), vec3(0, 1, 0));
+		light.calculate_space_matrix(proj_mat, view_mat);
+		direct_lights.push_back(light);
+	}
 }
 
 // Initialize depth map framebuffer
@@ -557,8 +549,7 @@ void render()
 		glClear(GL_DEPTH_BUFFER_BIT);
 
 		// Directional light shadows
-		glUniformMatrix4fv(glGetUniformLocation(depth_program, "projection_matrix"), 1, GL_FALSE, &(direct_lights[0].projection_matrix)[0][0]);
-		glUniformMatrix4fv(glGetUniformLocation(depth_program, "view_matrix"), 1, GL_FALSE, &(direct_lights[0].view_matrix)[0][0]);
+		glUniformMatrix4fv(glGetUniformLocation(depth_program, "space_matrix"), 1, GL_FALSE, direct_lights[i].get_space_matrix_pointer());
 
 		glEnable(GL_CULL_FACE);
 		glCullFace(GL_FRONT);
@@ -683,11 +674,11 @@ void render()
 	{
 		std::string light_array_str = "direct_lights[" + std::to_string(i) + "].color";
 		GLuint loc_lights_pos = glGetUniformLocation(deferred_shading_program, (GLchar*)light_array_str.c_str());
-		glUniform3fv(loc_lights_pos, 1, &(direct_lights[i].color)[0]);
+		glUniform3fv(loc_lights_pos, 1, direct_lights[i].get_color_pointer());
 
 		light_array_str = "direct_lights[" + std::to_string(i) + "].direction";
 		GLuint loc_lights_dir = glGetUniformLocation(deferred_shading_program, (GLchar*)light_array_str.c_str());
-		glUniform3fv(loc_lights_dir, 1, &(direct_lights[i].direction)[0]);
+		glUniform3fv(loc_lights_dir, 1, direct_lights[i].get_direction_pointer());
 
 		light_array_str = "direct_lights[" + std::to_string(i) + "].intensity";
 		GLuint loc_lights_in = glGetUniformLocation(deferred_shading_program, (GLchar*)light_array_str.c_str());
@@ -701,7 +692,7 @@ void render()
 		
 		light_array_str = "direct_lights[" + std::to_string(i) + "].light_space_matrix";
 		GLuint loc_lights_lsm = glGetUniformLocation(deferred_shading_program, (GLchar*)light_array_str.c_str());
-		glUniformMatrix4fv(loc_lights_lsm, 1, GL_FALSE, &(direct_lights[0].space_matrix)[0][0]);
+		glUniformMatrix4fv(loc_lights_lsm, 1, GL_FALSE, direct_lights[0].get_space_matrix_pointer());
 	}
 
 	// Draw quad using gBuffer color data

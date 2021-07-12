@@ -36,4 +36,6 @@ public:
 	void calculate_space_matrix();
 	void calculate_space_matrix(mat4 proj_mat, mat4 view_mat);
 	GLfloat* get_space_matrix_pointer();
+	GLfloat* get_direction_pointer();
+	GLfloat* get_color_pointer();
 };

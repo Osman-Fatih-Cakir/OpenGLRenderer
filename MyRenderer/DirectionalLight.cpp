@@ -47,3 +47,15 @@ GLfloat* DirectionalLight::get_space_matrix_pointer()
 {
 	return &space_matrix[0][0];
 }
+
+// Returns direction vector pointer
+GLfloat* DirectionalLight::get_direction_pointer()
+{
+	return &direction[0];
+}
+
+// Returns color vector pointer
+GLfloat* DirectionalLight::get_color_pointer()
+{
+	return &color[0];
+}
