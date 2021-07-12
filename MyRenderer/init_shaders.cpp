@@ -5,6 +5,7 @@
 #include <string>
 #include <GL/glew.h>
 #include <GL/glut.h>
+#include <Globals.h>
 
 #include <init_shaders.h>
 
@@ -61,6 +62,7 @@ GLuint initshaders(GLenum type, const char* filename)
         shadererrors(shader);
         throw 3;
     }
+    Globals::Log(filename + std::string(" has been compiled successfully."));
     return shader;
 }
 

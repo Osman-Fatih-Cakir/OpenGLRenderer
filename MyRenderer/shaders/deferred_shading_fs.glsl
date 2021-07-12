@@ -8,7 +8,7 @@ uniform sampler2D gPosition;
 uniform sampler2D gNormal;
 uniform sampler2D gAlbedoSpec;
 
-struct Light
+struct Point_Light
 {
 	vec3 position;
 	vec3 color;
@@ -22,8 +22,8 @@ struct Light
 	float intensity;
 
 };// TODO change names as "point lights"
-const int NUMBER_OF_LIGHTS = 8; // TODO number of lights is hardcoded
-uniform Light lights[NUMBER_OF_LIGHTS];
+const int NUMBER_OF_POINT_LIGHTS = 8; // TODO number of lights is hardcoded
+uniform Point_Light point_lights[NUMBER_OF_POINT_LIGHTS];
 
 struct Direct_Light
 {
@@ -77,7 +77,7 @@ float directional_shadow_calculation(int light_index, vec4 _fPos_light_space, fl
 // Returns shadow value for point light, (1.0: shadow, 0.0: non-shadow)
 float point_shadow_calculation(int light_index, vec3 _fPos, float bias)
 {
-	vec3 light_to_frag = _fPos - lights[light_index].position;
+	vec3 light_to_frag = _fPos - point_lights[light_index].position;
 
 	float current_depth = length(light_to_frag);
 
@@ -97,8 +97,8 @@ float point_shadow_calculation(int light_index, vec3 _fPos, float bias)
 
 	for (int i = 0; i < 20; i++)
 	{
-		float pcf_depth = texture(lights[light_index].point_shadow_map, light_to_frag + sample_offset_directions[i] * radius).r;
-		pcf_depth *= lights[light_index].far;
+		float pcf_depth = texture(point_lights[light_index].point_shadow_map, light_to_frag + sample_offset_directions[i] * radius).r;
+		pcf_depth *= point_lights[light_index].far;
 		if (current_depth - bias > pcf_depth)
 			shadow += 1.0;
 	}
@@ -132,7 +132,7 @@ void main()
 		// Specular
 		vec3 halfway = normalize(light_dir + view_dir);
 		float specular = pow(max(dot(normal, halfway), 0), 4.0); // TODO shineness is hardcoded
-		vec3 Specular = specular * lights[i].color * spec;
+		vec3 Specular = specular * point_lights[i].color * spec;
 
 		// Calculate shadow
 		vec4 fPos_light_space = direct_lights[i].light_space_matrix * vec4(frag_pos, 1.0);
@@ -143,30 +143,30 @@ void main()
 	}
 	
 	// Point light calculations
-	for (int i = 0; i < NUMBER_OF_LIGHTS; i++) // Calculate lighting for all lights
+	for (int i = 0; i < NUMBER_OF_POINT_LIGHTS; i++) // Calculate lighting for all lights
 	{
 		// Point light radius
 		//// If the fragment is not inside the light radious, no need to make calculation for that light
-		//if (length(lights[i].position - frag_pos) > lights[i].radius)
+		//if (length(point_lights[i].position - frag_pos) > point_lights[i].radius)
 		//	continue;
 
 		// Diffuse
-		vec3 light_dir = normalize(lights[i].position - frag_pos);
-		vec3 Diffuse = max(dot(normal, light_dir), 0.0) * diffuse * lights[i].color;
+		vec3 light_dir = normalize(point_lights[i].position - frag_pos);
+		vec3 Diffuse = max(dot(normal, light_dir), 0.0) * diffuse * point_lights[i].color;
 		
 		// Specular
 		vec3 halfway = normalize(light_dir + view_dir);
 		float specular = pow(max(dot(normal, halfway), 0), 4.0); // TODO shineness is hardcoded
-		vec3 Specular = specular * lights[i].color * spec;
+		vec3 Specular = specular * point_lights[i].color * spec;
 
 		// Attenuation
-		float distance = length(lights[i].position - frag_pos);
-		float attenuation = 1.0 / (1.0 + lights[i].linear * distance + lights[i].quadratic * distance * distance);
+		float distance = length(point_lights[i].position - frag_pos);
+		float attenuation = 1.0 / (1.0 + point_lights[i].linear * distance + point_lights[i].quadratic * distance * distance);
 		Diffuse *= attenuation;
 		Specular *= attenuation;
 
 		float shadow = point_shadow_calculation(i, frag_pos, 0.0);
-		lighting += (Diffuse + Specular) * (1.0 - shadow) * lights[i].intensity;
+		lighting += (Diffuse + Specular) * (1.0 - shadow) * point_lights[i].intensity;
 	}
 	
 	lighting += Ambient; // Add ambient light at the end

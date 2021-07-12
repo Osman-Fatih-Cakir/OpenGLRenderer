@@ -20,8 +20,9 @@ typedef glm::vec2 vec2;
 float old_time = 0.f;
 float cur_time = 0.f;
 
-const int light_count = 8;
-struct Light
+// Point lights
+const int point_light_count = 8;
+struct Point_Light
 {
 	vec3 position;
 	vec3 color;
@@ -35,7 +36,7 @@ struct Light
 	float linear;
 	float quadratic;
 	float intensity;
-}lights[light_count]; // TODO change the name as "point_lights"
+}point_lights[point_light_count];
 
 const int direct_light_count = 1;
 struct Direct_Light
@@ -228,39 +229,28 @@ void init_shaders()
 {
 	// gBuffer shaders
 	GLuint vertex_shader = initshaders(GL_VERTEX_SHADER, "shaders/gbuffer_vs.glsl");
-	Globals::Log("shaders/gbuffer_vs.glsl has been compiled successfully.");
 	GLuint fragment_shader = initshaders(GL_FRAGMENT_SHADER, "shaders/gbuffer_fs.glsl");
-	Globals::Log("shaders/gbuffer_fs.glsl has been compiled successfully.");
 	gBuffer_program = initprogram(vertex_shader, fragment_shader);
 
 	// Deferred lighting shaders
 	vertex_shader = initshaders(GL_VERTEX_SHADER, "shaders/deferred_shading_vs.glsl");
-	Globals::Log("shaders/deferred_shading_vs.glsl has been compiled successfully.");
 	fragment_shader = initshaders(GL_FRAGMENT_SHADER, "shaders/deferred_shading_fs.glsl");
-	Globals::Log("shaders/deferred_shading_fs.glsl has been compiled successfully.");
 	deferred_shading_program = initprogram(vertex_shader, fragment_shader);
 
 	// Deferred unlit meshes shaders
 	vertex_shader = initshaders(GL_VERTEX_SHADER, "shaders/deferred_unlit_meshes_vs.glsl");
-	Globals::Log("shaders/deferred_unlit_meshes_vs.glsl has been compiled successfully.");
 	fragment_shader = initshaders(GL_FRAGMENT_SHADER, "shaders/deferred_unlit_meshes_fs.glsl");
-	Globals::Log("shaders/deferred_unlit_meshes_fs.glsl has been compiled successfully.");
 	deferred_unlit_meshes_program = initprogram(vertex_shader, fragment_shader);
 
 	// Depth shaders
 	vertex_shader = initshaders(GL_VERTEX_SHADER, "shaders/depth_vs.glsl");
-	Globals::Log("shaders/depth_vs.glsl has been compiled successfully.");
 	fragment_shader = initshaders(GL_FRAGMENT_SHADER, "shaders/depth_fs.glsl");
-	Globals::Log("shaders/depth_fs.glsl has been compiled successfully.");
 	depth_program = initprogram(vertex_shader, fragment_shader);
 
 	// Point depth shaders
 	vertex_shader = initshaders(GL_VERTEX_SHADER, "shaders/point_depth_vs.glsl");
-	Globals::Log("shaders/point_depth_vs.glsl has been compiled successfully.");
 	GLuint geometry_shader = initshaders(GL_GEOMETRY_SHADER, "shaders/point_depth_gs.glsl");
-	Globals::Log("shaders/point_depth_gs.glsl has been compiled successfully.");
 	fragment_shader = initshaders(GL_FRAGMENT_SHADER, "shaders/point_depth_fs.glsl");
-	Globals::Log("shaders/point_depth_fs.glsl has been compiled successfully.");
 	point_depth_program = initprogram(vertex_shader, geometry_shader, fragment_shader);
 }
 
@@ -322,7 +312,7 @@ void init_gBuffer()
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, gNormal, 0);
 
-	// Color + Speculer color buffer
+	// Color + Specular color buffer
 	glGenTextures(1, &gAlbedoSpec);
 	glBindTexture(GL_TEXTURE_2D, gAlbedoSpec);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, Globals::WIDTH, Globals::HEIGHT, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
@@ -356,48 +346,48 @@ void init_lights()
 	srand((unsigned int)time(NULL));
 
 	// Light positions
-	for (int i = 0; i < light_count; i++)
+	for (int i = 0; i < point_light_count; i++)
 	{
 		// Set positions of the lights
-		lights[i].position = vec3(
+		point_lights[i].position = vec3(
 			((rand() % 100) / 100.f) * 20.f - 10.f,
 			((rand() % 100) / 100.f) * 3.f + 1.f,
 			((rand() % 100) / 100.f) * 20.f - 10.f
 		);
 		// Set colors of the lights
-		lights[i].color = vec3(
+		point_lights[i].color = vec3(
 			((rand() % 100) / 200.f) + 0.5f,
 			((rand() % 100) / 200.f) + 0.5f,
 			((rand() % 100) / 200.f) + 0.5f
 		);
 		// Draw a mesh for represent a light
 		Mesh* light_mesh = new Mesh("mesh/cube.obj", "NONE");
-		light_mesh->translate_mesh(lights[i].position);
+		light_mesh->translate_mesh(point_lights[i].position);
 		light_mesh->scale_mesh(vec3(0.1f, 0.1f, 0.1f));
 		light_meshes.push_back(light_mesh);
 
 		// Calculate light radius
 		float constant = 1.0f;
-		lights[i].linear = 0.02f;
-		lights[i].quadratic = 0.07f;
-		float lightMax = std::fmaxf(std::fmaxf(lights[i].color.r, lights[i].color.g), lights[i].color.b);
-		float radius = (float)(-lights[i].linear + std::sqrtf(lights[i].linear * lights[i].linear - 4 * lights[i].quadratic * (constant - (256.0 / 5.0) * lightMax)))
-			/ (2 * lights[i].quadratic);
-		lights[i].radius = radius;
-		lights[i].intensity = 1.0f;
+		point_lights[i].linear = 0.02f;
+		point_lights[i].quadratic = 0.07f;
+		float lightMax = std::fmaxf(std::fmaxf(point_lights[i].color.r, point_lights[i].color.g), point_lights[i].color.b);
+		float radius = (float)(-point_lights[i].linear + std::sqrtf(point_lights[i].linear * point_lights[i].linear - 4 * point_lights[i].quadratic * (constant - (256.0 / 5.0) * lightMax)))
+			/ (2 * point_lights[i].quadratic);
+		point_lights[i].radius = radius;
+		point_lights[i].intensity = 1.0f;
 
 		// Space matrices
 		
 		// Projection matrix
-		lights[i].shadow_projection_far = 500.f;
-		mat4 pointlight_projection = glm::perspective(glm::radians(90.0f), 1.0f, 0.01f, lights[i].shadow_projection_far);
+		point_lights[i].shadow_projection_far = 500.f;
+		mat4 pointlight_projection = glm::perspective(glm::radians(90.0f), 1.0f, 0.01f, point_lights[i].shadow_projection_far);
 		// View matrices (for each cube plane)
-		lights[i].space_matrices[1] = pointlight_projection * glm::lookAt(lights[i].position, lights[i].position + vec3(-1.f, 0.f, 0.f), vec3(0.f, -1.f, 0.f));
-		lights[i].space_matrices[0] = pointlight_projection * glm::lookAt(lights[i].position, lights[i].position + vec3(1.f, 0.f, 0.f), vec3(0.f, -1.f, 0.f));
-		lights[i].space_matrices[2] = pointlight_projection * glm::lookAt(lights[i].position, lights[i].position + vec3(0.f, 1.f, 0.f), vec3(0.f, 0.f, 1.f));
-		lights[i].space_matrices[3] = pointlight_projection * glm::lookAt(lights[i].position, lights[i].position + vec3(0.f, -1.f, 0.f), vec3(0.f, 0.f, -1.f));
-		lights[i].space_matrices[4] = pointlight_projection * glm::lookAt(lights[i].position, lights[i].position + vec3(0.f, 0.f, 1.f), vec3(0.f, -1.f, 0.f));
-		lights[i].space_matrices[5] = pointlight_projection * glm::lookAt(lights[i].position, lights[i].position + vec3(0.f, 0.f, -1.f), vec3(0.f, -1.f, 0.f));
+		point_lights[i].space_matrices[1] = pointlight_projection * glm::lookAt(point_lights[i].position, point_lights[i].position + vec3(-1.f, 0.f, 0.f), vec3(0.f, -1.f, 0.f));
+		point_lights[i].space_matrices[0] = pointlight_projection * glm::lookAt(point_lights[i].position, point_lights[i].position + vec3(1.f, 0.f, 0.f), vec3(0.f, -1.f, 0.f));
+		point_lights[i].space_matrices[2] = pointlight_projection * glm::lookAt(point_lights[i].position, point_lights[i].position + vec3(0.f, 1.f, 0.f), vec3(0.f, 0.f, 1.f));
+		point_lights[i].space_matrices[3] = pointlight_projection * glm::lookAt(point_lights[i].position, point_lights[i].position + vec3(0.f, -1.f, 0.f), vec3(0.f, 0.f, -1.f));
+		point_lights[i].space_matrices[4] = pointlight_projection * glm::lookAt(point_lights[i].position, point_lights[i].position + vec3(0.f, 0.f, 1.f), vec3(0.f, -1.f, 0.f));
+		point_lights[i].space_matrices[5] = pointlight_projection * glm::lookAt(point_lights[i].position, point_lights[i].position + vec3(0.f, 0.f, -1.f), vec3(0.f, -1.f, 0.f));
 	}
 
 	//
@@ -445,11 +435,11 @@ void init_depth_map()
 // Initialize depth maps with framebuffer
 void init_point_depth_maps()
 {
-	for (int i = 0; i < light_count; i++)
+	for (int i = 0; i < point_light_count; i++)
 	{
-		glGenFramebuffers(1, &lights[i].depth_cubemap_fbo);
-		glGenTextures(1, &lights[i].depth_cubemap);
-		glBindTexture(GL_TEXTURE_CUBE_MAP, lights[i].depth_cubemap);
+		glGenFramebuffers(1, &point_lights[i].depth_cubemap_fbo);
+		glGenTextures(1, &point_lights[i].depth_cubemap);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, point_lights[i].depth_cubemap);
 
 		// Create 6 2D depth texture framebuffers for genertate a cubemap
 		for (int i = 0; i < 6; i++)
@@ -463,8 +453,8 @@ void init_point_depth_maps()
 		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 
 		// Attach depth texture as FBO's depth buffer
-		glBindFramebuffer(GL_FRAMEBUFFER, lights[i].depth_cubemap_fbo);
-		glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, lights[i].depth_cubemap, 0);
+		glBindFramebuffer(GL_FRAMEBUFFER, point_lights[i].depth_cubemap_fbo);
+		glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, point_lights[i].depth_cubemap, 0);
 		// Set both to "none" because there is no need for color attachment
 		glDrawBuffer(GL_NONE);
 		glReadBuffer(GL_NONE);
@@ -581,18 +571,18 @@ void render()
 	glUseProgram(point_depth_program);
 
 	// Point light shadows
-	for (int i = 0; i < light_count; i++)
+	for (int i = 0; i < point_light_count; i++)
 	{
 		glViewport(0, 0, 1024, 1024); // Use shadow resolutions
-		glBindFramebuffer(GL_FRAMEBUFFER, lights[i].depth_cubemap_fbo);
+		glBindFramebuffer(GL_FRAMEBUFFER, point_lights[i].depth_cubemap_fbo);
 		glClear(GL_DEPTH_BUFFER_BIT);
 		
 		GLuint loc_point_space_matrices = glGetUniformLocation(point_depth_program, "light_space_matrix");
-		glUniformMatrix4fv(loc_point_space_matrices, 6, GL_FALSE, &(lights[i].space_matrices)[0][0][0]);
+		glUniformMatrix4fv(loc_point_space_matrices, 6, GL_FALSE, &(point_lights[i].space_matrices)[0][0][0]);
 		GLuint loc_light_pos = glGetUniformLocation(point_depth_program, "light_position");
-		glUniform3fv(loc_light_pos, 1, &lights[i].position[0]);
+		glUniform3fv(loc_light_pos, 1, &point_lights[i].position[0]);
 		GLuint loc_far = glGetUniformLocation(point_depth_program, "far");
-		glUniform1f(loc_far, lights[i].shadow_projection_far);
+		glUniform1f(loc_far, point_lights[i].shadow_projection_far);
 
 		glEnable(GL_CULL_FACE);
 		glCullFace(GL_FRONT);
@@ -649,41 +639,41 @@ void render()
 	glBindTexture(GL_TEXTURE_2D, gAlbedoSpec);
 	// Bind point light uniforms
 	int last = 0;
-	for (int i = 0; i < light_count; i++)
+	for (int i = 0; i < point_light_count; i++)
 	{
-		std::string light_array_str = "lights[" + std::to_string(i) + "].position";
+		std::string light_array_str = "point_lights[" + std::to_string(i) + "].position";
 		GLuint loc_lights_pos = glGetUniformLocation(deferred_shading_program, (GLchar*)light_array_str.c_str());
-		glUniform3fv(loc_lights_pos, 1, &(lights[i].position)[0]);
+		glUniform3fv(loc_lights_pos, 1, &(point_lights[i].position)[0]);
 
-		light_array_str = "lights[" + std::to_string(i) + "].color";
+		light_array_str = "point_lights[" + std::to_string(i) + "].color";
 		GLuint loc_lights_col = glGetUniformLocation(deferred_shading_program, (GLchar*)light_array_str.c_str());
-		glUniform3fv(loc_lights_col, 1, &(lights[i].color)[0]);
+		glUniform3fv(loc_lights_col, 1, &(point_lights[i].color)[0]);
 
-		light_array_str = "lights[" + std::to_string(i) + "].radius";
+		light_array_str = "point_lights[" + std::to_string(i) + "].radius";
 		GLuint loc_light_r = glGetUniformLocation(deferred_shading_program, (GLchar*)light_array_str.c_str());
-		glUniform1f(loc_light_r, (GLfloat)lights[i].radius);
+		glUniform1f(loc_light_r, (GLfloat)point_lights[i].radius);
 
-		light_array_str = "lights[" + std::to_string(i) + "].linear";
+		light_array_str = "point_lights[" + std::to_string(i) + "].linear";
 		GLuint loc_light_l = glGetUniformLocation(deferred_shading_program, (GLchar*)light_array_str.c_str());
-		glUniform1f(loc_light_l, (GLfloat)lights[i].linear);
+		glUniform1f(loc_light_l, (GLfloat)point_lights[i].linear);
 
-		light_array_str = "lights[" + std::to_string(i) + "].quadratic";
+		light_array_str = "point_lights[" + std::to_string(i) + "].quadratic";
 		GLuint loc_light_q = glGetUniformLocation(deferred_shading_program, (GLchar*)light_array_str.c_str());
-		glUniform1f(loc_light_q,lights[i].quadratic);
+		glUniform1f(loc_light_q, point_lights[i].quadratic);
 
-		light_array_str = "lights[" + std::to_string(i) + "].far";
+		light_array_str = "point_lights[" + std::to_string(i) + "].far";
 		GLuint loc_light_far = glGetUniformLocation(deferred_shading_program, (GLchar*)light_array_str.c_str());
-		glUniform1f(loc_light_far, (GLfloat)lights[i].shadow_projection_far);
+		glUniform1f(loc_light_far, (GLfloat)point_lights[i].shadow_projection_far);
 		
-		light_array_str = "lights[" + std::to_string(i) + "].point_shadow_map";
+		light_array_str = "point_lights[" + std::to_string(i) + "].point_shadow_map";
 		GLuint loc_light_cubemap = glGetUniformLocation(deferred_shading_program, (GLchar*)light_array_str.c_str());
 		glUniform1i(loc_light_cubemap, 3 + i);
 		glActiveTexture(GL_TEXTURE0 + 3 + i);
-		glBindTexture(GL_TEXTURE_CUBE_MAP, lights[i].depth_cubemap);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, point_lights[i].depth_cubemap);
 
-		light_array_str = "lights[" + std::to_string(i) + "].intensity";
+		light_array_str = "point_lights[" + std::to_string(i) + "].intensity";
 		GLuint loc_light_int = glGetUniformLocation(deferred_shading_program, (GLchar*)light_array_str.c_str());
-		glUniform1f(loc_light_int, (GLfloat)lights[i].intensity);
+		glUniform1f(loc_light_int, (GLfloat)point_lights[i].intensity);
 
 		last = 3 + i + 1; // TODO change the name of the variable
 	}
@@ -741,10 +731,10 @@ void render()
 	glUniformMatrix4fv(loc_view, 1, GL_FALSE, &(camera->get_view_matrix())[0][0]);
 	
 	// Draw light meshes
-	for (int i = 0; i < light_count; i++)
+	for (int i = 0; i < point_light_count; i++)
 	{
 		glUniformMatrix4fv(loc_model_matrix, 1, GL_FALSE, &(light_meshes[i]->get_model_matrix())[0][0]);
-		glUniform3fv(loc_color, 1, &(lights[i].color)[0]);
+		glUniform3fv(loc_color, 1, &(point_lights[i].color)[0]);
 		glBindVertexArray(light_meshes[i]->get_VAO());
 		glDrawArrays(GL_TRIANGLES, 0, light_meshes[i]->get_triangle_count() * 3);
 		glBindVertexArray(0);
