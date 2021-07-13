@@ -46,6 +46,10 @@ mat4 Mesh::get_model_matrix()
 {
 	return model_matrix;
 }
+GLfloat* Mesh::get_model_matrix_pointer()
+{
+	return &model_matrix[0][0];
+}
 void Mesh::set_model_matrix(mat4 mat)
 {
 	model_matrix = mat;
@@ -53,6 +57,11 @@ void Mesh::set_model_matrix(mat4 mat)
 mat4 Mesh::get_normal_matrix()
 {
 	return normal_matrix;
+}
+
+GLfloat* Mesh::get_normal_matrix_pointer()
+{
+	return &normal_matrix[0][0];
 }
 void Mesh::set_normal_matrix(mat4 mat)
 {

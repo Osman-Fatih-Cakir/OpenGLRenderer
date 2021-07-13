@@ -10,6 +10,7 @@
 #include <Mesh.h>
 #include <init_shaders.h>
 #include <DirectionalLight.h>
+#include <PointLight.h>
 
 typedef glm::mat3 mat3;
 typedef glm::mat4 mat4;
@@ -23,23 +24,9 @@ float cur_time = 0.f;
 
 // Point lights
 const int point_light_count = 8;
-struct Point_Light
-{
-	vec3 position;
-	vec3 color;
+std::vector<PointLight> point_lights;
 
-	mat4 space_matrices[6];
-	GLuint depth_cubemap;
-	GLuint depth_cubemap_fbo;
-
-	float shadow_projection_far;
-	float radius;
-	float linear;
-	float quadratic;
-	float intensity;
-}point_lights[point_light_count];
-
-const int direct_light_count = 1;
+const int direct_light_count = 8;
 std::vector<DirectionalLight> direct_lights;
 
 // Camera
@@ -48,7 +35,6 @@ Camera* camera;
 // Meshes
 int sphere_count = 16;
 std::vector<Mesh*> spheres;
-std::vector<Mesh*> light_meshes;
 std::vector<Mesh*> planes;
 
 // VAOs
@@ -337,45 +323,43 @@ void init_lights()
 	for (int i = 0; i < point_light_count; i++)
 	{
 		// Set positions of the lights
-		point_lights[i].position = vec3(
+		vec3 _position = vec3(
 			((rand() % 100) / 100.f) * 20.f - 10.f,
 			((rand() % 100) / 100.f) * 3.f + 1.f,
 			((rand() % 100) / 100.f) * 20.f - 10.f
 		);
+
 		// Set colors of the lights
-		point_lights[i].color = vec3(
+		vec3 _color = vec3(
 			((rand() % 100) / 200.f) + 0.5f,
 			((rand() % 100) / 200.f) + 0.5f,
 			((rand() % 100) / 200.f) + 0.5f
 		);
+
+		// Initialize light
+		PointLight light = PointLight(_position, _color);
+
 		// Draw a mesh for represent a light
 		Mesh* light_mesh = new Mesh("mesh/cube.obj", "NONE");
-		light_mesh->translate_mesh(point_lights[i].position);
+		light_mesh->translate_mesh(light.position);
 		light_mesh->scale_mesh(vec3(0.1f, 0.1f, 0.1f));
-		light_meshes.push_back(light_mesh);
-
-		// Calculate light radius
-		float constant = 1.0f;
-		point_lights[i].linear = 0.02f;
-		point_lights[i].quadratic = 0.07f;
-		float lightMax = std::fmaxf(std::fmaxf(point_lights[i].color.r, point_lights[i].color.g), point_lights[i].color.b);
-		float radius = (float)(-point_lights[i].linear + std::sqrtf(point_lights[i].linear * point_lights[i].linear - 4 * point_lights[i].quadratic * (constant - (256.0 / 5.0) * lightMax)))
-			/ (2 * point_lights[i].quadratic);
-		point_lights[i].radius = radius;
-		point_lights[i].intensity = 1.0f;
+		
+		light.mesh = light_mesh;
 
 		// Space matrices
 		
 		// Projection matrix
-		point_lights[i].shadow_projection_far = 500.f;
-		mat4 pointlight_projection = glm::perspective(glm::radians(90.0f), 1.0f, 0.01f, point_lights[i].shadow_projection_far);
+		light.shadow_projection_far = 500.f;
+		mat4 pointlight_projection = glm::perspective(glm::radians(90.0f), 1.0f, 0.01f, light.shadow_projection_far);
 		// View matrices (for each cube plane)
-		point_lights[i].space_matrices[1] = pointlight_projection * glm::lookAt(point_lights[i].position, point_lights[i].position + vec3(-1.f, 0.f, 0.f), vec3(0.f, -1.f, 0.f));
-		point_lights[i].space_matrices[0] = pointlight_projection * glm::lookAt(point_lights[i].position, point_lights[i].position + vec3(1.f, 0.f, 0.f), vec3(0.f, -1.f, 0.f));
-		point_lights[i].space_matrices[2] = pointlight_projection * glm::lookAt(point_lights[i].position, point_lights[i].position + vec3(0.f, 1.f, 0.f), vec3(0.f, 0.f, 1.f));
-		point_lights[i].space_matrices[3] = pointlight_projection * glm::lookAt(point_lights[i].position, point_lights[i].position + vec3(0.f, -1.f, 0.f), vec3(0.f, 0.f, -1.f));
-		point_lights[i].space_matrices[4] = pointlight_projection * glm::lookAt(point_lights[i].position, point_lights[i].position + vec3(0.f, 0.f, 1.f), vec3(0.f, -1.f, 0.f));
-		point_lights[i].space_matrices[5] = pointlight_projection * glm::lookAt(point_lights[i].position, point_lights[i].position + vec3(0.f, 0.f, -1.f), vec3(0.f, -1.f, 0.f));
+		light.space_matrices[0] = pointlight_projection * glm::lookAt(light.position, light.position + vec3(1.f, 0.f, 0.f), vec3(0.f, -1.f, 0.f));
+		light.space_matrices[1] = pointlight_projection * glm::lookAt(light.position, light.position + vec3(-1.f, 0.f, 0.f), vec3(0.f, -1.f, 0.f));
+		light.space_matrices[2] = pointlight_projection * glm::lookAt(light.position, light.position + vec3(0.f, 1.f, 0.f), vec3(0.f, 0.f, 1.f));
+		light.space_matrices[3] = pointlight_projection * glm::lookAt(light.position, light.position + vec3(0.f, -1.f, 0.f), vec3(0.f, 0.f, -1.f));
+		light.space_matrices[4] = pointlight_projection * glm::lookAt(light.position, light.position + vec3(0.f, 0.f, 1.f), vec3(0.f, -1.f, 0.f));
+		light.space_matrices[5] = pointlight_projection * glm::lookAt(light.position, light.position + vec3(0.f, 0.f, -1.f), vec3(0.f, -1.f, 0.f));
+
+		point_lights.push_back(light);
 	}
 
 	//
@@ -569,9 +553,9 @@ void render()
 		glClear(GL_DEPTH_BUFFER_BIT);
 		
 		GLuint loc_point_space_matrices = glGetUniformLocation(point_depth_program, "light_space_matrix");
-		glUniformMatrix4fv(loc_point_space_matrices, 6, GL_FALSE, &(point_lights[i].space_matrices)[0][0][0]);
+		glUniformMatrix4fv(loc_point_space_matrices, 6, GL_FALSE, point_lights[i].get_space_matrices_pointer());
 		GLuint loc_light_pos = glGetUniformLocation(point_depth_program, "light_position");
-		glUniform3fv(loc_light_pos, 1, &point_lights[i].position[0]);
+		glUniform3fv(loc_light_pos, 1, point_lights[i].get_position_pointer());
 		GLuint loc_far = glGetUniformLocation(point_depth_program, "far");
 		glUniform1f(loc_far, point_lights[i].shadow_projection_far);
 
@@ -634,11 +618,11 @@ void render()
 	{
 		std::string light_array_str = "point_lights[" + std::to_string(i) + "].position";
 		GLuint loc_lights_pos = glGetUniformLocation(deferred_shading_program, (GLchar*)light_array_str.c_str());
-		glUniform3fv(loc_lights_pos, 1, &(point_lights[i].position)[0]);
+		glUniform3fv(loc_lights_pos, 1, point_lights[i].get_position_pointer());
 
 		light_array_str = "point_lights[" + std::to_string(i) + "].color";
 		GLuint loc_lights_col = glGetUniformLocation(deferred_shading_program, (GLchar*)light_array_str.c_str());
-		glUniform3fv(loc_lights_col, 1, &(point_lights[i].color)[0]);
+		glUniform3fv(loc_lights_col, 1, point_lights[i].get_color_pointer());
 
 		light_array_str = "point_lights[" + std::to_string(i) + "].radius";
 		GLuint loc_light_r = glGetUniformLocation(deferred_shading_program, (GLchar*)light_array_str.c_str());
@@ -724,10 +708,10 @@ void render()
 	// Draw light meshes
 	for (int i = 0; i < point_light_count; i++)
 	{
-		glUniformMatrix4fv(loc_model_matrix, 1, GL_FALSE, &(light_meshes[i]->get_model_matrix())[0][0]);
-		glUniform3fv(loc_color, 1, &(point_lights[i].color)[0]);
-		glBindVertexArray(light_meshes[i]->get_VAO());
-		glDrawArrays(GL_TRIANGLES, 0, light_meshes[i]->get_triangle_count() * 3);
+		glUniformMatrix4fv(loc_model_matrix, 1, GL_FALSE, point_lights[i].mesh->get_model_matrix_pointer());
+		glUniform3fv(loc_color, 1, point_lights[i].get_color_pointer());
+		glBindVertexArray(point_lights[i].mesh->get_VAO());
+		glDrawArrays(GL_TRIANGLES, 0, point_lights[i].mesh->get_triangle_count() * 3);
 		glBindVertexArray(0);
 	}
 	

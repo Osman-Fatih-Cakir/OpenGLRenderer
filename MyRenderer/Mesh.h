@@ -36,8 +36,10 @@ public:
 
 	// Getters and setters
 	mat4 get_model_matrix();
+	GLfloat* get_model_matrix_pointer();
 	void set_model_matrix(mat4 mat);
 	mat4 get_normal_matrix();
+	GLfloat* get_normal_matrix_pointer();
 	void set_normal_matrix(mat4 mat);
 	GLuint get_texture_id();
 	void set_texture_id(GLuint _id);
