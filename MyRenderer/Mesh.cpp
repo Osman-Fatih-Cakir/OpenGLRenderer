@@ -258,7 +258,6 @@ GLuint Mesh::gen_obj_buffers(std::vector<vec3>& vertices, std::vector<vec3>& nor
 void Mesh::translate_mesh(vec3 tra)
 {
 	model_matrix = glm::translate(model_matrix, tra);
-	normal_matrix = glm::transpose(glm::inverse(model_matrix));
 }
 
 // Rotate mesh
@@ -266,7 +265,6 @@ void Mesh::translate_mesh(vec3 tra)
 void Mesh::rotate_mesh(vec3 rot, float angle)
 {
 	model_matrix = glm::rotate(model_matrix, glm::radians(angle),  rot);
-	normal_matrix = glm::transpose(glm::inverse(model_matrix));
 }
 
 // Scale mesh

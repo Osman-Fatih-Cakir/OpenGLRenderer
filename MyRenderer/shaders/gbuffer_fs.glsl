@@ -17,7 +17,7 @@ void main()
 	// Fragment normal
 	gNormal = fNormal;
 	// Diffuse
-	gAlbedoSpec.rgb = texture(diffuse, fTexCoord).rgb;//vec3(0.5, 0.5, 0.5);
+	gAlbedoSpec.rgb = texture(diffuse, fTexCoord).rgb;
 	// Specular (float number)
 	gAlbedoSpec.a = 0.5;
 }

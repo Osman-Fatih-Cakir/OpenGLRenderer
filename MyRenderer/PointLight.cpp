@@ -30,6 +30,12 @@ PointLight::PointLight(vec3 pos, vec3 col)
 
 }
 
+// Destructor
+PointLight::~PointLight()
+{
+	delete mesh;
+}
+
 // Returns a pointer to the space matrices array
 GLfloat* PointLight::get_space_matrices_pointer()
 {

@@ -17,6 +17,8 @@ class PointLight
 public:
 	// Constructor
 	PointLight(vec3 pos, vec3 col);
+	// Destructor
+	~PointLight();
 
 	// Returns a pointer to the space matrices array
 	GLfloat* get_space_matrices_pointer();

@@ -11,6 +11,24 @@
 #include <init_shaders.h>
 #include <DirectionalLight.h>
 #include <PointLight.h>
+#include <gBuffer.h>
+
+////////////////
+// Debugging memory leaks
+#define _CRTDBG_MAP_ALLOC
+#include <stdlib.h>
+#include <crtdbg.h>
+#ifdef _DEBUG
+#define DBG_NEW new ( _NORMAL_BLOCK , __FILE__ , __LINE__ )
+#else
+#define DBG_NEW new
+#endif
+#ifdef _DEBUG
+#define new new( _NORMAL_BLOCK , __FILE__ , __LINE__ )
+#else
+#define new new
+#endif
+////////////////
 
 typedef glm::mat3 mat3;
 typedef glm::mat4 mat4;
@@ -24,10 +42,10 @@ float cur_time = 0.f;
 
 // Point lights
 const int point_light_count = 8;
-std::vector<PointLight> point_lights;
+std::vector<PointLight*> point_lights;
 
 const int direct_light_count = 8;
-std::vector<DirectionalLight> direct_lights;
+std::vector<DirectionalLight*> direct_lights;
 
 // Camera
 Camera* camera;
@@ -41,16 +59,16 @@ std::vector<Mesh*> planes;
 GLuint quad_VAO;
 
 // Shader programs
-GLuint gBuffer_program, deferred_shading_program, deferred_unlit_meshes_program, depth_program, point_depth_program;
+GLuint deferred_shading_program, deferred_unlit_meshes_program, depth_program, point_depth_program;
 
-// Framebuffers
-GLuint gBuffer;
+gBuffer* GBuffer = nullptr;
 
-// Textures
-GLuint gPosition, gNormal, gAlbedoSpec;
+// Window
+unsigned int win_id;
 
 void Init_Glut_and_Glew(int argc, char* argv[]);
 void init();
+void exit_app();
 void keyboard(unsigned char key, int x, int y);
 void resize_window(int w, int h);
 void init_meshes();
@@ -96,7 +114,7 @@ void Init_Glut_and_Glew(int argc, char* argv[])
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH);
 
 	// Create window
-	glutCreateWindow("Renderer Window");
+	win_id = glutCreateWindow("Renderer Window");
 	glEnable(GL_DEPTH_TEST);
 	glutInitWindowSize(Globals::WIDTH, Globals::HEIGHT);
 	glutReshapeWindow(Globals::WIDTH, Globals::HEIGHT);
@@ -158,9 +176,26 @@ void init()
 	old_time = (float)glutGet(GLUT_ELAPSED_TIME);
 }
 
+// TODO exit the app
+// Exit from the application
+void exit_app()
+{
+	//
+	//// Deallocate all pointers
+	//
+}
+
 // Keyboard inputs
 void keyboard(unsigned char key, int x, int y)
 {
+	switch (key)
+	{
+	case 'q':
+		glutDestroyWindow(win_id);
+		_CrtDumpMemoryLeaks();
+		exit(0);
+		break;
+	}
 }
 
 // Resize window
@@ -201,14 +236,9 @@ void init_meshes()
 // Initialize and compiling shaders
 void init_shaders()
 {
-	// gBuffer shaders
-	GLuint vertex_shader = initshaders(GL_VERTEX_SHADER, "shaders/gbuffer_vs.glsl");
-	GLuint fragment_shader = initshaders(GL_FRAGMENT_SHADER, "shaders/gbuffer_fs.glsl");
-	gBuffer_program = initprogram(vertex_shader, fragment_shader);
-
 	// Deferred lighting shaders
-	vertex_shader = initshaders(GL_VERTEX_SHADER, "shaders/deferred_shading_vs.glsl");
-	fragment_shader = initshaders(GL_FRAGMENT_SHADER, "shaders/deferred_shading_fs.glsl");
+	GLuint vertex_shader = initshaders(GL_VERTEX_SHADER, "shaders/deferred_shading_vs.glsl");
+	GLuint fragment_shader = initshaders(GL_FRAGMENT_SHADER, "shaders/deferred_shading_fs.glsl");
 	deferred_shading_program = initprogram(vertex_shader, fragment_shader);
 
 	// Deferred unlit meshes shaders
@@ -267,48 +297,9 @@ void init_quad()
 // Initialize gBuffers
 void init_gBuffer()
 {
-	glGenFramebuffers(1, &gBuffer);
-	glBindFramebuffer(GL_FRAMEBUFFER, gBuffer);
-
-	// Position color buffer
-	glGenTextures(1, &gPosition);
-	glBindTexture(GL_TEXTURE_2D, gPosition);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, Globals::WIDTH, Globals::HEIGHT, 0, GL_RGBA, GL_FLOAT, NULL);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, gPosition, 0);
-
-	// Normal color buffer
-	glGenTextures(1, &gNormal);
-	glBindTexture(GL_TEXTURE_2D, gNormal);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, Globals::WIDTH, Globals::HEIGHT, 0, GL_RGBA, GL_FLOAT, NULL);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, gNormal, 0);
-
-	// Color + Specular color buffer
-	glGenTextures(1, &gAlbedoSpec);
-	glBindTexture(GL_TEXTURE_2D, gAlbedoSpec);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, Globals::WIDTH, Globals::HEIGHT, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, gAlbedoSpec, 0);
-
-	// Tell OpenGL which color attachments we'll use (of this framebuffer) for rendering 
-	GLuint attachments[3] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 };
-	glDrawBuffers(3, attachments);
-	
-	// Create and attach depth buffer (renderbuffer)
-	GLuint rbo_depth;
-	glGenRenderbuffers(1, &rbo_depth);
-	glBindRenderbuffer(GL_RENDERBUFFER, rbo_depth);
-	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, Globals::WIDTH, Globals::HEIGHT);
-	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rbo_depth);
-	// Check if framebuffer is complete
-	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-		Globals::Log("Framebuffer not complete!");
-	
-	glBindFramebuffer(GL_FRAMEBUFFER, 0); // Prevent further modification
+	GBuffer = new gBuffer();
+	// Set resolution
+	GBuffer->set_gBuffer_resolution(Globals::WIDTH, Globals::HEIGHT);
 }
 
 // Initialize light paramters
@@ -337,27 +328,27 @@ void init_lights()
 		);
 
 		// Initialize light
-		PointLight light = PointLight(_position, _color);
+		PointLight* light = new PointLight(_position, _color);
 
 		// Draw a mesh for represent a light
 		Mesh* light_mesh = new Mesh("mesh/cube.obj", "NONE");
-		light_mesh->translate_mesh(light.position);
+		light_mesh->translate_mesh(light->position);
 		light_mesh->scale_mesh(vec3(0.1f, 0.1f, 0.1f));
 		
-		light.mesh = light_mesh;
+		light->mesh = light_mesh;
 
 		// Space matrices
 		
 		// Projection matrix
-		light.shadow_projection_far = 500.f;
-		mat4 pointlight_projection = glm::perspective(glm::radians(90.0f), 1.0f, 0.01f, light.shadow_projection_far);
+		light->shadow_projection_far = 500.f;
+		mat4 pointlight_projection = glm::perspective(glm::radians(90.0f), 1.0f, 0.01f, light->shadow_projection_far);
 		// View matrices (for each cube plane)
-		light.space_matrices[0] = pointlight_projection * glm::lookAt(light.position, light.position + vec3(1.f, 0.f, 0.f), vec3(0.f, -1.f, 0.f));
-		light.space_matrices[1] = pointlight_projection * glm::lookAt(light.position, light.position + vec3(-1.f, 0.f, 0.f), vec3(0.f, -1.f, 0.f));
-		light.space_matrices[2] = pointlight_projection * glm::lookAt(light.position, light.position + vec3(0.f, 1.f, 0.f), vec3(0.f, 0.f, 1.f));
-		light.space_matrices[3] = pointlight_projection * glm::lookAt(light.position, light.position + vec3(0.f, -1.f, 0.f), vec3(0.f, 0.f, -1.f));
-		light.space_matrices[4] = pointlight_projection * glm::lookAt(light.position, light.position + vec3(0.f, 0.f, 1.f), vec3(0.f, -1.f, 0.f));
-		light.space_matrices[5] = pointlight_projection * glm::lookAt(light.position, light.position + vec3(0.f, 0.f, -1.f), vec3(0.f, -1.f, 0.f));
+		light->space_matrices[0] = pointlight_projection * glm::lookAt(light->position, light->position + vec3(1.f, 0.f, 0.f), vec3(0.f, -1.f, 0.f));
+		light->space_matrices[1] = pointlight_projection * glm::lookAt(light->position, light->position + vec3(-1.f, 0.f, 0.f), vec3(0.f, -1.f, 0.f));
+		light->space_matrices[2] = pointlight_projection * glm::lookAt(light->position, light->position + vec3(0.f, 1.f, 0.f), vec3(0.f, 0.f, 1.f));
+		light->space_matrices[3] = pointlight_projection * glm::lookAt(light->position, light->position + vec3(0.f, -1.f, 0.f), vec3(0.f, 0.f, -1.f));
+		light->space_matrices[4] = pointlight_projection * glm::lookAt(light->position, light->position + vec3(0.f, 0.f, 1.f), vec3(0.f, -1.f, 0.f));
+		light->space_matrices[5] = pointlight_projection * glm::lookAt(light->position, light->position + vec3(0.f, 0.f, -1.f), vec3(0.f, -1.f, 0.f));
 
 		point_lights.push_back(light);
 	}
@@ -368,11 +359,11 @@ void init_lights()
 
 	for (int i = 0; i < direct_light_count; i++)
 	{
-		DirectionalLight light = DirectionalLight(vec3(-1.0f, -1.0f, -1.0f), vec3(1.0f, 1.0f, 1.0f));
-		light.intensity = 0.5f;
+		DirectionalLight* light = new DirectionalLight(vec3(-1.0f, -1.0f, -1.0f), vec3(1.0f, 1.0f, 1.0f));
+		light->intensity = 0.5f;
 		mat4 proj_mat = glm::ortho(-20.f, 20.f, -20.f, 20.f, 0.1f, 1000.f);
 		mat4 view_mat = glm::lookAt(vec3(16, 20, 16), vec3(0, 0, 0), vec3(0, 1, 0));
-		light.calculate_space_matrix(proj_mat, view_mat);
+		light->calculate_space_matrix(proj_mat, view_mat);
 		direct_lights.push_back(light);
 	}
 }
@@ -385,11 +376,11 @@ void init_depth_map()
 	//
 	for (int i = 0; i < direct_light_count; i++)
 	{
-		glGenFramebuffers(1, &direct_lights[i].depth_map_fbo);
+		glGenFramebuffers(1, &direct_lights[i]->depth_map_fbo);
 
 		// Create 2D depth texture for store depths
-		glGenTextures(1, &direct_lights[i].depth_map);
-		glBindTexture(GL_TEXTURE_2D, direct_lights[i].depth_map);
+		glGenTextures(1, &direct_lights[i]->depth_map);
+		glBindTexture(GL_TEXTURE_2D, direct_lights[i]->depth_map);
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, 1024, 1024, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -399,8 +390,8 @@ void init_depth_map()
 		glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
 
 		// Attach depth texture as FBO's depth buffer
-		glBindFramebuffer(GL_FRAMEBUFFER, direct_lights[i].depth_map_fbo);
-		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, direct_lights[i].depth_map, 0);
+		glBindFramebuffer(GL_FRAMEBUFFER, direct_lights[i]->depth_map_fbo);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, direct_lights[i]->depth_map, 0);
 		// Set both to "none" because there is no need for color attachment
 		glDrawBuffer(GL_NONE);
 		glReadBuffer(GL_NONE);
@@ -413,9 +404,9 @@ void init_point_depth_maps()
 {
 	for (int i = 0; i < point_light_count; i++)
 	{
-		glGenFramebuffers(1, &point_lights[i].depth_cubemap_fbo);
-		glGenTextures(1, &point_lights[i].depth_cubemap);
-		glBindTexture(GL_TEXTURE_CUBE_MAP, point_lights[i].depth_cubemap);
+		glGenFramebuffers(1, &point_lights[i]->depth_cubemap_fbo);
+		glGenTextures(1, &point_lights[i]->depth_cubemap);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, point_lights[i]->depth_cubemap);
 
 		// Create 6 2D depth texture framebuffers for genertate a cubemap
 		for (int i = 0; i < 6; i++)
@@ -429,8 +420,8 @@ void init_point_depth_maps()
 		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 
 		// Attach depth texture as FBO's depth buffer
-		glBindFramebuffer(GL_FRAMEBUFFER, point_lights[i].depth_cubemap_fbo);
-		glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, point_lights[i].depth_cubemap, 0);
+		glBindFramebuffer(GL_FRAMEBUFFER, point_lights[i]->depth_cubemap_fbo);
+		glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, point_lights[i]->depth_cubemap, 0);
 		// Set both to "none" because there is no need for color attachment
 		glDrawBuffer(GL_NONE);
 		glReadBuffer(GL_NONE);
@@ -481,42 +472,51 @@ void draw_scene(GLuint program, bool isLit)
 // Renders the scene
 void render()
 {
-	//
-	//// 1. GBuffer Pass: Generate geometry/color data into gBuffers
-	//
-
-	// Bind framebuffer to gBuffer
-	glBindFramebuffer(GL_FRAMEBUFFER, gBuffer);
-
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-	glClearColor(0.f, 0.f, 0.f, 1.f);
-
-	// gBuffer program
-	glUseProgram(gBuffer_program);
-
 	// Get delta time
 	cur_time = (float)glutGet(GLUT_ELAPSED_TIME);
 	float delta = cur_time - old_time;
 	old_time = cur_time;
 
+	//
+	//// 1. GBuffer Pass: Generate geometry/color data into gBuffers
+	//
+
+	glBindFramebuffer(GL_FRAMEBUFFER, GBuffer->get_fbo());
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+	glClearColor(0.f, 0.f, 0.f, 1.f);
+
+	// Start gBuffer program
+	GBuffer->start_program(); 
+	
 	camera->camera_rotate(vec3(0.f, 1.f, 0.f), delta / 10000); // Camera rotation smoothly
+	// Set camera attributes
+	GBuffer->set_projection_matrix(camera->get_projection_matrix());
+	GBuffer->set_view_matrix(camera->get_view_matrix());
 
-	// Draw camera
-	GLuint loc_proj = glGetUniformLocation(gBuffer_program, "projection_matrix");
-	GLuint loc_view = glGetUniformLocation(gBuffer_program, "view_matrix");
-	glUniformMatrix4fv(loc_proj, 1, GL_FALSE, &(camera->get_projection_matrix())[0][0]);
-	glUniformMatrix4fv(loc_view, 1, GL_FALSE, &(camera->get_view_matrix())[0][0]);
-
-	// Cull backfaces
-	glEnable(GL_CULL_FACE);
-	glCullFace(GL_BACK);
-	draw_scene(gBuffer_program, true);
-	glDisable(GL_CULL_FACE);
+	// Draw scene
+	for (int i = 0; i < sphere_count; i++) // Cubes
+	{
+		// Set model attributes
+		GBuffer->set_model_matrix(spheres[i]->get_model_matrix());
+		GBuffer->set_normal_matrix(spheres[i]->get_normal_matrix());
+		GBuffer->set_diffuse_texture(spheres[i]->get_texture_id());
+		// Draw
+		GBuffer->render(spheres[i]->get_VAO(), spheres[i]->get_triangle_count()*3);
+	}
+	for (int i = 0; i < planes.size(); i++) // Planes
+	{
+		// Set model attributes
+		GBuffer->set_model_matrix(planes[i]->get_model_matrix());
+		GBuffer->set_normal_matrix(planes[i]->get_normal_matrix());
+		GBuffer->set_diffuse_texture(planes[i]->get_texture_id());
+		// Draw
+		GBuffer->render(planes[i]->get_VAO(), planes[i]->get_triangle_count() * 3);
+	}
 
 	// Attach depth buffer to default framebuffer
-	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0); // Write to default framebuffer
-	glBlitFramebuffer(0, 0, Globals::WIDTH, Globals::HEIGHT, 0, 0, Globals::WIDTH, Globals::HEIGHT, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+	GBuffer->attach_depthbuffer_to_framebuffer(0);
 
+	// Attach default framebuffer
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 	//
@@ -529,11 +529,11 @@ void render()
 	for (int i = 0; i < direct_light_count; i++)
 	{
 		glViewport(0, 0, 1024, 1024); // Use shadow resolutions
-		glBindFramebuffer(GL_FRAMEBUFFER, direct_lights[i].depth_map_fbo);
+		glBindFramebuffer(GL_FRAMEBUFFER, direct_lights[i]->depth_map_fbo);
 		glClear(GL_DEPTH_BUFFER_BIT);
 
 		// Directional light shadows
-		glUniformMatrix4fv(glGetUniformLocation(depth_program, "space_matrix"), 1, GL_FALSE, direct_lights[i].get_space_matrix_pointer());
+		glUniformMatrix4fv(glGetUniformLocation(depth_program, "space_matrix"), 1, GL_FALSE, direct_lights[i]->get_space_matrix_pointer());
 
 		glEnable(GL_CULL_FACE);
 		glCullFace(GL_FRONT);
@@ -549,15 +549,15 @@ void render()
 	for (int i = 0; i < point_light_count; i++)
 	{
 		glViewport(0, 0, 1024, 1024); // Use shadow resolutions
-		glBindFramebuffer(GL_FRAMEBUFFER, point_lights[i].depth_cubemap_fbo);
+		glBindFramebuffer(GL_FRAMEBUFFER, point_lights[i]->depth_cubemap_fbo);
 		glClear(GL_DEPTH_BUFFER_BIT);
 		
 		GLuint loc_point_space_matrices = glGetUniformLocation(point_depth_program, "light_space_matrix");
-		glUniformMatrix4fv(loc_point_space_matrices, 6, GL_FALSE, point_lights[i].get_space_matrices_pointer());
+		glUniformMatrix4fv(loc_point_space_matrices, 6, GL_FALSE, point_lights[i]->get_space_matrices_pointer());
 		GLuint loc_light_pos = glGetUniformLocation(point_depth_program, "light_position");
-		glUniform3fv(loc_light_pos, 1, point_lights[i].get_position_pointer());
+		glUniform3fv(loc_light_pos, 1, point_lights[i]->get_position_pointer());
 		GLuint loc_far = glGetUniformLocation(point_depth_program, "far");
-		glUniform1f(loc_far, point_lights[i].shadow_projection_far);
+		glUniform1f(loc_far, point_lights[i]->shadow_projection_far);
 
 		glEnable(GL_CULL_FACE);
 		glCullFace(GL_FRONT);
@@ -607,48 +607,48 @@ void render()
 	glUniform1i(loc_gNor, 1);
 	glUniform1i(loc_gAlb, 2);
 	glActiveTexture(GL_TEXTURE0 + 0);
-	glBindTexture(GL_TEXTURE_2D, gPosition);
+	glBindTexture(GL_TEXTURE_2D, GBuffer->get_gPosition());
 	glActiveTexture(GL_TEXTURE0 + 1);
-	glBindTexture(GL_TEXTURE_2D, gNormal);
+	glBindTexture(GL_TEXTURE_2D, GBuffer->get_gNormal());
 	glActiveTexture(GL_TEXTURE0 + 2);
-	glBindTexture(GL_TEXTURE_2D, gAlbedoSpec);
+	glBindTexture(GL_TEXTURE_2D, GBuffer->get_gAlbedoSpec());
 	// Bind point light uniforms
 	int last = 0;
 	for (int i = 0; i < point_light_count; i++)
 	{
 		std::string light_array_str = "point_lights[" + std::to_string(i) + "].position";
 		GLuint loc_lights_pos = glGetUniformLocation(deferred_shading_program, (GLchar*)light_array_str.c_str());
-		glUniform3fv(loc_lights_pos, 1, point_lights[i].get_position_pointer());
+		glUniform3fv(loc_lights_pos, 1, point_lights[i]->get_position_pointer());
 
 		light_array_str = "point_lights[" + std::to_string(i) + "].color";
 		GLuint loc_lights_col = glGetUniformLocation(deferred_shading_program, (GLchar*)light_array_str.c_str());
-		glUniform3fv(loc_lights_col, 1, point_lights[i].get_color_pointer());
+		glUniform3fv(loc_lights_col, 1, point_lights[i]->get_color_pointer());
 
 		light_array_str = "point_lights[" + std::to_string(i) + "].radius";
 		GLuint loc_light_r = glGetUniformLocation(deferred_shading_program, (GLchar*)light_array_str.c_str());
-		glUniform1f(loc_light_r, (GLfloat)point_lights[i].radius);
+		glUniform1f(loc_light_r, (GLfloat)point_lights[i]->radius);
 
 		light_array_str = "point_lights[" + std::to_string(i) + "].linear";
 		GLuint loc_light_l = glGetUniformLocation(deferred_shading_program, (GLchar*)light_array_str.c_str());
-		glUniform1f(loc_light_l, (GLfloat)point_lights[i].linear);
+		glUniform1f(loc_light_l, (GLfloat)point_lights[i]->linear);
 
 		light_array_str = "point_lights[" + std::to_string(i) + "].quadratic";
 		GLuint loc_light_q = glGetUniformLocation(deferred_shading_program, (GLchar*)light_array_str.c_str());
-		glUniform1f(loc_light_q, point_lights[i].quadratic);
+		glUniform1f(loc_light_q, point_lights[i]->quadratic);
 
 		light_array_str = "point_lights[" + std::to_string(i) + "].far";
 		GLuint loc_light_far = glGetUniformLocation(deferred_shading_program, (GLchar*)light_array_str.c_str());
-		glUniform1f(loc_light_far, (GLfloat)point_lights[i].shadow_projection_far);
+		glUniform1f(loc_light_far, (GLfloat)point_lights[i]->shadow_projection_far);
 		
 		light_array_str = "point_lights[" + std::to_string(i) + "].point_shadow_map";
 		GLuint loc_light_cubemap = glGetUniformLocation(deferred_shading_program, (GLchar*)light_array_str.c_str());
 		glUniform1i(loc_light_cubemap, 3 + i);
 		glActiveTexture(GL_TEXTURE0 + 3 + i);
-		glBindTexture(GL_TEXTURE_CUBE_MAP, point_lights[i].depth_cubemap);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, point_lights[i]->depth_cubemap);
 
 		light_array_str = "point_lights[" + std::to_string(i) + "].intensity";
 		GLuint loc_light_int = glGetUniformLocation(deferred_shading_program, (GLchar*)light_array_str.c_str());
-		glUniform1f(loc_light_int, (GLfloat)point_lights[i].intensity);
+		glUniform1f(loc_light_int, (GLfloat)point_lights[i]->intensity);
 
 		last = 3 + i + 1; // TODO change the name of the variable
 	}
@@ -658,25 +658,25 @@ void render()
 	{
 		std::string light_array_str = "direct_lights[" + std::to_string(i) + "].color";
 		GLuint loc_lights_pos = glGetUniformLocation(deferred_shading_program, (GLchar*)light_array_str.c_str());
-		glUniform3fv(loc_lights_pos, 1, direct_lights[i].get_color_pointer());
+		glUniform3fv(loc_lights_pos, 1, direct_lights[i]->get_color_pointer());
 
 		light_array_str = "direct_lights[" + std::to_string(i) + "].direction";
 		GLuint loc_lights_dir = glGetUniformLocation(deferred_shading_program, (GLchar*)light_array_str.c_str());
-		glUniform3fv(loc_lights_dir, 1, direct_lights[i].get_direction_pointer());
+		glUniform3fv(loc_lights_dir, 1, direct_lights[i]->get_direction_pointer());
 
 		light_array_str = "direct_lights[" + std::to_string(i) + "].intensity";
 		GLuint loc_lights_in = glGetUniformLocation(deferred_shading_program, (GLchar*)light_array_str.c_str());
-		glUniform1f(loc_lights_in, direct_lights[i].intensity);
+		glUniform1f(loc_lights_in, direct_lights[i]->intensity);
 
 		light_array_str = "direct_lights[" + std::to_string(i) + "].directional_shadow_map";
 		GLuint loc_lights_sm = glGetUniformLocation(deferred_shading_program, (GLchar*)light_array_str.c_str());
 		glUniform1i(loc_lights_sm, last + i);
 		glActiveTexture(GL_TEXTURE0 + last + i);
-		glBindTexture(GL_TEXTURE_2D, direct_lights[i].depth_map);
+		glBindTexture(GL_TEXTURE_2D, direct_lights[i]->depth_map);
 		
 		light_array_str = "direct_lights[" + std::to_string(i) + "].light_space_matrix";
 		GLuint loc_lights_lsm = glGetUniformLocation(deferred_shading_program, (GLchar*)light_array_str.c_str());
-		glUniformMatrix4fv(loc_lights_lsm, 1, GL_FALSE, direct_lights[0].get_space_matrix_pointer());
+		glUniformMatrix4fv(loc_lights_lsm, 1, GL_FALSE, direct_lights[0]->get_space_matrix_pointer());
 	}
 
 	// Draw quad using gBuffer color data
@@ -689,7 +689,7 @@ void render()
 	//
 	
 	// Attach depth buffer to default framebuffer
-	glBindFramebuffer(GL_FRAMEBUFFER, gBuffer);
+	glBindFramebuffer(GL_FRAMEBUFFER, GBuffer->get_fbo());
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0); // Write to default framebuffer
 	glBlitFramebuffer(0, 0, Globals::WIDTH, Globals::HEIGHT, 0, 0, Globals::WIDTH, Globals::HEIGHT, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -698,8 +698,8 @@ void render()
 	glUseProgram(deferred_unlit_meshes_program);
 
 	// Draw camera
-	loc_proj = glGetUniformLocation(deferred_unlit_meshes_program, "projection_matrix");
-	loc_view = glGetUniformLocation(deferred_unlit_meshes_program, "view_matrix");
+	GLuint loc_proj = glGetUniformLocation(deferred_unlit_meshes_program, "projection_matrix");
+	GLuint loc_view = glGetUniformLocation(deferred_unlit_meshes_program, "view_matrix");
 	GLuint loc_model_matrix = glGetUniformLocation(deferred_unlit_meshes_program, "model_matrix");
 	GLuint loc_color = glGetUniformLocation(deferred_unlit_meshes_program, "light_color");
 	glUniformMatrix4fv(loc_proj, 1, GL_FALSE, &(camera->get_projection_matrix())[0][0]);
@@ -708,10 +708,10 @@ void render()
 	// Draw light meshes
 	for (int i = 0; i < point_light_count; i++)
 	{
-		glUniformMatrix4fv(loc_model_matrix, 1, GL_FALSE, point_lights[i].mesh->get_model_matrix_pointer());
-		glUniform3fv(loc_color, 1, point_lights[i].get_color_pointer());
-		glBindVertexArray(point_lights[i].mesh->get_VAO());
-		glDrawArrays(GL_TRIANGLES, 0, point_lights[i].mesh->get_triangle_count() * 3);
+		glUniformMatrix4fv(loc_model_matrix, 1, GL_FALSE, point_lights[i]->mesh->get_model_matrix_pointer());
+		glUniform3fv(loc_color, 1, point_lights[i]->get_color_pointer());
+		glBindVertexArray(point_lights[i]->mesh->get_VAO());
+		glDrawArrays(GL_TRIANGLES, 0, point_lights[i]->mesh->get_triangle_count() * 3);
 		glBindVertexArray(0);
 	}
 	
