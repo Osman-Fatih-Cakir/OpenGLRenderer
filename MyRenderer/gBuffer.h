@@ -39,7 +39,6 @@ private:
 	int gBuffer_height = 1024;
 	GLuint program;
 	GLuint gBuffer_fbo;
-	GLuint vertex_count;
 	GLuint loc_projection_matrix;
 	GLuint loc_view_matrix;
 	GLuint loc_model_matrix;

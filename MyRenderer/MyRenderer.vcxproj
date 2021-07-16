@@ -145,6 +145,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Camera.cpp" />
+    <ClCompile Include="DirectionalDepth.cpp" />
     <ClCompile Include="gBuffer.cpp" />
     <ClCompile Include="Globals.cpp" />
     <ClCompile Include="DirectionalLight.cpp" />
@@ -155,6 +156,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Camera.h" />
+    <ClInclude Include="DirectionalDepth.h" />
     <ClInclude Include="gBuffer.h" />
     <ClInclude Include="Globals.h" />
     <ClInclude Include="DirectionalLight.h" />

@@ -35,8 +35,14 @@ gBuffer::~gBuffer()
 // Attachs the g-buffer depth buffer to given framebuffer
 void gBuffer::attach_depthbuffer_to_framebuffer(GLuint framebuffer)
 {
+	// Get current fbo for set it back
+	GLint current_fbo;
+	glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &current_fbo);
+
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, framebuffer);
 	glBlitFramebuffer(0, 0, Globals::WIDTH, Globals::HEIGHT, 0, 0, Globals::WIDTH, Globals::HEIGHT, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+
+	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, current_fbo); // Set the last framebuffer back
 }
 
 // Sets the g-buffer resolution
@@ -72,6 +78,9 @@ GLuint gBuffer::get_fbo()
 // Starts the shader program
 void gBuffer::start_program()
 {
+	glBindFramebuffer(GL_FRAMEBUFFER, gBuffer_fbo);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+	glClearColor(0.f, 0.f, 0.f, 1.f);
 	glUseProgram(program);
 }
 
@@ -111,9 +120,6 @@ void gBuffer::set_diffuse_texture(GLuint id)
 // Renders the scene
 void gBuffer::render(GLuint VAO, unsigned int vertex_count)
 {
-	// Bind gBuffer framebuffer
-	//glBindFramebuffer(GL_FRAMEBUFFER, gBuffer_fbo);
-
 	glBindVertexArray(VAO);
 
 	// Cull backfaces
@@ -124,8 +130,6 @@ void gBuffer::render(GLuint VAO, unsigned int vertex_count)
 	glBindVertexArray(0);
 
 	glDisable(GL_CULL_FACE); // Disable culling when rendering is done
-
-	//glBindFramebuffer(GL_FRAMEBUFFER, 0); // Bind default framebuffer for no further modification
 }
 
 // Compiles shaders and generates the shader program

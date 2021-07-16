@@ -12,9 +12,6 @@ DirectionalLight::DirectionalLight(vec3 dir, vec3 col)
 	view_matrix = mat4(0.0f);
 	space_matrix = mat4(0.0f);
 
-	depth_map = -1;
-	depth_map_fbo = -1;
-
 	intensity = 1.0f;
 }
 

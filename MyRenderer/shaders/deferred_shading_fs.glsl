@@ -93,7 +93,7 @@ float point_shadow_calculation(int light_index, vec3 _fPos, float bias)
 		vec3(0, 1, 1), vec3(0, -1, 1), vec3(0, -1, -1), vec3(0, 1, -1)
 	);
 
-	float radius = 0.008;
+	float radius = 0.08;
 
 	for (int i = 0; i < 20; i++)
 	{
@@ -136,12 +136,12 @@ void main()
 
 		// Calculate shadow
 		vec4 fPos_light_space = direct_lights[i].light_space_matrix * vec4(frag_pos, 1.0);
-		float dir_bias = 0.0;//max(0.0 * (1.0 - dot(normal, light_dir)), 0.0);
+		float dir_bias = max(0.0001 * (1.0 - dot(normal, light_dir)), 0.0001);
 		float shadow = directional_shadow_calculation(i, fPos_light_space, dir_bias);
 
 		lighting += (Diffuse + Specular) * direct_lights[i].intensity * (1.0 - shadow);
 	}
-	
+
 	// Point light calculations
 	for (int i = 0; i < NUMBER_OF_POINT_LIGHTS; i++) // Calculate lighting for all lights
 	{

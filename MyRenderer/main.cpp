@@ -12,6 +12,7 @@
 #include <DirectionalLight.h>
 #include <PointLight.h>
 #include <gBuffer.h>
+#include <DirectionalDepth.h>
 
 ////////////////
 // Debugging memory leaks
@@ -44,7 +45,7 @@ float cur_time = 0.f;
 const int point_light_count = 8;
 std::vector<PointLight*> point_lights;
 
-const int direct_light_count = 8;
+const int direct_light_count = 1;
 std::vector<DirectionalLight*> direct_lights;
 
 // Camera
@@ -59,9 +60,10 @@ std::vector<Mesh*> planes;
 GLuint quad_VAO;
 
 // Shader programs
-GLuint deferred_shading_program, deferred_unlit_meshes_program, depth_program, point_depth_program;
+GLuint deferred_shading_program, deferred_unlit_meshes_program, point_depth_program;
 
 gBuffer* GBuffer = nullptr;
+std::vector<DirectionalDepth*> DirDepths;
 
 // Window
 unsigned int win_id;
@@ -246,11 +248,6 @@ void init_shaders()
 	fragment_shader = initshaders(GL_FRAGMENT_SHADER, "shaders/deferred_unlit_meshes_fs.glsl");
 	deferred_unlit_meshes_program = initprogram(vertex_shader, fragment_shader);
 
-	// Depth shaders
-	vertex_shader = initshaders(GL_VERTEX_SHADER, "shaders/depth_vs.glsl");
-	fragment_shader = initshaders(GL_FRAGMENT_SHADER, "shaders/depth_fs.glsl");
-	depth_program = initprogram(vertex_shader, fragment_shader);
-
 	// Point depth shaders
 	vertex_shader = initshaders(GL_VERTEX_SHADER, "shaders/point_depth_vs.glsl");
 	GLuint geometry_shader = initshaders(GL_GEOMETRY_SHADER, "shaders/point_depth_gs.glsl");
@@ -374,28 +371,11 @@ void init_depth_map()
 	//
 	//// Directional light depth
 	//
+
 	for (int i = 0; i < direct_light_count; i++)
 	{
-		glGenFramebuffers(1, &direct_lights[i]->depth_map_fbo);
-
-		// Create 2D depth texture for store depths
-		glGenTextures(1, &direct_lights[i]->depth_map);
-		glBindTexture(GL_TEXTURE_2D, direct_lights[i]->depth_map);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, 1024, 1024, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-		float borderColor[] = { 1.0f, 1.0f, 1.0f, 1.0f };
-		glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
-
-		// Attach depth texture as FBO's depth buffer
-		glBindFramebuffer(GL_FRAMEBUFFER, direct_lights[i]->depth_map_fbo);
-		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, direct_lights[i]->depth_map, 0);
-		// Set both to "none" because there is no need for color attachment
-		glDrawBuffer(GL_NONE);
-		glReadBuffer(GL_NONE);
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		DirectionalDepth* temp = new DirectionalDepth();
+		DirDepths.push_back(temp);
 	}
 }
 
@@ -481,10 +461,6 @@ void render()
 	//// 1. GBuffer Pass: Generate geometry/color data into gBuffers
 	//
 
-	glBindFramebuffer(GL_FRAMEBUFFER, GBuffer->get_fbo());
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-	glClearColor(0.f, 0.f, 0.f, 1.f);
-
 	// Start gBuffer program
 	GBuffer->start_program(); 
 	
@@ -516,33 +492,37 @@ void render()
 	// Attach depth buffer to default framebuffer
 	GBuffer->attach_depthbuffer_to_framebuffer(0);
 
-	// Attach default framebuffer
+	// Attach default framebuffer for no prevent further modifications
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 	//
 	//// Shadow pass: Get the depth map of the scene
 	//
 
-	glUseProgram(depth_program);
-
-	// Direct light shadows
 	for (int i = 0; i < direct_light_count; i++)
 	{
-		glViewport(0, 0, 1024, 1024); // Use shadow resolutions
-		glBindFramebuffer(GL_FRAMEBUFFER, direct_lights[i]->depth_map_fbo);
-		glClear(GL_DEPTH_BUFFER_BIT);
-
-		// Directional light shadows
-		glUniformMatrix4fv(glGetUniformLocation(depth_program, "space_matrix"), 1, GL_FALSE, direct_lights[i]->get_space_matrix_pointer());
-
-		glEnable(GL_CULL_FACE);
-		glCullFace(GL_FRONT);
-		draw_scene(depth_program, false);
-		glDisable(GL_CULL_FACE);
-
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		DirDepths[i]->start_program();
+		// Set space matrix
+		DirDepths[i]->set_space_matrix(direct_lights[i]->space_matrix);
+		// Draw scene
+		for (int ii = 0; ii < spheres.size(); ii++) // Cubes
+		{
+			// Set model matrix
+			DirDepths[i]->set_model_matrix(spheres[ii]->get_model_matrix());
+			// Draw
+			DirDepths[i]->render(spheres[i]->get_VAO(), spheres[ii]->get_triangle_count() * 3);
+		}
+		for (int ii = 0; ii < planes.size(); ii++) // Planes
+		{
+			// Set model matrix
+			DirDepths[i]->set_model_matrix(planes[ii]->get_model_matrix());
+			// Draw
+			DirDepths[i]->render(planes[ii]->get_VAO(), planes[ii]->get_triangle_count() * 3);
+		}
 	}
 	
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
 	glUseProgram(point_depth_program);
 
 	// Point light shadows
@@ -672,7 +652,7 @@ void render()
 		GLuint loc_lights_sm = glGetUniformLocation(deferred_shading_program, (GLchar*)light_array_str.c_str());
 		glUniform1i(loc_lights_sm, last + i);
 		glActiveTexture(GL_TEXTURE0 + last + i);
-		glBindTexture(GL_TEXTURE_2D, direct_lights[i]->depth_map);
+		glBindTexture(GL_TEXTURE_2D, DirDepths[i]->get_depth_map());
 		
 		light_array_str = "direct_lights[" + std::to_string(i) + "].light_space_matrix";
 		GLuint loc_lights_lsm = glGetUniformLocation(deferred_shading_program, (GLchar*)light_array_str.c_str());
@@ -716,7 +696,7 @@ void render()
 	}
 	
 	// Error check
-	GLuint err = glGetError(); if (err) fprintf(stderr, "%s\n", gluErrorString(err));
+	//GLuint err = glGetError(); if (err) fprintf(stderr, "%s\n", gluErrorString(err));
 	
 	glutSwapBuffers();
 

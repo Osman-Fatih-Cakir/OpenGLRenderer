@@ -34,8 +34,5 @@ public:
 	mat4 view_matrix;
 	mat4 space_matrix;
 
-	GLuint depth_map;
-	GLuint depth_map_fbo;
-
 	float intensity;
 };
