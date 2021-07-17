@@ -13,6 +13,7 @@
 #include <PointLight.h>
 #include <gBuffer.h>
 #include <DirectionalDepth.h>
+#include <PointDepth.h>
 
 ////////////////
 // Debugging memory leaks
@@ -60,11 +61,11 @@ std::vector<Mesh*> planes;
 GLuint quad_VAO;
 
 // Shader programs
-GLuint deferred_shading_program, deferred_unlit_meshes_program, point_depth_program;
+GLuint deferred_shading_program, deferred_unlit_meshes_program;
 
 gBuffer* GBuffer = nullptr;
 DirectionalDepth* dirDepth = nullptr;
-
+PointDepth* pointDepth = nullptr;
 
 // Window
 unsigned int win_id;
@@ -248,12 +249,6 @@ void init_shaders()
 	vertex_shader = initshaders(GL_VERTEX_SHADER, "shaders/deferred_unlit_meshes_vs.glsl");
 	fragment_shader = initshaders(GL_FRAGMENT_SHADER, "shaders/deferred_unlit_meshes_fs.glsl");
 	deferred_unlit_meshes_program = initprogram(vertex_shader, fragment_shader);
-
-	// Point depth shaders
-	vertex_shader = initshaders(GL_VERTEX_SHADER, "shaders/point_depth_vs.glsl");
-	GLuint geometry_shader = initshaders(GL_GEOMETRY_SHADER, "shaders/point_depth_gs.glsl");
-	fragment_shader = initshaders(GL_FRAGMENT_SHADER, "shaders/point_depth_fs.glsl");
-	point_depth_program = initprogram(vertex_shader, geometry_shader, fragment_shader);
 }
 
 // Initialize camera
@@ -366,13 +361,10 @@ void init_lights()
 	}
 }
 
-// Initialize depth map framebuffer
+// Initialize depth maps and the framebuffer
 void init_depth_map()
 {
-	//
-	//// Directional light depths
-	//
-
+	// Directional light depths
 	for (int i = 0; i < direct_lights.size(); i++)
 	{
 		// Create depth map framebuffer for each light
@@ -387,71 +379,15 @@ void init_depth_map()
 // Initialize depth maps with framebuffer
 void init_point_depth_maps()
 {
+	// Point light depths
 	for (int i = 0; i < point_light_count; i++)
 	{
-		glGenFramebuffers(1, &point_lights[i]->depth_cubemap_fbo);
-		glGenTextures(1, &point_lights[i]->depth_cubemap);
-		glBindTexture(GL_TEXTURE_CUBE_MAP, point_lights[i]->depth_cubemap);
-
-		// Create 6 2D depth texture framebuffers for genertate a cubemap
-		for (int i = 0; i < 6; i++)
-		{
-			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_DEPTH_COMPONENT, 1024, 1024, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
-		}
-		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-
-		// Attach depth texture as FBO's depth buffer
-		glBindFramebuffer(GL_FRAMEBUFFER, point_lights[i]->depth_cubemap_fbo);
-		glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, point_lights[i]->depth_cubemap, 0);
-		// Set both to "none" because there is no need for color attachment
-		glDrawBuffer(GL_NONE);
-		glReadBuffer(GL_NONE);
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		// Create depth map framebuffer for each light
+		point_lights[i]->create_depth_map_framebuffer();
 	}
-}
 
-// Draw the scene
-// isLit: "True" if the scene is going to be lit and normal calculations will occur, otherwise "false"
-void draw_scene(GLuint program, bool isLit)
-{
-	// Draw scene meshes
-	GLuint loc_model_matrix = glGetUniformLocation(program, "model_matrix");
-	GLuint loc_normal_matrix;
-	if (isLit) // Check if we need normal matrix
-		loc_normal_matrix = glGetUniformLocation(program, "normal_matrix");
-	for (int i = 0; i < sphere_count; i++)
-	{
-		glUniformMatrix4fv(loc_model_matrix, 1, GL_FALSE, &(spheres[i]->get_model_matrix())[0][0]);
-		if (isLit) // Check if we need normal matrix
-			glUniformMatrix4fv(loc_normal_matrix, 1, GL_FALSE, &(spheres[i]->get_normal_matrix())[0][0]);
-		glBindVertexArray(spheres[i]->get_VAO());
-		// Bind the texture
-		GLuint loc_diff_texture = glGetUniformLocation(program, "diffuse");
-		glUniform1i(loc_diff_texture, 0);
-		glActiveTexture(GL_TEXTURE0 + 0);
-		glBindTexture(GL_TEXTURE_2D, spheres[i]->get_texture_id());
-		glDrawArrays(GL_TRIANGLES, 0, spheres[i]->get_triangle_count() * 3);
-		glBindVertexArray(0);
-	}
-	// Draw planes
-	for (int i = 0; i < planes.size(); i++)
-	{
-		glUniformMatrix4fv(loc_model_matrix, 1, GL_FALSE, &(planes[i]->get_model_matrix())[0][0]);
-		if (isLit)
-			glUniformMatrix4fv(loc_normal_matrix, 1, GL_FALSE, &(planes[i]->get_normal_matrix())[0][0]);
-		glBindVertexArray(planes[i]->get_VAO());
-		// Bind the texture
-		GLuint loc_diff_texture = glGetUniformLocation(program, "diffuse");
-		glUniform1i(loc_diff_texture, 0);
-		glActiveTexture(GL_TEXTURE0 + 0);
-		glBindTexture(GL_TEXTURE_2D, planes[i]->get_texture_id());
-		glDrawArrays(GL_TRIANGLES, 0, planes[i]->get_triangle_count() * 3);
-		glBindVertexArray(0);
-	}
+	// Initialize point depth
+	pointDepth = new PointDepth();
 }
 
 // Renders the scene
@@ -504,9 +440,10 @@ void render()
 	//// Shadow pass: Get the depth map of the scene
 	//
 
+	// Directional shadows
+	dirDepth->start_program();
 	for (int i = 0; i < direct_light_count; i++)
 	{
-		dirDepth->start_program();
 		glViewport(0, 0, direct_lights[i]->depth_map_width, direct_lights[i]->depth_map_height);
 		glBindFramebuffer(GL_FRAMEBUFFER, direct_lights[i]->depth_map_fbo);
 		glClear(GL_DEPTH_BUFFER_BIT);
@@ -532,45 +469,41 @@ void render()
 	
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-	glUseProgram(point_depth_program);
-
 	// Point light shadows
-	for (int i = 0; i < point_light_count; i++)
+	pointDepth->start_program();
+	for (int i = 0; i < point_lights.size(); i++)
 	{
-		glViewport(0, 0, 1024, 1024); // Use shadow resolutions
+		glViewport(0, 0, point_lights[i]->depth_map_width, point_lights[i]->depth_map_height); // Use shadow resolutions
 		glBindFramebuffer(GL_FRAMEBUFFER, point_lights[i]->depth_cubemap_fbo);
 		glClear(GL_DEPTH_BUFFER_BIT);
-		
-		GLuint loc_point_space_matrices = glGetUniformLocation(point_depth_program, "light_space_matrix");
-		glUniformMatrix4fv(loc_point_space_matrices, 6, GL_FALSE, point_lights[i]->get_space_matrices_pointer());
-		GLuint loc_light_pos = glGetUniformLocation(point_depth_program, "light_position");
-		glUniform3fv(loc_light_pos, 1, point_lights[i]->get_position_pointer());
-		GLuint loc_far = glGetUniformLocation(point_depth_program, "far");
-		glUniform1f(loc_far, point_lights[i]->shadow_projection_far);
 
-		glEnable(GL_CULL_FACE);
-		glCullFace(GL_FRONT);
-
-		// Draw scene meshes
-		GLuint loc_model_matrix = glGetUniformLocation(point_depth_program, "model");
-		for (int i = 0; i < sphere_count; i++)
+		// Draw scene
+		for (int ii = 0; ii < spheres.size(); ii++) // Cubes
 		{
-			glUniformMatrix4fv(loc_model_matrix, 1, GL_FALSE, &(spheres[i]->get_model_matrix())[0][0]);
-			glBindVertexArray(spheres[i]->get_VAO());
-			glDrawArrays(GL_TRIANGLES, 0, spheres[i]->get_triangle_count() * 3);
-			glBindVertexArray(0);
+			// Set model matrix
+			pointDepth->set_model_matrix(spheres[ii]->get_model_matrix());
+			// Set space matrices
+			pointDepth->set_space_matrices(point_lights[i]->space_matrices);
+			// Set far
+			pointDepth->set_far(point_lights[i]->shadow_projection_far);
+			// Set position
+			pointDepth->set_position(point_lights[i]->position);
+			// Draw
+			pointDepth->render(spheres[ii]->get_VAO(), spheres[ii]->get_triangle_count() * 3);
 		}
-		// Draw planes
-		for (int i = 0; i < planes.size(); i++)
+		for (int ii = 0; ii < planes.size(); ii++) // Planes
 		{
-			glUniformMatrix4fv(loc_model_matrix, 1, GL_FALSE, &(planes[i]->get_model_matrix())[0][0]);
-			glBindVertexArray(planes[i]->get_VAO());
-			glDrawArrays(GL_TRIANGLES, 0, planes[i]->get_triangle_count() * 3);
-			glBindVertexArray(0);
+			// Set model matrix
+			pointDepth->set_model_matrix(planes[ii]->get_model_matrix());
+			// Set space matrices
+			pointDepth->set_space_matrices(point_lights[i]->space_matrices);
+			// Set far
+			pointDepth->set_far(point_lights[i]->shadow_projection_far);
+			// Set position
+			pointDepth->set_position(point_lights[i]->position);
+			// Draw
+			pointDepth->render(planes[ii]->get_VAO(), planes[ii]->get_triangle_count() * 3);
 		}
-
-		glDisable(GL_CULL_FACE);
-
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	}
 
@@ -705,7 +638,7 @@ void render()
 	}
 	
 	// Error check
-	//GLuint err = glGetError(); if (err) fprintf(stderr, "%s\n", gluErrorString(err));
+	GLuint err = glGetError(); if (err) fprintf(stderr, "%s\n", gluErrorString(err));
 	
 	glutSwapBuffers();
 

@@ -6,11 +6,8 @@
 
 #include <Mesh.h>
 
-typedef glm::mat3 mat3;
 typedef glm::mat4 mat4;
 typedef glm::vec3 vec3;
-typedef glm::vec4 vec4;
-typedef glm::vec2 vec2;
 
 class PointLight
 {
@@ -20,12 +17,10 @@ public:
 	// Destructor
 	~PointLight();
 
-	// Returns a pointer to the space matrices array
 	GLfloat* get_space_matrices_pointer();
-	// Returns a pointer to the position vector
 	GLfloat* get_position_pointer();
-	// Returns a pointer to the color vector
 	GLfloat* get_color_pointer();
+	void create_depth_map_framebuffer();
 
 	Mesh* mesh = nullptr;
 
@@ -41,4 +36,7 @@ public:
 	float linear;
 	float quadratic;
 	float intensity;
+
+	int depth_map_width = 1024;
+	int depth_map_height = 1024;
 };

@@ -152,6 +152,7 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Mesh.cpp" />
     <ClCompile Include="init_shaders.cpp" />
+    <ClCompile Include="PointDepth.cpp" />
     <ClCompile Include="PointLight.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -162,6 +163,7 @@
     <ClInclude Include="DirectionalLight.h" />
     <ClInclude Include="Mesh.h" />
     <ClInclude Include="init_shaders.h" />
+    <ClInclude Include="PointDepth.h" />
     <ClInclude Include="PointLight.h" />
   </ItemGroup>
   <ItemGroup>

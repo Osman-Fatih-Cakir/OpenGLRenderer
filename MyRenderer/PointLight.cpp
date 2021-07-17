@@ -53,3 +53,30 @@ GLfloat* PointLight::get_color_pointer()
 {
 	return &color[0];
 }
+
+void PointLight::create_depth_map_framebuffer()
+{
+	glGenFramebuffers(1, &depth_cubemap_fbo);
+	glGenTextures(1, &depth_cubemap);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, depth_cubemap);
+
+	// Create 6 2D depth texture framebuffers for genertate a cubemap
+	for (int i = 0; i < 6; i++)
+	{
+		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_DEPTH_COMPONENT, depth_map_width, depth_map_height,
+			0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+	}
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+
+	// Attach depth texture as FBO's depth buffer
+	glBindFramebuffer(GL_FRAMEBUFFER, depth_cubemap_fbo);
+	glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depth_cubemap, 0);
+	// Set both to "none" because there is no need for color attachment
+	glDrawBuffer(GL_NONE);
+	glReadBuffer(GL_NONE);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
