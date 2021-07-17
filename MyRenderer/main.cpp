@@ -63,7 +63,8 @@ GLuint quad_VAO;
 GLuint deferred_shading_program, deferred_unlit_meshes_program, point_depth_program;
 
 gBuffer* GBuffer = nullptr;
-std::vector<DirectionalDepth*> DirDepths;
+DirectionalDepth* dirDepth = nullptr;
+
 
 // Window
 unsigned int win_id;
@@ -369,14 +370,18 @@ void init_lights()
 void init_depth_map()
 {
 	//
-	//// Directional light depth
+	//// Directional light depths
 	//
 
-	for (int i = 0; i < direct_light_count; i++)
+	for (int i = 0; i < direct_lights.size(); i++)
 	{
-		DirectionalDepth* temp = new DirectionalDepth();
-		DirDepths.push_back(temp);
+		// Create depth map framebuffer for each light
+		direct_lights[i]->create_depth_map_framebuffer();
 	}
+
+	// Initialize depth map program
+	dirDepth = new DirectionalDepth();
+
 }
 
 // Initialize depth maps with framebuffer
@@ -501,23 +506,27 @@ void render()
 
 	for (int i = 0; i < direct_light_count; i++)
 	{
-		DirDepths[i]->start_program();
+		dirDepth->start_program();
+		glViewport(0, 0, direct_lights[i]->depth_map_width, direct_lights[i]->depth_map_height);
+		glBindFramebuffer(GL_FRAMEBUFFER, direct_lights[i]->depth_map_fbo);
+		glClear(GL_DEPTH_BUFFER_BIT);
+
 		// Set space matrix
-		DirDepths[i]->set_space_matrix(direct_lights[i]->space_matrix);
+		dirDepth->set_space_matrix(direct_lights[i]->space_matrix);
 		// Draw scene
 		for (int ii = 0; ii < spheres.size(); ii++) // Cubes
 		{
 			// Set model matrix
-			DirDepths[i]->set_model_matrix(spheres[ii]->get_model_matrix());
+			dirDepth->set_model_matrix(spheres[ii]->get_model_matrix());
 			// Draw
-			DirDepths[i]->render(spheres[i]->get_VAO(), spheres[ii]->get_triangle_count() * 3);
+			dirDepth->render(spheres[i]->get_VAO(), spheres[ii]->get_triangle_count() * 3);
 		}
 		for (int ii = 0; ii < planes.size(); ii++) // Planes
 		{
 			// Set model matrix
-			DirDepths[i]->set_model_matrix(planes[ii]->get_model_matrix());
+			dirDepth->set_model_matrix(planes[ii]->get_model_matrix());
 			// Draw
-			DirDepths[i]->render(planes[ii]->get_VAO(), planes[ii]->get_triangle_count() * 3);
+			dirDepth->render(planes[ii]->get_VAO(), planes[ii]->get_triangle_count() * 3);
 		}
 	}
 	
@@ -652,7 +661,7 @@ void render()
 		GLuint loc_lights_sm = glGetUniformLocation(deferred_shading_program, (GLchar*)light_array_str.c_str());
 		glUniform1i(loc_lights_sm, last + i);
 		glActiveTexture(GL_TEXTURE0 + last + i);
-		glBindTexture(GL_TEXTURE_2D, DirDepths[i]->get_depth_map());
+		glBindTexture(GL_TEXTURE_2D, direct_lights[i]->depth_map);
 		
 		light_array_str = "direct_lights[" + std::to_string(i) + "].light_space_matrix";
 		GLuint loc_lights_lsm = glGetUniformLocation(deferred_shading_program, (GLchar*)light_array_str.c_str());

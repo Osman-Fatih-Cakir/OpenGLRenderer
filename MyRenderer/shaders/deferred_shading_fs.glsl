@@ -141,7 +141,7 @@ void main()
 
 		lighting += (Diffuse + Specular) * direct_lights[i].intensity * (1.0 - shadow);
 	}
-
+	/*
 	// Point light calculations
 	for (int i = 0; i < NUMBER_OF_POINT_LIGHTS; i++) // Calculate lighting for all lights
 	{
@@ -167,7 +167,7 @@ void main()
 
 		float shadow = point_shadow_calculation(i, frag_pos, 0.0);
 		lighting += (Diffuse + Specular) * (1.0 - shadow) * point_lights[i].intensity;
-	}
+	}*/
 	
 	lighting += Ambient; // Add ambient light at the end
 

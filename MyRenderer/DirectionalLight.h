@@ -23,6 +23,7 @@ public:
 	// This function should be called after setting view and projection matrices
 	void calculate_space_matrix();
 	void calculate_space_matrix(mat4 proj_mat, mat4 view_mat);
+	void create_depth_map_framebuffer();
 	GLfloat* get_space_matrix_pointer();
 	GLfloat* get_direction_pointer();
 	GLfloat* get_color_pointer();
@@ -33,6 +34,12 @@ public:
 	mat4 projection_matrix;
 	mat4 view_matrix;
 	mat4 space_matrix;
+
+	GLuint depth_map;
+	GLuint depth_map_fbo;
+
+	int depth_map_width = 1024;
+	int depth_map_height = 1024;
 
 	float intensity;
 };
