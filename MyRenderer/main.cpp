@@ -14,6 +14,7 @@
 #include <gBuffer.h>
 #include <DirectionalDepth.h>
 #include <PointDepth.h>
+#include <ForwardRender.h>
 
 ////////////////
 // Debugging memory leaks
@@ -61,11 +62,12 @@ std::vector<Mesh*> planes;
 GLuint quad_VAO;
 
 // Shader programs
-GLuint deferred_shading_program, deferred_unlit_meshes_program;
+GLuint deferred_shading_program;
 
 gBuffer* GBuffer = nullptr;
 DirectionalDepth* dirDepth = nullptr;
 PointDepth* pointDepth = nullptr;
+ForwardRender* forwardRender = nullptr;
 
 // Window
 unsigned int win_id;
@@ -84,6 +86,7 @@ void init_gBuffer();
 void init_lights();
 void init_depth_map();
 void init_point_depth_maps();
+void init_shader_programs();
 
 void render();
 
@@ -176,6 +179,9 @@ void init()
 	// Init point depth maps
 	init_point_depth_maps();
 
+	// Initialize shader program classes
+	init_shader_programs();
+
 	// Get delta time
 	old_time = (float)glutGet(GLUT_ELAPSED_TIME);
 }
@@ -244,11 +250,6 @@ void init_shaders()
 	GLuint vertex_shader = initshaders(GL_VERTEX_SHADER, "shaders/deferred_shading_vs.glsl");
 	GLuint fragment_shader = initshaders(GL_FRAGMENT_SHADER, "shaders/deferred_shading_fs.glsl");
 	deferred_shading_program = initprogram(vertex_shader, fragment_shader);
-
-	// Deferred unlit meshes shaders
-	vertex_shader = initshaders(GL_VERTEX_SHADER, "shaders/deferred_unlit_meshes_vs.glsl");
-	fragment_shader = initshaders(GL_FRAGMENT_SHADER, "shaders/deferred_unlit_meshes_fs.glsl");
-	deferred_unlit_meshes_program = initprogram(vertex_shader, fragment_shader);
 }
 
 // Initialize camera
@@ -388,6 +389,13 @@ void init_point_depth_maps()
 
 	// Initialize point depth
 	pointDepth = new PointDepth();
+}
+
+// Initialize shader program classes
+void init_shader_programs()
+{
+	forwardRender = new ForwardRender();
+	forwardRender->change_viewport_resolution(Globals::WIDTH, Globals::HEIGHT );
 }
 
 // Renders the scene
@@ -613,28 +621,23 @@ void render()
 	// Attach depth buffer to default framebuffer
 	glBindFramebuffer(GL_FRAMEBUFFER, GBuffer->get_fbo());
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0); // Write to default framebuffer
-	glBlitFramebuffer(0, 0, Globals::WIDTH, Globals::HEIGHT, 0, 0, Globals::WIDTH, Globals::HEIGHT, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+	glBlitFramebuffer(0, 0, GBuffer->get_width(), GBuffer->get_height(), 0, 0,
+		GBuffer->get_width(), GBuffer->get_height(), GL_DEPTH_BUFFER_BIT, GL_NEAREST);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 	// Start forward rendering program
-	glUseProgram(deferred_unlit_meshes_program);
+	forwardRender->start_program();
 
-	// Draw camera
-	GLuint loc_proj = glGetUniformLocation(deferred_unlit_meshes_program, "projection_matrix");
-	GLuint loc_view = glGetUniformLocation(deferred_unlit_meshes_program, "view_matrix");
-	GLuint loc_model_matrix = glGetUniformLocation(deferred_unlit_meshes_program, "model_matrix");
-	GLuint loc_color = glGetUniformLocation(deferred_unlit_meshes_program, "light_color");
-	glUniformMatrix4fv(loc_proj, 1, GL_FALSE, &(camera->get_projection_matrix())[0][0]);
-	glUniformMatrix4fv(loc_view, 1, GL_FALSE, &(camera->get_view_matrix())[0][0]);
-	
-	// Draw light meshes
+	// Set camera attributes
+	forwardRender->set_projection_matrix(camera->get_projection_matrix());
+	forwardRender->set_view_matrix(camera->get_view_matrix());
+
+	// Draw scene
 	for (int i = 0; i < point_light_count; i++)
 	{
-		glUniformMatrix4fv(loc_model_matrix, 1, GL_FALSE, point_lights[i]->mesh->get_model_matrix_pointer());
-		glUniform3fv(loc_color, 1, point_lights[i]->get_color_pointer());
-		glBindVertexArray(point_lights[i]->mesh->get_VAO());
-		glDrawArrays(GL_TRIANGLES, 0, point_lights[i]->mesh->get_triangle_count() * 3);
-		glBindVertexArray(0);
+		forwardRender->set_model_matrix(point_lights[i]->mesh->get_model_matrix());
+		forwardRender->set_color(point_lights[i]->color);
+		forwardRender->render(point_lights[i]->mesh->get_VAO(), point_lights[i]->mesh->get_triangle_count() * 3);
 	}
 	
 	// Error check

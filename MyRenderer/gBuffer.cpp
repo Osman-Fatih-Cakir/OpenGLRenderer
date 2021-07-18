@@ -117,6 +117,16 @@ void gBuffer::set_diffuse_texture(GLuint id)
 	glBindTexture(GL_TEXTURE_2D, id);
 }
 
+unsigned int gBuffer::get_width()
+{
+	return gBuffer_width;
+}
+
+unsigned int gBuffer::get_height()
+{
+	return gBuffer_height;
+}
+
 // Renders the scene
 void gBuffer::render(GLuint VAO, unsigned int vertex_count)
 {

@@ -20,8 +20,7 @@ struct Point_Light
 	float linear;
 	float quadratic;
 	float intensity;
-
-};// TODO change names as "point lights"
+};
 const int NUMBER_OF_POINT_LIGHTS = 8; // TODO number of lights is hardcoded
 uniform Point_Light point_lights[NUMBER_OF_POINT_LIGHTS];
 
@@ -146,9 +145,9 @@ void main()
 	for (int i = 0; i < NUMBER_OF_POINT_LIGHTS; i++) // Calculate lighting for all lights
 	{
 		// Point light radius
-		//// If the fragment is not inside the light radious, no need to make calculation for that light
-		//if (length(point_lights[i].position - frag_pos) > point_lights[i].radius)
-		//	continue;
+		// If the fragment is not inside the light radious, no need to make calculation for that light
+		if (length(point_lights[i].position - frag_pos) > point_lights[i].radius)
+			continue;
 
 		// Diffuse
 		vec3 light_dir = normalize(point_lights[i].position - frag_pos);

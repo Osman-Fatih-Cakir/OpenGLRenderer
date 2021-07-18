@@ -28,6 +28,8 @@ public:
 	void set_model_matrix(mat4 mat);
 	void set_normal_matrix(mat4 mat);
 	void set_diffuse_texture(GLuint id);
+	unsigned int get_width();
+	unsigned int get_height();
 	void render(GLuint VAO, unsigned int vertex_count);
 
 private:
