@@ -81,10 +81,7 @@ void init_meshes();
 
 void init_camera(vec3 eye, vec3 center, vec3 up);
 void init_quad();
-void init_gBuffer();
 void init_lights();
-void init_depth_map();
-void init_point_depth_maps();
 void init_shader_programs();
 
 void render();
@@ -160,20 +157,11 @@ void init()
 		vec3(0.f, 0.f, 0.f) // Center
 	);
 
-	// Initialize gBuffer textures and render buffer for depth
-	init_gBuffer();
-
 	// Initialize quad that will be rendered with texture (The scene texture)
 	init_quad();
 
 	// Initialize lights
 	init_lights();
-
-	// Initialize depth maps
-	init_depth_map();
-
-	// Init point depth maps
-	init_point_depth_maps();
 
 	// Initialize shader program classes
 	init_shader_programs();
@@ -275,14 +263,6 @@ void init_quad()
 	glBindVertexArray(0);
 }
 
-// Initialize gBuffers
-void init_gBuffer()
-{
-	GBuffer = new gBuffer();
-	// Set resolution
-	GBuffer->set_gBuffer_resolution(Globals::WIDTH, Globals::HEIGHT);
-}
-
 // Initialize light paramters
 void init_lights()
 {
@@ -330,7 +310,8 @@ void init_lights()
 		light->space_matrices[3] = pointlight_projection * glm::lookAt(light->position, light->position + vec3(0.f, -1.f, 0.f), vec3(0.f, 0.f, -1.f));
 		light->space_matrices[4] = pointlight_projection * glm::lookAt(light->position, light->position + vec3(0.f, 0.f, 1.f), vec3(0.f, -1.f, 0.f));
 		light->space_matrices[5] = pointlight_projection * glm::lookAt(light->position, light->position + vec3(0.f, 0.f, -1.f), vec3(0.f, -1.f, 0.f));
-
+		// Create depth map framebuffer for each light
+		light->create_depth_map_framebuffer();
 		point_lights.push_back(light);
 	}
 
@@ -345,42 +326,26 @@ void init_lights()
 		mat4 proj_mat = glm::ortho(-20.f, 20.f, -20.f, 20.f, 0.1f, 1000.f);
 		mat4 view_mat = glm::lookAt(vec3(16, 20, 16), vec3(0, 0, 0), vec3(0, 1, 0));
 		light->calculate_space_matrix(proj_mat, view_mat);
+		// Create depth map framebuffer
+		light->create_depth_map_framebuffer();
 		direct_lights.push_back(light);
 	}
-}
-
-// Initialize depth maps and the framebuffer
-void init_depth_map()
-{
-	// Directional light depths
-	for (int i = 0; i < direct_lights.size(); i++)
-	{
-		// Create depth map framebuffer for each light
-		direct_lights[i]->create_depth_map_framebuffer();
-	}
-
-	// Initialize depth map program
-	dirDepth = new DirectionalDepth();
-
-}
-
-// Initialize depth maps with framebuffer
-void init_point_depth_maps()
-{
-	// Point light depths
-	for (int i = 0; i < point_light_count; i++)
-	{
-		// Create depth map framebuffer for each light
-		point_lights[i]->create_depth_map_framebuffer();
-	}
-
-	// Initialize point depth
-	pointDepth = new PointDepth();
 }
 
 // Initialize shader program classes
 void init_shader_programs()
 {
+	// Initialize g-buffer program
+	GBuffer = new gBuffer();
+	// Set resolution
+	GBuffer->set_gBuffer_resolution(Globals::WIDTH, Globals::HEIGHT);
+
+	// Initialize depth map program
+	dirDepth = new DirectionalDepth();
+
+	// Initialize point depth
+	pointDepth = new PointDepth();
+
 	// Deferred shading program
 	deferredShading = new DeferredShading();
 	deferredShading->change_viewport_resolution(Globals::WIDTH, Globals::HEIGHT);
