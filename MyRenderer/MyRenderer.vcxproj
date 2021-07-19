@@ -145,6 +145,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Camera.cpp" />
+    <ClCompile Include="DeferredShading.cpp" />
     <ClCompile Include="DirectionalDepth.cpp" />
     <ClCompile Include="ForwardRender.cpp" />
     <ClCompile Include="gBuffer.cpp" />
@@ -158,6 +159,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Camera.h" />
+    <ClInclude Include="DeferredShading.h" />
     <ClInclude Include="DirectionalDepth.h" />
     <ClInclude Include="ForwardRender.h" />
     <ClInclude Include="gBuffer.h" />

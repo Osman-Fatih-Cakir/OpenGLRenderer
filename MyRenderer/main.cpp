@@ -15,6 +15,8 @@
 #include <DirectionalDepth.h>
 #include <PointDepth.h>
 #include <ForwardRender.h>
+#include <DeferredShading.h>
+
 
 ////////////////
 // Debugging memory leaks
@@ -61,13 +63,11 @@ std::vector<Mesh*> planes;
 // VAOs
 GLuint quad_VAO;
 
-// Shader programs
-GLuint deferred_shading_program;
-
 gBuffer* GBuffer = nullptr;
 DirectionalDepth* dirDepth = nullptr;
 PointDepth* pointDepth = nullptr;
 ForwardRender* forwardRender = nullptr;
+DeferredShading* deferredShading = nullptr;
 
 // Window
 unsigned int win_id;
@@ -78,7 +78,6 @@ void exit_app();
 void keyboard(unsigned char key, int x, int y);
 void resize_window(int w, int h);
 void init_meshes();
-void init_shaders();
 
 void init_camera(vec3 eye, vec3 center, vec3 up);
 void init_quad();
@@ -150,9 +149,6 @@ void Init_Glut_and_Glew(int argc, char* argv[])
 void init()
 {
 	Globals::Log("*****************Start************************");
-
-	// Initialize shaders
-	init_shaders();
 
 	// Load sphere mesh
 	init_meshes();
@@ -243,15 +239,6 @@ void init_meshes()
 	planes.push_back(plane);
 }
 
-// Initialize and compiling shaders
-void init_shaders()
-{
-	// Deferred lighting shaders
-	GLuint vertex_shader = initshaders(GL_VERTEX_SHADER, "shaders/deferred_shading_vs.glsl");
-	GLuint fragment_shader = initshaders(GL_FRAGMENT_SHADER, "shaders/deferred_shading_fs.glsl");
-	deferred_shading_program = initprogram(vertex_shader, fragment_shader);
-}
-
 // Initialize camera
 void init_camera(vec3 eye, vec3 up, vec3 center)
 {
@@ -269,7 +256,7 @@ void init_quad()
 
 		-1.0f, -1.0f, 0.0f, 0.0f, 0.0f, // 2
 		1.0f,  1.0f, 0.0f, 1.0f, 1.0f, // 3
-		-1.0f,  1.0f, 0.0f, 0.0f, 1.0f, // 1
+		-1.0f,  1.0f, 0.0f, 0.0f, 1.0f // 1
 	};
 
 	glGenVertexArrays(1, &quad_VAO);
@@ -394,8 +381,13 @@ void init_point_depth_maps()
 // Initialize shader program classes
 void init_shader_programs()
 {
+	// Deferred shading program
+	deferredShading = new DeferredShading();
+	deferredShading->change_viewport_resolution(Globals::WIDTH, Globals::HEIGHT);
+
+	// Forward render program
 	forwardRender = new ForwardRender();
-	forwardRender->change_viewport_resolution(Globals::WIDTH, Globals::HEIGHT );
+	forwardRender->change_viewport_resolution(Globals::WIDTH, Globals::HEIGHT);
 }
 
 // Renders the scene
@@ -518,101 +510,44 @@ void render()
 	//
 	//// 2. Lighting Pass: Calculate lighting pixel by pixel using gBuffer
 	//
-
-	glViewport(0, 0, Globals::WIDTH, Globals::HEIGHT);
+	
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	deferredShading->start_program();
+	
+	deferredShading->set_viewer_pos(camera->get_eye());
+	// Set g-buffer color attachments
+	deferredShading->set_gPosition(GBuffer->get_gPosition());
+	deferredShading->set_gNormal(GBuffer->get_gNormal());
+	deferredShading->set_gAlbedoSpec(GBuffer->get_gAlbedoSpec());
 
-	// Deferred shader program
-	glUseProgram(deferred_shading_program);
-
-	// Bind uniforms
-	GLuint loc_viewer_pos = glGetUniformLocation(deferred_shading_program, "viewer_pos");
-	glUniform3fv(loc_viewer_pos, 1, &(camera->get_eye())[0]);
-
-	// Bind texture with gBuffer data
-	GLuint loc_gPos = glGetUniformLocation(deferred_shading_program, "gPosition");
-	GLuint loc_gNor = glGetUniformLocation(deferred_shading_program, "gNormal");
-	GLuint loc_gAlb = glGetUniformLocation(deferred_shading_program, "gAlbedoSpec");
-	glUniform1i(loc_gPos, 0);
-	glUniform1i(loc_gNor, 1);
-	glUniform1i(loc_gAlb, 2);
-	glActiveTexture(GL_TEXTURE0 + 0);
-	glBindTexture(GL_TEXTURE_2D, GBuffer->get_gPosition());
-	glActiveTexture(GL_TEXTURE0 + 1);
-	glBindTexture(GL_TEXTURE_2D, GBuffer->get_gNormal());
-	glActiveTexture(GL_TEXTURE0 + 2);
-	glBindTexture(GL_TEXTURE_2D, GBuffer->get_gAlbedoSpec());
-	// Bind point light uniforms
-	int last = 0;
+	// Point lights
 	for (int i = 0; i < point_light_count; i++)
 	{
-		std::string light_array_str = "point_lights[" + std::to_string(i) + "].position";
-		GLuint loc_lights_pos = glGetUniformLocation(deferred_shading_program, (GLchar*)light_array_str.c_str());
-		glUniform3fv(loc_lights_pos, 1, point_lights[i]->get_position_pointer());
-
-		light_array_str = "point_lights[" + std::to_string(i) + "].color";
-		GLuint loc_lights_col = glGetUniformLocation(deferred_shading_program, (GLchar*)light_array_str.c_str());
-		glUniform3fv(loc_lights_col, 1, point_lights[i]->get_color_pointer());
-
-		light_array_str = "point_lights[" + std::to_string(i) + "].radius";
-		GLuint loc_light_r = glGetUniformLocation(deferred_shading_program, (GLchar*)light_array_str.c_str());
-		glUniform1f(loc_light_r, (GLfloat)point_lights[i]->radius);
-
-		light_array_str = "point_lights[" + std::to_string(i) + "].linear";
-		GLuint loc_light_l = glGetUniformLocation(deferred_shading_program, (GLchar*)light_array_str.c_str());
-		glUniform1f(loc_light_l, (GLfloat)point_lights[i]->linear);
-
-		light_array_str = "point_lights[" + std::to_string(i) + "].quadratic";
-		GLuint loc_light_q = glGetUniformLocation(deferred_shading_program, (GLchar*)light_array_str.c_str());
-		glUniform1f(loc_light_q, point_lights[i]->quadratic);
-
-		light_array_str = "point_lights[" + std::to_string(i) + "].far";
-		GLuint loc_light_far = glGetUniformLocation(deferred_shading_program, (GLchar*)light_array_str.c_str());
-		glUniform1f(loc_light_far, (GLfloat)point_lights[i]->shadow_projection_far);
-		
-		light_array_str = "point_lights[" + std::to_string(i) + "].point_shadow_map";
-		GLuint loc_light_cubemap = glGetUniformLocation(deferred_shading_program, (GLchar*)light_array_str.c_str());
-		glUniform1i(loc_light_cubemap, 3 + i);
-		glActiveTexture(GL_TEXTURE0 + 3 + i);
-		glBindTexture(GL_TEXTURE_CUBE_MAP, point_lights[i]->depth_cubemap);
-
-		light_array_str = "point_lights[" + std::to_string(i) + "].intensity";
-		GLuint loc_light_int = glGetUniformLocation(deferred_shading_program, (GLchar*)light_array_str.c_str());
-		glUniform1f(loc_light_int, (GLfloat)point_lights[i]->intensity);
-
-		last = 3 + i + 1; // TODO change the name of the variable
+		deferredShading->set_point_light(
+			point_lights[i]->position,
+			point_lights[i]->color,
+			point_lights[i]->radius,
+			point_lights[i]->linear,
+			point_lights[i]->quadratic,
+			point_lights[i]->shadow_projection_far,
+			point_lights[i]->depth_cubemap,
+			point_lights[i]->intensity
+		);
 	}
-
-	// Bind directional light uniforms
+	// Directional lights
 	for (int i = 0; i < direct_light_count; i++)
 	{
-		std::string light_array_str = "direct_lights[" + std::to_string(i) + "].color";
-		GLuint loc_lights_pos = glGetUniformLocation(deferred_shading_program, (GLchar*)light_array_str.c_str());
-		glUniform3fv(loc_lights_pos, 1, direct_lights[i]->get_color_pointer());
-
-		light_array_str = "direct_lights[" + std::to_string(i) + "].direction";
-		GLuint loc_lights_dir = glGetUniformLocation(deferred_shading_program, (GLchar*)light_array_str.c_str());
-		glUniform3fv(loc_lights_dir, 1, direct_lights[i]->get_direction_pointer());
-
-		light_array_str = "direct_lights[" + std::to_string(i) + "].intensity";
-		GLuint loc_lights_in = glGetUniformLocation(deferred_shading_program, (GLchar*)light_array_str.c_str());
-		glUniform1f(loc_lights_in, direct_lights[i]->intensity);
-
-		light_array_str = "direct_lights[" + std::to_string(i) + "].directional_shadow_map";
-		GLuint loc_lights_sm = glGetUniformLocation(deferred_shading_program, (GLchar*)light_array_str.c_str());
-		glUniform1i(loc_lights_sm, last + i);
-		glActiveTexture(GL_TEXTURE0 + last + i);
-		glBindTexture(GL_TEXTURE_2D, direct_lights[i]->depth_map);
-		
-		light_array_str = "direct_lights[" + std::to_string(i) + "].light_space_matrix";
-		GLuint loc_lights_lsm = glGetUniformLocation(deferred_shading_program, (GLchar*)light_array_str.c_str());
-		glUniformMatrix4fv(loc_lights_lsm, 1, GL_FALSE, direct_lights[0]->get_space_matrix_pointer());
+		deferredShading->set_direct_light(
+			direct_lights[i]->color,
+			direct_lights[i]->direction,
+			direct_lights[i]->intensity,
+			direct_lights[i]->depth_map,
+			direct_lights[i]->space_matrix
+		);
 	}
-
-	// Draw quad using gBuffer color data
-	glBindVertexArray(quad_VAO);
-	glDrawArrays(GL_TRIANGLES, 0, 6);
-	glBindVertexArray(0);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	// Render to quad
+	deferredShading->render(quad_VAO, 6);
 
 	//
 	//// 3. Pass: Draw light meshes (The meshes that are not lit but in the same scene with other meshes)
