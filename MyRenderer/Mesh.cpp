@@ -200,6 +200,9 @@ GLuint Mesh::load_obj_mesh(std::string path)
 		}
 	}
 
+	// Close file
+	fclose(obj_file);
+
 	// After loading, process the data and set correct arrays
 	for (unsigned int i = 0; i < vertex_indices.size(); i++)
 	{

@@ -13,6 +13,7 @@ class DirectionalLight
 public:
 	// Constructor
 	DirectionalLight(vec3 dir, vec3 col);
+	~DirectionalLight();
 
 	void set_view(vec3 eye, vec3 center, vec3 up);
 	// The projection matrix must be orthogonal matrix

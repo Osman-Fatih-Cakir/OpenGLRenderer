@@ -2,7 +2,7 @@
 #include <gtc/matrix_transform.hpp>
 #include <DirectionalLight.h>
 
-
+// Constructor
 DirectionalLight::DirectionalLight(vec3 dir, vec3 col)
 {
 	direction = dir;
@@ -13,6 +13,12 @@ DirectionalLight::DirectionalLight(vec3 dir, vec3 col)
 	space_matrix = mat4(0.0f);
 
 	intensity = 1.0f;
+}
+
+// Destructor
+DirectionalLight::~DirectionalLight()
+{
+
 }
 
 void DirectionalLight::set_view(vec3 eye, vec3 center, vec3 up)

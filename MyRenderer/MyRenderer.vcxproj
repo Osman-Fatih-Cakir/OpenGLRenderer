@@ -156,6 +156,8 @@
     <ClCompile Include="init_shaders.cpp" />
     <ClCompile Include="PointDepth.cpp" />
     <ClCompile Include="PointLight.cpp" />
+    <ClCompile Include="Timer.cpp" />
+    <ClCompile Include="Window.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Camera.h" />
@@ -169,6 +171,8 @@
     <ClInclude Include="init_shaders.h" />
     <ClInclude Include="PointDepth.h" />
     <ClInclude Include="PointLight.h" />
+    <ClInclude Include="Timer.h" />
+    <ClInclude Include="Window.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\deferred_shading_fs.glsl" />

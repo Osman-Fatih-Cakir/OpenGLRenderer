@@ -4,7 +4,8 @@
 #include <glm.hpp>
 #include <gtc/matrix_transform.hpp>
 #include <iostream>
-
+#include <Timer.h>
+#include <Window.h>
 #include <Camera.h>
 #include <Globals.h>
 #include <Mesh.h>
@@ -16,7 +17,6 @@
 #include <PointDepth.h>
 #include <ForwardRender.h>
 #include <DeferredShading.h>
-
 
 ////////////////
 // Debugging memory leaks
@@ -42,8 +42,7 @@ typedef glm::vec4 vec4;
 typedef glm::vec2 vec2;
 
 // Timing
-float old_time = 0.f;
-float cur_time = 0.f;
+Timer* timer = nullptr;
 
 // Point lights
 const int point_light_count = 8;
@@ -63,6 +62,7 @@ std::vector<Mesh*> planes;
 // VAOs
 GLuint quad_VAO;
 
+// Shader programs
 gBuffer* GBuffer = nullptr;
 DirectionalDepth* dirDepth = nullptr;
 PointDepth* pointDepth = nullptr;
@@ -70,7 +70,7 @@ ForwardRender* forwardRender = nullptr;
 DeferredShading* deferredShading = nullptr;
 
 // Window
-unsigned int win_id;
+Window* window = nullptr;
 
 void Init_Glut_and_Glew(int argc, char* argv[]);
 void init();
@@ -91,15 +91,12 @@ int main(int argc, char* argv[])
 {	
 	Init_Glut_and_Glew(argc, argv);
 
-	//
-	//// Main function that prepares the scene and program
-	//
+	// Main function that prepares the scene and program
 	init();
 
-	//
-	//// Start update loop
-	//
+	// Start update loop
 	glutMainLoop();
+
 
 	return 0;
 }
@@ -117,12 +114,11 @@ void Init_Glut_and_Glew(int argc, char* argv[])
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH);
 
 	// Create window
-	win_id = glutCreateWindow("Renderer Window");
-	glEnable(GL_DEPTH_TEST);
-	glutInitWindowSize(Globals::WIDTH, Globals::HEIGHT);
-	glutReshapeWindow(Globals::WIDTH, Globals::HEIGHT);
+	window = new Window();
+	window->create_window(Globals::WIDTH, Globals::HEIGHT);
 	
 	// Initialize Glew
+	glEnable(GL_DEPTH_TEST);
 	glewExperimental = GL_TRUE;
 	GLenum err = glewInit();
 	// TODO After updating glew version, delete this
@@ -149,7 +145,7 @@ void init()
 
 	// Load sphere mesh
 	init_meshes();
-
+	
 	// Set camera parameters
 	init_camera(
 		vec3(11.f, 6.f, 11.f), // Eye
@@ -166,17 +162,22 @@ void init()
 	// Initialize shader program classes
 	init_shader_programs();
 
-	// Get delta time
-	old_time = (float)glutGet(GLUT_ELAPSED_TIME);
+	// Initialize timer
+	timer = new Timer();
 }
 
-// TODO exit the app
 // Exit from the application
 void exit_app()
 {
-	//
-	//// Deallocate all pointers
-	//
+	// Destroy window
+	window->destroy_window();
+
+	// Deallocate all pointers
+
+	// Check for leaks
+	_CrtDumpMemoryLeaks();
+
+	exit(0);
 }
 
 // Keyboard inputs
@@ -185,9 +186,7 @@ void keyboard(unsigned char key, int x, int y)
 	switch (key)
 	{
 	case 'q':
-		glutDestroyWindow(win_id);
-		_CrtDumpMemoryLeaks();
-		exit(0);
+		exit_app();
 		break;
 	}
 }
@@ -359,9 +358,7 @@ void init_shader_programs()
 void render()
 {
 	// Get delta time
-	cur_time = (float)glutGet(GLUT_ELAPSED_TIME);
-	float delta = cur_time - old_time;
-	old_time = cur_time;
+	float delta = timer->get_delta_time();
 
 	//
 	//// 1. GBuffer Pass: Generate geometry/color data into gBuffers
