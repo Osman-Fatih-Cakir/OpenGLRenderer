@@ -17,6 +17,7 @@
 #include <PointDepth.h>
 #include <ForwardRender.h>
 #include <DeferredShading.h>
+#include <Scene.h>
 
 ////////////////
 // Debugging memory leaks
@@ -43,6 +44,9 @@ typedef glm::vec2 vec2;
 
 // Timing
 Timer* timer = nullptr;
+
+// Scene pointer
+Scene* scene = nullptr;
 
 // Point lights
 const int point_light_count = 8;
@@ -78,10 +82,10 @@ void exit_app();
 void keyboard(unsigned char key, int x, int y);
 void resize_window(int w, int h);
 void init_meshes();
-
 void init_camera(vec3 eye, vec3 center, vec3 up);
 void init_quad();
 void init_lights();
+void init_scene();
 void init_shader_programs();
 
 void render();
@@ -118,7 +122,6 @@ void Init_Glut_and_Glew(int argc, char* argv[])
 	window->create_window(Globals::WIDTH, Globals::HEIGHT);
 	
 	// Initialize Glew
-	glEnable(GL_DEPTH_TEST);
 	glewExperimental = GL_TRUE;
 	GLenum err = glewInit();
 	// TODO After updating glew version, delete this
@@ -143,21 +146,8 @@ void init()
 {
 	Globals::Log("*****************Start************************");
 
-	// Load sphere mesh
-	init_meshes();
-	
-	// Set camera parameters
-	init_camera(
-		vec3(11.f, 6.f, 11.f), // Eye
-		vec3(0.f, 1.f, 0.f), // Up
-		vec3(0.f, 0.f, 0.f) // Center
-	);
-
-	// Initialize quad that will be rendered with texture (The scene texture)
-	init_quad();
-
-	// Initialize lights
-	init_lights();
+	// Initialize scene
+	init_scene();
 
 	// Initialize shader program classes
 	init_shader_programs();
@@ -198,7 +188,7 @@ void resize_window(int w, int h)
 	if (h == 0) h = 1;
 
 	// Recalculate camera projection matrix
-	camera->set_camera_projection(Globals::PERSPECTIVE);
+	scene->camera->set_camera_projection(Globals::PERSPECTIVE);
 	glViewport(0, 0, w, h); // Set the viewport
 }
 
@@ -216,20 +206,21 @@ void init_meshes()
 	{
 		Mesh* mesh = new Mesh("mesh/cube.obj", "mesh/brick.jpg");
 		mesh->translate_mesh(cords[i]);
-		spheres.push_back(mesh);
+		scene->add_mesh(mesh);
 	}
 
 	// Floor
 	Mesh* plane = new Mesh("mesh/plane.obj", "mesh/wood.png");
 	plane->translate_mesh(vec3(0.f, -1.f, 0.f));
 	plane->scale_mesh(vec3(10.f, 1.f, 10.f));
-	planes.push_back(plane);
+	scene->add_mesh(plane);
 }
 
 // Initialize camera
 void init_camera(vec3 eye, vec3 up, vec3 center)
 {
-	camera = new Camera(eye, up, center, Globals::PERSPECTIVE);
+	Camera* camera = new Camera(eye, up, center, Globals::PERSPECTIVE);
+	scene->camera = camera;
 }
 
 // Initialize a quad
@@ -311,7 +302,7 @@ void init_lights()
 		light->space_matrices[5] = pointlight_projection * glm::lookAt(light->position, light->position + vec3(0.f, 0.f, -1.f), vec3(0.f, -1.f, 0.f));
 		// Create depth map framebuffer for each light
 		light->create_depth_map_framebuffer();
-		point_lights.push_back(light);
+		scene->add_point_light(light);
 	}
 
 	//
@@ -327,8 +318,28 @@ void init_lights()
 		light->calculate_space_matrix(proj_mat, view_mat);
 		// Create depth map framebuffer
 		light->create_depth_map_framebuffer();
-		direct_lights.push_back(light);
+		scene->add_direct_light(light);
 	}
+}
+
+// Initialize the scene
+void init_scene()
+{
+	// Initlialize scene class
+	scene = new Scene();
+	
+	// Load sphere mesh
+	init_meshes();
+
+	// Set camera parameters
+	init_camera(
+		vec3(11.f, 6.f, 11.f), // Eye
+		vec3(0.f, 1.f, 0.f), // Up
+		vec3(0.f, 0.f, 0.f) // Center
+	);
+
+	// Initialize lights
+	init_lights();
 }
 
 // Initialize shader program classes
@@ -338,6 +349,8 @@ void init_shader_programs()
 	GBuffer = new gBuffer();
 	// Set resolution
 	GBuffer->set_gBuffer_resolution(Globals::WIDTH, Globals::HEIGHT);
+	// Initialize quad that will be rendered with texture (The scene texture)
+	init_quad();
 
 	// Initialize depth map program
 	dirDepth = new DirectionalDepth();
@@ -367,29 +380,20 @@ void render()
 	// Start gBuffer program
 	GBuffer->start_program(); 
 	
-	camera->camera_rotate(vec3(0.f, 1.f, 0.f), delta / 10000); // Camera rotation smoothly
+	scene->camera->camera_rotate(vec3(0.f, 1.f, 0.f), delta / 10000); // Camera rotation smoothly
 	// Set camera attributes
-	GBuffer->set_projection_matrix(camera->get_projection_matrix());
-	GBuffer->set_view_matrix(camera->get_view_matrix());
+	GBuffer->set_projection_matrix(scene->camera->get_projection_matrix());
+	GBuffer->set_view_matrix(scene->camera->get_view_matrix());
 
 	// Draw scene
-	for (int i = 0; i < sphere_count; i++) // Cubes
+	for (int i = 0; i < scene->all_meshes.size(); i++)
 	{
 		// Set model attributes
-		GBuffer->set_model_matrix(spheres[i]->get_model_matrix());
-		GBuffer->set_normal_matrix(spheres[i]->get_normal_matrix());
-		GBuffer->set_diffuse_texture(spheres[i]->get_texture_id());
+		GBuffer->set_model_matrix(scene->all_meshes[i]->get_model_matrix());
+		GBuffer->set_normal_matrix(scene->all_meshes[i]->get_normal_matrix());
+		GBuffer->set_diffuse_texture(scene->all_meshes[i]->get_texture_id());
 		// Draw
-		GBuffer->render(spheres[i]->get_VAO(), spheres[i]->get_triangle_count()*3);
-	}
-	for (int i = 0; i < planes.size(); i++) // Planes
-	{
-		// Set model attributes
-		GBuffer->set_model_matrix(planes[i]->get_model_matrix());
-		GBuffer->set_normal_matrix(planes[i]->get_normal_matrix());
-		GBuffer->set_diffuse_texture(planes[i]->get_texture_id());
-		// Draw
-		GBuffer->render(planes[i]->get_VAO(), planes[i]->get_triangle_count() * 3);
+		GBuffer->render(scene->all_meshes[i]->get_VAO(), scene->all_meshes[i]->get_triangle_count()*3);
 	}
 
 	// Attach depth buffer to default framebuffer
@@ -404,28 +408,21 @@ void render()
 
 	// Directional shadows
 	dirDepth->start_program();
-	for (int i = 0; i < direct_light_count; i++)
+	for (int i = 0; i < scene->direct_lights.size(); i++)
 	{
-		glViewport(0, 0, direct_lights[i]->depth_map_width, direct_lights[i]->depth_map_height);
-		glBindFramebuffer(GL_FRAMEBUFFER, direct_lights[i]->depth_map_fbo);
+		glViewport(0, 0, scene->direct_lights[i]->depth_map_width, scene->direct_lights[i]->depth_map_height);
+		glBindFramebuffer(GL_FRAMEBUFFER, scene->direct_lights[i]->depth_map_fbo);
 		glClear(GL_DEPTH_BUFFER_BIT);
 
 		// Set space matrix
-		dirDepth->set_space_matrix(direct_lights[i]->space_matrix);
+		dirDepth->set_space_matrix(scene->direct_lights[i]->space_matrix);
 		// Draw scene
-		for (int ii = 0; ii < spheres.size(); ii++) // Cubes
+		for (int ii = 0; ii < scene->all_meshes.size(); ii++)
 		{
 			// Set model matrix
-			dirDepth->set_model_matrix(spheres[ii]->get_model_matrix());
+			dirDepth->set_model_matrix(scene->all_meshes[ii]->get_model_matrix());
 			// Draw
-			dirDepth->render(spheres[i]->get_VAO(), spheres[ii]->get_triangle_count() * 3);
-		}
-		for (int ii = 0; ii < planes.size(); ii++) // Planes
-		{
-			// Set model matrix
-			dirDepth->set_model_matrix(planes[ii]->get_model_matrix());
-			// Draw
-			dirDepth->render(planes[ii]->get_VAO(), planes[ii]->get_triangle_count() * 3);
+			dirDepth->render(scene->all_meshes[i]->get_VAO(), scene->all_meshes[ii]->get_triangle_count() * 3);
 		}
 	}
 	
@@ -433,39 +430,27 @@ void render()
 
 	// Point light shadows
 	pointDepth->start_program();
-	for (int i = 0; i < point_lights.size(); i++)
+	for (int i = 0; i < scene->point_lights.size(); i++)
 	{
-		glViewport(0, 0, point_lights[i]->depth_map_width, point_lights[i]->depth_map_height); // Use shadow resolutions
-		glBindFramebuffer(GL_FRAMEBUFFER, point_lights[i]->depth_cubemap_fbo);
+		glViewport(0, 0, scene->point_lights[i]->depth_map_width, scene->point_lights[i]->depth_map_height); // Use shadow resolutions
+		glBindFramebuffer(GL_FRAMEBUFFER, scene->point_lights[i]->depth_cubemap_fbo);
 		glClear(GL_DEPTH_BUFFER_BIT);
 
 		// Draw scene
-		for (int ii = 0; ii < spheres.size(); ii++) // Cubes
+		for (int ii = 0; ii < scene->all_meshes.size(); ii++)
 		{
 			// Set model matrix
-			pointDepth->set_model_matrix(spheres[ii]->get_model_matrix());
+			pointDepth->set_model_matrix(scene->all_meshes[ii]->get_model_matrix());
 			// Set space matrices
-			pointDepth->set_space_matrices(point_lights[i]->space_matrices);
+			pointDepth->set_space_matrices(scene->point_lights[i]->space_matrices);
 			// Set far
-			pointDepth->set_far(point_lights[i]->shadow_projection_far);
+			pointDepth->set_far(scene->point_lights[i]->shadow_projection_far);
 			// Set position
-			pointDepth->set_position(point_lights[i]->position);
+			pointDepth->set_position(scene->point_lights[i]->position);
 			// Draw
-			pointDepth->render(spheres[ii]->get_VAO(), spheres[ii]->get_triangle_count() * 3);
+			pointDepth->render(scene->all_meshes[ii]->get_VAO(), scene->all_meshes[ii]->get_triangle_count() * 3);
 		}
-		for (int ii = 0; ii < planes.size(); ii++) // Planes
-		{
-			// Set model matrix
-			pointDepth->set_model_matrix(planes[ii]->get_model_matrix());
-			// Set space matrices
-			pointDepth->set_space_matrices(point_lights[i]->space_matrices);
-			// Set far
-			pointDepth->set_far(point_lights[i]->shadow_projection_far);
-			// Set position
-			pointDepth->set_position(point_lights[i]->position);
-			// Draw
-			pointDepth->render(planes[ii]->get_VAO(), planes[ii]->get_triangle_count() * 3);
-		}
+
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	}
 
@@ -476,38 +461,40 @@ void render()
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	deferredShading->start_program();
 	
-	deferredShading->set_viewer_pos(camera->get_eye());
+	deferredShading->set_viewer_pos(scene->camera->get_eye());
 	// Set g-buffer color attachments
 	deferredShading->set_gPosition(GBuffer->get_gPosition());
 	deferredShading->set_gNormal(GBuffer->get_gNormal());
 	deferredShading->set_gAlbedoSpec(GBuffer->get_gAlbedoSpec());
 
 	// Point lights
-	for (int i = 0; i < point_light_count; i++)
+	for (int i = 0; i < scene->point_lights.size(); i++)
 	{
 		deferredShading->set_point_light(
-			point_lights[i]->position,
-			point_lights[i]->color,
-			point_lights[i]->radius,
-			point_lights[i]->linear,
-			point_lights[i]->quadratic,
-			point_lights[i]->shadow_projection_far,
-			point_lights[i]->depth_cubemap,
-			point_lights[i]->intensity
+			scene->point_lights[i]->position,
+			scene->point_lights[i]->color,
+			scene->point_lights[i]->radius,
+			scene->point_lights[i]->linear,
+			scene->point_lights[i]->quadratic,
+			scene->point_lights[i]->shadow_projection_far,
+			scene->point_lights[i]->depth_cubemap,
+			scene->point_lights[i]->intensity
 		);
 	}
 	// Directional lights
-	for (int i = 0; i < direct_light_count; i++)
+	for (int i = 0; i < scene->direct_lights.size(); i++)
 	{
 		deferredShading->set_direct_light(
-			direct_lights[i]->color,
-			direct_lights[i]->direction,
-			direct_lights[i]->intensity,
-			direct_lights[i]->depth_map,
-			direct_lights[i]->space_matrix
+			scene->direct_lights[i]->color,
+			scene->direct_lights[i]->direction,
+			scene->direct_lights[i]->intensity,
+			scene->direct_lights[i]->depth_map,
+			scene->direct_lights[i]->space_matrix
 		);
 	}
+
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
 	// Render to quad
 	deferredShading->render(quad_VAO, 6);
 
@@ -526,15 +513,15 @@ void render()
 	forwardRender->start_program();
 
 	// Set camera attributes
-	forwardRender->set_projection_matrix(camera->get_projection_matrix());
-	forwardRender->set_view_matrix(camera->get_view_matrix());
+	forwardRender->set_projection_matrix(scene->camera->get_projection_matrix());
+	forwardRender->set_view_matrix(scene->camera->get_view_matrix());
 
 	// Draw scene
-	for (int i = 0; i < point_light_count; i++)
+	for (int i = 0; i < scene->point_lights.size(); i++)
 	{
-		forwardRender->set_model_matrix(point_lights[i]->mesh->get_model_matrix());
-		forwardRender->set_color(point_lights[i]->color);
-		forwardRender->render(point_lights[i]->mesh->get_VAO(), point_lights[i]->mesh->get_triangle_count() * 3);
+		forwardRender->set_model_matrix(scene->point_lights[i]->mesh->get_model_matrix());
+		forwardRender->set_color(scene->point_lights[i]->color);
+		forwardRender->render(scene->point_lights[i]->mesh->get_VAO(), scene->point_lights[i]->mesh->get_triangle_count() * 3);
 	}
 	
 	// Error check

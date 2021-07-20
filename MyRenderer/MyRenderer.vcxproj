@@ -156,6 +156,7 @@
     <ClCompile Include="init_shaders.cpp" />
     <ClCompile Include="PointDepth.cpp" />
     <ClCompile Include="PointLight.cpp" />
+    <ClCompile Include="Scene.cpp" />
     <ClCompile Include="Timer.cpp" />
     <ClCompile Include="Window.cpp" />
   </ItemGroup>
@@ -171,6 +172,7 @@
     <ClInclude Include="init_shaders.h" />
     <ClInclude Include="PointDepth.h" />
     <ClInclude Include="PointLight.h" />
+    <ClInclude Include="Scene.h" />
     <ClInclude Include="Timer.h" />
     <ClInclude Include="Window.h" />
   </ItemGroup>
