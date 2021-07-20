@@ -37,19 +37,16 @@ typedef glm::vec3 vec3;
 typedef glm::vec4 vec4;
 typedef glm::vec2 vec2;
 
-// Scene pointer
-Scene* scene = nullptr;
-
 // Point lights
 const int point_light_count = 8;
 const int direct_light_count = 1;
 const int sphere_count = 16;
 
-// Camera
-Camera* camera;
-
 // Window
 Window* window = nullptr;
+
+// Scene pointer
+Scene* scene = nullptr;
 
 // Renderer
 Renderer* renderer = nullptr;
@@ -76,7 +73,6 @@ int main(int argc, char* argv[])
 
 	// Start update loop
 	glutMainLoop();
-
 
 	return 0;
 }
@@ -133,6 +129,8 @@ void exit_app()
 	window->destroy_window();
 
 	// Deallocate all pointers
+	delete window;
+	delete renderer;
 
 	// Check for leaks
 	_CrtDumpMemoryLeaks();
