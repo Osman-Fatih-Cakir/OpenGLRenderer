@@ -12,9 +12,13 @@ public:
 
 	void create_window(int w, int h);
 	void destroy_window();
+	int get_width();
+	int get_height();
 
 private:
 
 	unsigned int win_id;
+	int width = 1024;
+	int height = 1024;
 
 };
