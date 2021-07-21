@@ -172,7 +172,7 @@ void init_meshes()
 	};
 	for (int i = 0; i < sphere_count; i++)
 	{
-		Mesh* mesh = new Mesh("mesh/cube.obj", "mesh/brick.jpg");
+		Mesh* mesh = new Mesh("mesh/sphere.obj", "mesh/brick.jpg");
 		mesh->translate_mesh(cords[i]);
 		scene->add_mesh(mesh);
 	}

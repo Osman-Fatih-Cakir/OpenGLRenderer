@@ -78,7 +78,7 @@ void Renderer::render()
 			// Set model matrix
 			dirDepth->set_model_matrix(scene->all_meshes[ii]->get_model_matrix());
 			// Draw
-			dirDepth->render(scene->all_meshes[i]->get_VAO(), scene->all_meshes[ii]->get_triangle_count() * 3);
+			dirDepth->render(scene->all_meshes[ii]->get_VAO(), scene->all_meshes[ii]->get_triangle_count() * 3);
 		}
 	}
 

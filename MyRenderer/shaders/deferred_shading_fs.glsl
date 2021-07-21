@@ -140,7 +140,7 @@ void main()
 
 		lighting += (Diffuse + Specular) * direct_lights[i].intensity * (1.0 - shadow);
 	}
-
+	
 	// Point light calculations
 	for (int i = 0; i < NUMBER_OF_POINT_LIGHTS; i++) // Calculate lighting for all lights
 	{
