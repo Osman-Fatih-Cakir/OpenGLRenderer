@@ -14,21 +14,21 @@ Scene::~Scene()
 	//
 	
 	// Mesh pointers
-	for (int i = 0; i < all_meshes.size(); i++)
+	for (unsigned int i = 0; i < all_meshes.size(); i++)
 	{
 		delete all_meshes[i];
 	}
 	all_meshes.clear();
 
 	// Direct lights
-	for (int i = 0; i < direct_lights.size(); i++)
+	for (unsigned int i = 0; i < direct_lights.size(); i++)
 	{
 		delete direct_lights[i];
 	}
 	direct_lights.clear();
 
 	// Point lights
-	for (int i = 0; i < point_lights.size(); i++)
+	for (unsigned int i = 0; i < point_lights.size(); i++)
 	{
 		delete point_lights[i];
 	}

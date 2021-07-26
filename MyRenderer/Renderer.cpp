@@ -42,7 +42,7 @@ void Renderer::render()
 	GBuffer->set_view_matrix(scene->camera->get_view_matrix());
 
 	// Draw scene
-	for (int i = 0; i < scene->all_meshes.size(); i++)
+	for (unsigned int i = 0; i < scene->all_meshes.size(); i++)
 	{
 		// Set model attributes
 		GBuffer->set_model_matrix(scene->all_meshes[i]->get_model_matrix());
@@ -64,7 +64,7 @@ void Renderer::render()
 
 	// Directional shadows
 	dirDepth->start_program();
-	for (int i = 0; i < scene->direct_lights.size(); i++)
+	for (unsigned int i = 0; i < scene->direct_lights.size(); i++)
 	{
 		glViewport(0, 0, scene->direct_lights[i]->depth_map_width, scene->direct_lights[i]->depth_map_height);
 		glBindFramebuffer(GL_FRAMEBUFFER, scene->direct_lights[i]->depth_map_fbo);
@@ -73,7 +73,7 @@ void Renderer::render()
 		// Set space matrix
 		dirDepth->set_space_matrix(scene->direct_lights[i]->space_matrix);
 		// Draw scene
-		for (int ii = 0; ii < scene->all_meshes.size(); ii++)
+		for (unsigned int ii = 0; ii < scene->all_meshes.size(); ii++)
 		{
 			// Set model matrix
 			dirDepth->set_model_matrix(scene->all_meshes[ii]->get_model_matrix());
@@ -86,14 +86,14 @@ void Renderer::render()
 
 	// Point light shadows
 	pointDepth->start_program();
-	for (int i = 0; i < scene->point_lights.size(); i++)
+	for (unsigned int i = 0; i < scene->point_lights.size(); i++)
 	{
 		glViewport(0, 0, scene->point_lights[i]->depth_map_width, scene->point_lights[i]->depth_map_height); // Use shadow resolutions
 		glBindFramebuffer(GL_FRAMEBUFFER, scene->point_lights[i]->depth_cubemap_fbo);
 		glClear(GL_DEPTH_BUFFER_BIT);
 
 		// Draw scene
-		for (int ii = 0; ii < scene->all_meshes.size(); ii++)
+		for (unsigned int ii = 0; ii < scene->all_meshes.size(); ii++)
 		{
 			// Set model matrix
 			pointDepth->set_model_matrix(scene->all_meshes[ii]->get_model_matrix());
@@ -124,7 +124,7 @@ void Renderer::render()
 	deferredShading->set_gAlbedoSpec(GBuffer->get_gAlbedoSpec());
 
 	// Point lights
-	for (int i = 0; i < scene->point_lights.size(); i++)
+	for (unsigned int i = 0; i < scene->point_lights.size(); i++)
 	{
 		deferredShading->set_point_light(
 			scene->point_lights[i]->position,
@@ -138,7 +138,7 @@ void Renderer::render()
 		);
 	}
 	// Directional lights
-	for (int i = 0; i < scene->direct_lights.size(); i++)
+	for (unsigned int i = 0; i < scene->direct_lights.size(); i++)
 	{
 		deferredShading->set_direct_light(
 			scene->direct_lights[i]->color,
@@ -173,7 +173,7 @@ void Renderer::render()
 	forwardRender->set_view_matrix(scene->camera->get_view_matrix());
 
 	// Draw scene
-	for (int i = 0; i < scene->point_lights.size(); i++)
+	for (unsigned int i = 0; i < scene->point_lights.size(); i++)
 	{
 		forwardRender->set_model_matrix(scene->point_lights[i]->mesh->get_model_matrix());
 		forwardRender->set_color(scene->point_lights[i]->color);
