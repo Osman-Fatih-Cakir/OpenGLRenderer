@@ -3,6 +3,7 @@
 #include <GL/glew.h>
 #include <GL/freeglut.h>
 #include <glm.hpp>
+#include <Model.h>
 
 typedef glm::mat4 mat4;
 typedef glm::vec3 vec3;
@@ -21,6 +22,7 @@ public:
 	GLuint get_gNormal();
 	GLuint get_gAlbedoSpec();
 	GLuint get_fbo();
+	GLuint get_shader_program();
 
 	void start_program();
 	void set_projection_matrix(mat4 mat);
@@ -30,7 +32,7 @@ public:
 	void set_diffuse_texture(GLuint id);
 	unsigned int get_width();
 	unsigned int get_height();
-	void render(GLuint VAO, unsigned int vertex_count);
+	void render(Model* model, GLuint shader_program);
 
 private:
 

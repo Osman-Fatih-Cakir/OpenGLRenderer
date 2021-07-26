@@ -51,7 +51,7 @@ void Camera::camera_translate(vec3 tra)
 // Camera rotate
 void Camera::camera_rotate(vec3 rot, float angle)
 {
-	view_matrix = glm::rotate(view_matrix, angle, rot);
+	view_matrix = glm::rotate(view_matrix, glm::radians(angle), rot);
 }
 
 //

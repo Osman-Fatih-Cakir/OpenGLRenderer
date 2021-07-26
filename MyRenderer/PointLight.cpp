@@ -4,6 +4,7 @@
 #include <GL/glew.h>
 #include <GL/freeglut.h>
 #include <glm.hpp>
+#include <iostream>
 
 // Constructor
 PointLight::PointLight(vec3 pos, vec3 col)
@@ -34,7 +35,7 @@ PointLight::PointLight(vec3 pos, vec3 col)
 PointLight::~PointLight()
 {
 	std::cout << "DELETE MESH" << std::endl;
-	delete mesh;
+	delete model;
 }
 
 // Returns a pointer to the space matrices array

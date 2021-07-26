@@ -36,20 +36,22 @@ void Renderer::render()
 	// Start gBuffer program
 	GBuffer->start_program();
 
-	scene->camera->camera_rotate(vec3(0.f, 1.f, 0.f), delta / 10000); // Camera rotation smoothly
+	//scene->camera->camera_translate(vec3(0.f, -0.001f, 0.f));
+	//scene->camera->camera_rotate(vec3(0.f, 1.f, 0.f), delta / 10000); // Camera rotation smoothly
+	//scene->point_lights[0]->position = scene->camera->get_eye();
+
 	// Set camera attributes
 	GBuffer->set_projection_matrix(scene->camera->get_projection_matrix());
 	GBuffer->set_view_matrix(scene->camera->get_view_matrix());
 
-	// Draw scene
-	for (unsigned int i = 0; i < scene->all_meshes.size(); i++)
+	// Draw models of the scene
+	for (unsigned int i = 0; i < scene->all_models.size(); i++)
 	{
 		// Set model attributes
-		GBuffer->set_model_matrix(scene->all_meshes[i]->get_model_matrix());
-		GBuffer->set_normal_matrix(scene->all_meshes[i]->get_normal_matrix());
-		GBuffer->set_diffuse_texture(scene->all_meshes[i]->get_texture_id());
-		// Draw
-		GBuffer->render(scene->all_meshes[i]->get_VAO(), scene->all_meshes[i]->get_triangle_count() * 3);
+		GBuffer->set_model_matrix(scene->all_models[i]->get_model_matrix());
+		GBuffer->set_normal_matrix(scene->all_models[i]->get_normal_matrix());
+		// Draw model
+		GBuffer->render(scene->all_models[i], GBuffer->get_shader_program());
 	}
 
 	// Attach depth buffer to default framebuffer
@@ -73,12 +75,12 @@ void Renderer::render()
 		// Set space matrix
 		dirDepth->set_space_matrix(scene->direct_lights[i]->space_matrix);
 		// Draw scene
-		for (unsigned int ii = 0; ii < scene->all_meshes.size(); ii++)
+		for (unsigned int ii = 0; ii < scene->all_models.size(); ii++)
 		{
 			// Set model matrix
-			dirDepth->set_model_matrix(scene->all_meshes[ii]->get_model_matrix());
+			dirDepth->set_model_matrix(scene->all_models[ii]->get_model_matrix());
 			// Draw
-			dirDepth->render(scene->all_meshes[ii]->get_VAO(), scene->all_meshes[ii]->get_triangle_count() * 3);
+			dirDepth->render(scene->all_models[ii], dirDepth->get_shader_program());
 		}
 	}
 
@@ -93,10 +95,10 @@ void Renderer::render()
 		glClear(GL_DEPTH_BUFFER_BIT);
 
 		// Draw scene
-		for (unsigned int ii = 0; ii < scene->all_meshes.size(); ii++)
+		for (unsigned int ii = 0; ii < scene->all_models.size(); ii++)
 		{
 			// Set model matrix
-			pointDepth->set_model_matrix(scene->all_meshes[ii]->get_model_matrix());
+			pointDepth->set_model_matrix(scene->all_models[ii]->get_model_matrix());
 			// Set space matrices
 			pointDepth->set_space_matrices(scene->point_lights[i]->space_matrices);
 			// Set far
@@ -104,7 +106,7 @@ void Renderer::render()
 			// Set position
 			pointDepth->set_position(scene->point_lights[i]->position);
 			// Draw
-			pointDepth->render(scene->all_meshes[ii]->get_VAO(), scene->all_meshes[ii]->get_triangle_count() * 3);
+			pointDepth->render(scene->all_models[ii], pointDepth->get_shader_program());
 		}
 
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -153,11 +155,11 @@ void Renderer::render()
 
 	// Render to quad
 	deferredShading->render(quad_VAO, 6);
-
+	
 	//
 	//// 3. Pass: Draw light meshes (The meshes that are not lit but in the same scene with other meshes)
 	//
-
+	/*
 	// Attach depth buffer to default framebuffer
 	glBindFramebuffer(GL_FRAMEBUFFER, GBuffer->get_fbo());
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0); // Write to default framebuffer
@@ -175,11 +177,11 @@ void Renderer::render()
 	// Draw scene
 	for (unsigned int i = 0; i < scene->point_lights.size(); i++)
 	{
-		forwardRender->set_model_matrix(scene->point_lights[i]->mesh->get_model_matrix());
+		forwardRender->set_model_matrix(scene->point_lights[i]->model->get_model_matrix());
 		forwardRender->set_color(scene->point_lights[i]->color);
-		forwardRender->render(scene->point_lights[i]->mesh->get_VAO(), scene->point_lights[i]->mesh->get_triangle_count() * 3);
+		forwardRender->render(scene->point_lights[i]->model, forwardRender->get_shader_program());
 	}
-
+	*/
 	// Error check
 	GLuint err = glGetError(); if (err) fprintf(stderr, "%s\n", gluErrorString(err));
 

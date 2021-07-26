@@ -3,6 +3,7 @@
 #include <GL/glew.h>
 #include <GL/freeglut.h>
 #include <glm.hpp>
+#include <Model.h>
 
 typedef glm::mat4 mat4;
 typedef glm::vec3 vec3;
@@ -16,11 +17,12 @@ public:
 
 	void start_program();
 	void change_viewport_resolution(unsigned int w, unsigned int h);
+	GLuint get_shader_program();
 	void set_projection_matrix(mat4 mat);
 	void set_view_matrix(mat4 mat);
 	void set_model_matrix(mat4 mat);
 	void set_color(vec3 vec);
-	void render(GLuint VAO, unsigned int vertex_count);
+	void render(Model* model, GLuint shader_program);
 
 private:
 

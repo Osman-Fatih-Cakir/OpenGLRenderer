@@ -75,6 +75,11 @@ GLuint gBuffer::get_fbo()
 	return gBuffer_fbo;
 }
 
+GLuint gBuffer::get_shader_program()
+{
+	return program;
+}
+
 // Starts the shader program
 void gBuffer::start_program()
 {
@@ -111,7 +116,7 @@ void gBuffer::set_normal_matrix(mat4 mat)
 // Sets diffuse texture
 void gBuffer::set_diffuse_texture(GLuint id)
 {
-	GLuint loc_diff_texture = glGetUniformLocation(program, "diffuse");
+	GLuint loc_diff_texture = glGetUniformLocation(program, "diffuse_map");
 	glUniform1i(loc_diff_texture, 0);
 	glActiveTexture(GL_TEXTURE0 + 0);
 	glBindTexture(GL_TEXTURE_2D, id);
@@ -128,16 +133,13 @@ unsigned int gBuffer::get_height()
 }
 
 // Renders the scene
-void gBuffer::render(GLuint VAO, unsigned int vertex_count)
+void gBuffer::render(Model* model, GLuint shader_program)
 {
-	glBindVertexArray(VAO);
-
 	// Cull backfaces
 	glEnable(GL_CULL_FACE);
 	glCullFace(GL_BACK);
 
-	glDrawArrays(GL_TRIANGLES, 0, vertex_count);
-	glBindVertexArray(0);
+	model->draw(shader_program);
 
 	glDisable(GL_CULL_FACE); // Disable culling when rendering is done
 }

@@ -4,7 +4,7 @@
 #include <GL/freeglut.h>
 #include <glm.hpp>
 
-#include <Mesh.h>
+#include <Model.h>
 
 typedef glm::mat4 mat4;
 typedef glm::vec3 vec3;
@@ -22,7 +22,7 @@ public:
 	GLfloat* get_color_pointer();
 	void create_depth_map_framebuffer();
 
-	Mesh* mesh = nullptr;
+	Model* model = nullptr;
 
 	vec3 position;
 	vec3 color;

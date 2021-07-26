@@ -8,7 +8,9 @@ in vec2 fTexCoord;
 in vec3 fFragPos;
 in vec3 fNormal;
 
-uniform sampler2D diffuse;
+uniform sampler2D diffuse_map;
+// TODO add specular map
+// TODO add bump map
 
 void main()
 {
@@ -17,7 +19,7 @@ void main()
 	// Fragment normal
 	gNormal = fNormal;
 	// Diffuse
-	gAlbedoSpec.rgb = texture(diffuse, fTexCoord).rgb;
+	gAlbedoSpec.rgb = texture(diffuse_map, fTexCoord).rgb;
 	// Specular (float number)
 	gAlbedoSpec.a = 0.5;
 }

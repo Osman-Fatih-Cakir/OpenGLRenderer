@@ -25,6 +25,11 @@ void ForwardRender::change_viewport_resolution(unsigned int w, unsigned int h)
 	height = h;
 }
 
+GLuint ForwardRender::get_shader_program()
+{
+	return program;
+}
+
 // Sets projection matrix
 void ForwardRender::set_projection_matrix(mat4 mat)
 {
@@ -50,13 +55,11 @@ void ForwardRender::set_color(vec3 vec)
 }
 
 // Render the scene
-void ForwardRender::render(GLuint VAO, unsigned int vertex_count)
+void ForwardRender::render(Model* model, GLuint shader_program)
 {
 	glViewport(0, 0, width, height);
 
-	glBindVertexArray(VAO);
-
-	glDrawArrays(GL_TRIANGLES, 0, vertex_count);
+	model->draw(shader_program);
 
 	glBindVertexArray(0);
 }

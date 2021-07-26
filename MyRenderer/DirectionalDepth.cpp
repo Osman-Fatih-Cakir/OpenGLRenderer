@@ -24,6 +24,11 @@ void DirectionalDepth::start_program()
 	glUseProgram(program);
 }
 
+GLuint DirectionalDepth::get_shader_program()
+{
+	return program;
+}
+
 // Sets space matrix
 void DirectionalDepth::set_space_matrix(mat4 mat)
 {
@@ -37,15 +42,12 @@ void DirectionalDepth::set_model_matrix(mat4 mat)
 }
 
 // Renders the scene
-void DirectionalDepth::render(GLuint VAO, unsigned int vertex_count)
+void DirectionalDepth::render(Model* model, GLuint shader_program)
 {
-	glBindVertexArray(VAO);
-
 	glEnable(GL_CULL_FACE);
 	glCullFace(GL_BACK);
 
-	glDrawArrays(GL_TRIANGLES, 0, vertex_count);
-	glBindVertexArray(0);
+	model->draw(shader_program);
 
 	glDisable(GL_CULL_FACE);
 }

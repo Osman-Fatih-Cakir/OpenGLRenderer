@@ -20,6 +20,11 @@ void PointDepth::start_program()
 	glUseProgram(program);
 }
 
+GLuint PointDepth::get_shader_program()
+{
+	return program;
+}
+
 void PointDepth::set_space_matrices(mat4 mats[6])
 {
 	glUniformMatrix4fv(loc_space_matrices, 6, GL_FALSE, &mats[0][0][0]);
@@ -40,15 +45,13 @@ void PointDepth::set_position(vec3 pos)
 	glUniform3fv(loc_position, 1,&pos[0]);
 }
 
-void PointDepth::render(GLuint VAO, unsigned int vertex_count)
+// Draw scene
+void PointDepth::render(Model* model, GLuint shader_program)
 {
-	glBindVertexArray(VAO);
-
 	glEnable(GL_CULL_FACE);
 	glCullFace(GL_FRONT);
 
-	glDrawArrays(GL_TRIANGLES, 0, vertex_count);
-	glBindVertexArray(0);
+	model->draw(shader_program);
 
 	glDisable(GL_CULL_FACE);
 }

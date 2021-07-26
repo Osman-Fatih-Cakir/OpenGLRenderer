@@ -14,11 +14,11 @@ Scene::~Scene()
 	//
 	
 	// Mesh pointers
-	for (unsigned int i = 0; i < all_meshes.size(); i++)
+	for (unsigned int i = 0; i < all_models.size(); i++)
 	{
-		delete all_meshes[i];
+		delete all_models[i];
 	}
-	all_meshes.clear();
+	all_models.clear();
 
 	// Direct lights
 	for (unsigned int i = 0; i < direct_lights.size(); i++)
@@ -39,9 +39,9 @@ Scene::~Scene()
 }
 
 // Add mesh to scene
-void Scene::add_mesh(Mesh* m)
+void Scene::add_model(Model* m)
 {
-	all_meshes.push_back(m);
+	all_models.push_back(m);
 }
 
 // Add point light to scene

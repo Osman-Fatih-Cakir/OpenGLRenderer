@@ -1,7 +1,7 @@
 #pragma once
 
 #include <vector>
-#include <Mesh.h>
+#include <Model.h>
 #include <Camera.h>
 #include <DirectionalLight.h>
 #include <PointLight.h>
@@ -14,11 +14,11 @@ public:
 	~Scene();
 
 	Camera* camera;
-	std::vector<Mesh*> all_meshes;
+	std::vector<Model*> all_models;
 	std::vector<DirectionalLight*> direct_lights;
 	std::vector<PointLight*> point_lights;
 
-	void add_mesh(Mesh* m);
+	void add_model(Model* m);
 	void add_point_light(PointLight* p);
 	void add_direct_light(DirectionalLight* d);
 

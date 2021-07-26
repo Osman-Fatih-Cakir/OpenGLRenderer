@@ -7,7 +7,7 @@
 #include <Window.h>
 #include <Camera.h>
 #include <Globals.h>
-#include <Mesh.h>
+#include <Model.h>
 #include <init_shaders.h>
 #include <DirectionalLight.h>
 #include <PointLight.h>
@@ -38,7 +38,7 @@ typedef glm::vec4 vec4;
 typedef glm::vec2 vec2;
 
 // Point lights
-const int point_light_count = 8;
+const int point_light_count = 1;
 const int direct_light_count = 1;
 const int sphere_count = 16;
 
@@ -143,7 +143,7 @@ void keyboard(unsigned char key, int x, int y)
 {
 	switch (key)
 	{
-	case 'q':
+	case 'r':
 		exit_app();
 		break;
 	}
@@ -162,7 +162,7 @@ void resize_window(int w, int h)
 
 // Initailize spheres
 void init_meshes()
-{
+{/*
 	// Scene meshes
 	vec3 cords[16] = {
 		vec3(6.f, 0.f, 6.f), vec3(6.f, 0.f, 2.f), vec3(6.f, 0.f, -2.f), vec3(6.f, 0.f, -6.f),
@@ -182,6 +182,10 @@ void init_meshes()
 	plane->translate_mesh(vec3(0.f, -1.f, 0.f));
 	plane->scale_mesh(vec3(10.f, 1.f, 10.f));
 	scene->add_mesh(plane);
+	*/
+	Model* model = new Model("mesh/sponza/sponza.obj");
+	model->translate(vec3(-10.f, 0.f, 0.f));
+	scene->add_model(model);
 }
 
 // Initialize camera
@@ -208,6 +212,7 @@ void init_lights()
 			((rand() % 100) / 100.f) * 3.f + 1.f,
 			((rand() % 100) / 100.f) * 20.f - 10.f
 		);
+		_position = vec3(0.f, -2.f, -2.f);
 
 		// Set colors of the lights
 		vec3 _color = vec3(
@@ -218,14 +223,17 @@ void init_lights()
 
 		// Initialize light
 		PointLight* light = new PointLight(_position, _color);
-
+		light->intensity = 1.f;
+		light->radius = 5000.f;
+		light->color = vec3(1.f, 1.f, 1.f);
+		/*
 		// Draw a mesh for represent a light
 		Mesh* light_mesh = new Mesh("mesh/cube.obj", "NONE");
 		light_mesh->translate_mesh(light->position);
 		light_mesh->scale_mesh(vec3(0.1f, 0.1f, 0.1f));
 		
 		light->mesh = light_mesh;
-
+		*/
 		// Space matrices
 		
 		// Projection matrix
@@ -271,7 +279,7 @@ void init_scene()
 
 	// Set camera parameters
 	init_camera(
-		vec3(11.f, 6.f, 11.f), // Eye
+		vec3(0.f, 1.f, -3.f), // Eye
 		vec3(0.f, 1.f, 0.f), // Up
 		vec3(0.f, 0.f, 0.f) // Center
 	);

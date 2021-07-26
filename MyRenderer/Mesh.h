@@ -4,55 +4,45 @@
 #include <GL/freeglut.h>
 #include <vector>
 #include <glm.hpp>
+#include <string>
 
-#include <Globals.h>
-
-typedef glm::mat4 mat4;
 typedef glm::vec3 vec3;
 typedef glm::vec2 vec2;
 
-// This class will be changed when importing models is available
+// Vertex struct
+struct Vertex
+{
+	vec3 position;
+	vec3 normal;
+	vec2 texCoord;
+};
+
+// Texture struct
+struct Texture
+{
+	unsigned int id;
+	std::string type;
+	std::string path;
+};
+
+// This class represents a mesh in a model
 class Mesh
 {
 public:
 	// Constructor and destructor
-	Mesh(std::string path, const char* texture_path);
+	Mesh(std::vector<Vertex> _vertices, std::vector<unsigned int> _indices, std::vector<Texture> _textures);
 	~Mesh();
 
-	GLuint get_VAO();
-	unsigned int get_triangle_count();
+	// Mesh data
+	std::vector<Vertex> vertices;
+	std::vector<unsigned int> indices;
+	std::vector<Texture> textures;
+	GLuint VAO;
 
-	// Load the texture
-	GLuint load_texture(const char* path);
-
-	// Translate mesh
-	void translate_mesh(vec3 tra);
-	// Rotate mesh
-	void rotate_mesh(vec3 rot, float angle);
-	// Scale mesh
-	void scale_mesh(vec3 scale);
-
-	// Getters and setters
-	mat4 get_model_matrix();
-	GLfloat* get_model_matrix_pointer();
-	void set_model_matrix(mat4 mat);
-	mat4 get_normal_matrix();
-	GLfloat* get_normal_matrix_pointer();
-	void set_normal_matrix(mat4 mat);
-	GLuint get_texture_id();
-	void set_texture_id(GLuint _id);
+	void draw(GLuint shader_program);
 
 private:
+	GLuint VBO, EBO;
 
-	GLuint VAO;
-	GLuint texture_id;
-	unsigned int triangle_count = 0;
-
-	mat4 model_matrix;
-	mat4 normal_matrix;
-
-	// Loads the mesh from specified path
-	GLuint load_obj_mesh(std::string path);
-	// Generates the mesh buffers
-	GLuint gen_obj_buffers(std::vector<vec3> &positions, std::vector<vec3> &normals, std::vector<vec2> &tex_coords);
+	void setup_mesh();
 };
