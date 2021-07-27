@@ -256,26 +256,12 @@ void init_lights()
 		light->intensity = 1.f;
 		light->radius = 5000.f;
 		light->color = vec3(1.f, 1.f, 1.f);
-		/*
+		
 		// Draw a mesh for represent a light
-		Mesh* light_mesh = new Mesh("mesh/cube.obj", "NONE");
-		light_mesh->translate_mesh(light->position);
-		light_mesh->scale_mesh(vec3(0.1f, 0.1f, 0.1f));
-		
-		light->mesh = light_mesh;
-		*/
-		// Space matrices
-		
-		// Projection matrix
-		light->shadow_projection_far = 500.f;
-		mat4 pointlight_projection = glm::perspective(glm::radians(90.0f), 1.0f, 0.01f, light->shadow_projection_far);
-		// View matrices (for each cube plane)
-		light->space_matrices[0] = pointlight_projection * glm::lookAt(light->position, light->position + vec3(1.f, 0.f, 0.f), vec3(0.f, -1.f, 0.f));
-		light->space_matrices[1] = pointlight_projection * glm::lookAt(light->position, light->position + vec3(-1.f, 0.f, 0.f), vec3(0.f, -1.f, 0.f));
-		light->space_matrices[2] = pointlight_projection * glm::lookAt(light->position, light->position + vec3(0.f, 1.f, 0.f), vec3(0.f, 0.f, 1.f));
-		light->space_matrices[3] = pointlight_projection * glm::lookAt(light->position, light->position + vec3(0.f, -1.f, 0.f), vec3(0.f, 0.f, -1.f));
-		light->space_matrices[4] = pointlight_projection * glm::lookAt(light->position, light->position + vec3(0.f, 0.f, 1.f), vec3(0.f, -1.f, 0.f));
-		light->space_matrices[5] = pointlight_projection * glm::lookAt(light->position, light->position + vec3(0.f, 0.f, -1.f), vec3(0.f, -1.f, 0.f));
+		Model* light_model = new Model("mesh/cube.obj");
+		light_model->translate(light->position);
+		light->model = light_model;
+	
 		// Create depth map framebuffer for each light
 		light->create_depth_map_framebuffer();
 		scene->add_point_light(light);

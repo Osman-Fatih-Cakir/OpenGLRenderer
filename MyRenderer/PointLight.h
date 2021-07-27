@@ -39,4 +39,7 @@ public:
 
 	int depth_map_width = 1024;
 	int depth_map_height = 1024;
+
+private:
+	void init_space_matrices();
 };

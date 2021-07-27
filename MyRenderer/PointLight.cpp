@@ -1,9 +1,6 @@
 
 #include <PointLight.h>
-
-#include <GL/glew.h>
-#include <GL/freeglut.h>
-#include <glm.hpp>
+#include <gtc/matrix_transform.hpp>
 #include <iostream>
 
 // Constructor
@@ -28,6 +25,8 @@ PointLight::PointLight(vec3 pos, vec3 col)
 	depth_cubemap_fbo = -1;
 	for (int i = 0; i < 6; i++)
 		space_matrices[i] = mat4(0.0f);
+
+	init_space_matrices();
 
 }
 
@@ -81,4 +80,19 @@ void PointLight::create_depth_map_framebuffer()
 	glDrawBuffer(GL_NONE);
 	glReadBuffer(GL_NONE);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+// Initialize space matrices for point light shadows
+void PointLight::init_space_matrices()
+{
+	// Projection matrix
+	shadow_projection_far = 500.f;
+	mat4 pointlight_projection = glm::perspective(glm::radians(90.0f), 1.0f, 0.01f, shadow_projection_far);
+	// View matrices (for each cube plane)
+	space_matrices[0] = pointlight_projection * glm::lookAt(position, position + vec3(1.f, 0.f, 0.f), vec3(0.f, -1.f, 0.f));
+	space_matrices[1] = pointlight_projection * glm::lookAt(position, position + vec3(-1.f, 0.f, 0.f), vec3(0.f, -1.f, 0.f));
+	space_matrices[2] = pointlight_projection * glm::lookAt(position, position + vec3(0.f, 1.f, 0.f), vec3(0.f, 0.f, 1.f));
+	space_matrices[3] = pointlight_projection * glm::lookAt(position, position + vec3(0.f, -1.f, 0.f), vec3(0.f, 0.f, -1.f));
+	space_matrices[4] = pointlight_projection * glm::lookAt(position, position + vec3(0.f, 0.f, 1.f), vec3(0.f, -1.f, 0.f));
+	space_matrices[5] = pointlight_projection * glm::lookAt(position, position + vec3(0.f, 0.f, -1.f), vec3(0.f, -1.f, 0.f));
 }

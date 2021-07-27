@@ -159,12 +159,12 @@ void Renderer::render()
 	//
 	//// 3. Pass: Draw light meshes (The meshes that are not lit but in the same scene with other meshes)
 	//
-	/*
+	
 	// Attach depth buffer to default framebuffer
 	glBindFramebuffer(GL_FRAMEBUFFER, GBuffer->get_fbo());
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0); // Write to default framebuffer
 	glBlitFramebuffer(0, 0, GBuffer->get_width(), GBuffer->get_height(), 0, 0,
-		GBuffer->get_width(), GBuffer->get_height(), GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+	GBuffer->get_width(), GBuffer->get_height(), GL_DEPTH_BUFFER_BIT, GL_NEAREST);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 	// Start forward rendering program
@@ -181,7 +181,7 @@ void Renderer::render()
 		forwardRender->set_color(scene->point_lights[i]->color);
 		forwardRender->render(scene->point_lights[i]->model, forwardRender->get_shader_program());
 	}
-	*/
+	
 	// Error check
 	GLuint err = glGetError(); if (err) fprintf(stderr, "%s\n", gluErrorString(err));
 
