@@ -120,7 +120,7 @@ void main()
 	vec3 view_dir = normalize(viewer_pos - frag_pos);
 
 	vec3 lighting = vec3(0.0);
-	/*
+	
 	// Directional light calculations
 	for (int i = 0; i < NUMBER_OF_DIRECT_LIGHTS; i++)
 	{
@@ -140,7 +140,7 @@ void main()
 
 		lighting += (Diffuse + Specular) * direct_lights[i].intensity * (1.0 - shadow);
 	}
-	*/
+	
 	// Point light calculations
 	for (int i = 0; i < NUMBER_OF_POINT_LIGHTS; i++) // Calculate lighting for all lights
 	{

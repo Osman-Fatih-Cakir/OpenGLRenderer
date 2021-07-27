@@ -157,6 +157,7 @@
     <ClCompile Include="gBuffer.cpp" />
     <ClCompile Include="Globals.cpp" />
     <ClCompile Include="DirectionalLight.cpp" />
+    <ClCompile Include="InputHandler.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Mesh.cpp" />
     <ClCompile Include="init_shaders.cpp" />
@@ -176,6 +177,7 @@
     <ClInclude Include="gBuffer.h" />
     <ClInclude Include="Globals.h" />
     <ClInclude Include="DirectionalLight.h" />
+    <ClInclude Include="InputHandler.h" />
     <ClInclude Include="Mesh.h" />
     <ClInclude Include="init_shaders.h" />
     <ClInclude Include="Model.h" />

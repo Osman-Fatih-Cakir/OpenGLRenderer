@@ -11,6 +11,7 @@
 #include <init_shaders.h>
 #include <DirectionalLight.h>
 #include <PointLight.h>
+#include <InputHandler.h>
 #include <Scene.h>
 #include <Renderer.h>
 
@@ -44,6 +45,9 @@ const int sphere_count = 16;
 
 // Window
 Window* window = nullptr;
+
+// Input handler
+InputHandler* input_handler = nullptr;
 
 // Scene pointer
 Scene* scene = nullptr;
@@ -118,6 +122,8 @@ void init()
 {
 	Globals::Log("*****************Start************************");
 
+	input_handler = new InputHandler();
+
 	// Initialize scene
 	init_scene();
 }
@@ -143,6 +149,30 @@ void keyboard(unsigned char key, int x, int y)
 {
 	switch (key)
 	{
+	case 'w':
+		scene->camera->camera_translate(vec3(0.f, 0.f, -0.1f));
+		break;
+	case 's':
+		scene->camera->camera_translate(vec3(0.f, 0.f, 0.1f));
+		break;
+	case 'd':
+		scene->camera->camera_translate(vec3(0.1f, 0.f, 0.f));
+		break;
+	case 'a':
+		scene->camera->camera_translate(vec3(-0.1f, 0.f, 0.f));
+		break;
+	case 'q':
+		scene->camera->camera_translate(vec3(0.f, -0.1f, 0.f));
+		break;
+	case 'e':
+		scene->camera->camera_translate(vec3(0.f, 0.1f, 0.f));
+		break;
+	case 'z':
+		scene->camera->camera_rotate(vec3(0.f, 0.1f, 0.f), -5.f);
+		break;
+	case 'c':
+		scene->camera->camera_rotate(vec3(0.f, 0.1f, 0.f), 5.f);
+		break;
 	case 'r':
 		exit_app();
 		break;
@@ -212,7 +242,7 @@ void init_lights()
 			((rand() % 100) / 100.f) * 3.f + 1.f,
 			((rand() % 100) / 100.f) * 20.f - 10.f
 		);
-		_position = vec3(0.f, -2.f, -2.f);
+		_position = vec3(1.f, 1.f, 1.f);
 
 		// Set colors of the lights
 		vec3 _color = vec3(
@@ -260,7 +290,7 @@ void init_lights()
 		DirectionalLight* light = new DirectionalLight(vec3(-1.0f, -1.0f, -1.0f), vec3(1.0f, 1.0f, 1.0f));
 		light->intensity = 0.5f;
 		mat4 proj_mat = glm::ortho(-20.f, 20.f, -20.f, 20.f, 0.1f, 1000.f);
-		mat4 view_mat = glm::lookAt(vec3(16, 20, 16), vec3(0, 0, 0), vec3(0, 1, 0));
+		mat4 view_mat = glm::lookAt(vec3(1, 8, 1), vec3(0, 0, 0), vec3(1, 1, 1));
 		light->calculate_space_matrix(proj_mat, view_mat);
 		// Create depth map framebuffer
 		light->create_depth_map_framebuffer();
@@ -295,4 +325,5 @@ void init_scene()
 void render()
 {
 	renderer->render();
+	//input_handler->update();
 }
