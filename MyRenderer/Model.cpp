@@ -40,7 +40,7 @@ void Model::draw(GLuint shader_program)
 {
     for (unsigned int i = 0; i < meshes.size(); i++)
     {
-        meshes[i].draw(shader_program);
+        meshes[i].draw(shader_program, has_normal_map);
     }
 }
 
@@ -48,7 +48,8 @@ void Model::draw(GLuint shader_program)
 void Model::load_model(std::string path)
 {
     Assimp::Importer import;
-    const aiScene* scene = import.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_GenNormals);
+    const aiScene* scene = import.ReadFile(path, aiProcess_Triangulate 
+        | aiProcess_FlipUVs | aiProcess_GenSmoothNormals | aiProcess_CalcTangentSpace);
 
     if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
     {
@@ -111,6 +112,16 @@ Mesh Model::process_mesh(aiMesh* mesh, const aiScene* scene)
             vec.x = mesh->mTextureCoords[0][i].x;
             vec.y = mesh->mTextureCoords[0][i].y;
             vertex.texCoord = vec;
+            // tangent
+            vector.x = mesh->mTangents[i].x;
+            vector.y = mesh->mTangents[i].y;
+            vector.z = mesh->mTangents[i].z;
+            vertex.tangent = vector;
+            // bitangent
+            vector.x = mesh->mBitangents[i].x;
+            vector.y = mesh->mBitangents[i].y;
+            vector.z = mesh->mBitangents[i].z;
+            vertex.bitangent = vector;
         }
         else
         {
@@ -134,7 +145,8 @@ Mesh Model::process_mesh(aiMesh* mesh, const aiScene* scene)
     std::vector<Texture> diffuse_maps = load_material_textures(material, aiTextureType_DIFFUSE, "diffuse_map");
     textures.insert(textures.end(), diffuse_maps.begin(), diffuse_maps.end());
     // Normal map
-    std::vector<Texture> normal_maps = load_material_textures(material, aiTextureType_HEIGHT, "normap_map");
+    std::vector<Texture> normal_maps = load_material_textures(material, aiTextureType_HEIGHT, "normal_map");
+    if (normal_maps.size() > 0) has_normal_map = true;
     textures.insert(textures.end(), normal_maps.begin(), normal_maps.end());
 
     // return a mesh object created from the extracted mesh data
@@ -183,6 +195,7 @@ unsigned int Model::texture_from_file(const char* path, const std::string& direc
 
     int width, height, nrComponents;
     unsigned char* data = stbi_load(filename.c_str(), &width, &height, &nrComponents, 0);
+
     if (data)
     {
         GLenum format;

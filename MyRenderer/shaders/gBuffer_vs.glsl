@@ -3,6 +3,8 @@
 layout(location = 0) in vec3 vPos;
 layout(location = 1) in vec3 vNormal;
 layout(location = 2) in vec2 vTexCoord;
+layout(location = 3) in vec3 vTangent;
+layout(location = 4) in vec3 vBitangent;
 
 out vec3 fFragPos;
 out vec2 fTexCoord;
@@ -20,5 +22,6 @@ void main()
     // I use world coordinates for light calculations
     fFragPos = (model_matrix * vec4(vPos, 1.0)).xyz;
     fTexCoord = vTexCoord;
+    // TODO calculate normal using TBN
     fNormal = normalize(mat3(normal_matrix) * vNormal); // Multiply the normal with normal matrix
 }

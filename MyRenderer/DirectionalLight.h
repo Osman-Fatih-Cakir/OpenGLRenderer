@@ -26,12 +26,12 @@ public:
 	GLfloat* get_direction_pointer();
 	GLfloat* get_color_pointer();
 
-	vec3 direction;
-	vec3 color;
+	vec3 direction = vec3(1.0f);
+	vec3 color = vec3(1.0f);
 
-	mat4 projection_matrix;
-	mat4 view_matrix;
-	mat4 space_matrix;
+	mat4 projection_matrix = mat4(1.0f);
+	mat4 view_matrix = mat4(1.0f);
+	mat4 space_matrix = mat4(1.0f);
 
 	GLuint depth_map;
 	GLuint depth_map_fbo;

@@ -16,7 +16,7 @@ Mesh::Mesh(std::vector<Vertex> _vertices, std::vector<GLuint> _indices, std::vec
 Mesh::~Mesh() {};
 
 // Draw the mesh
-void Mesh::draw(GLuint shader_program)
+void Mesh::draw(GLuint shader_program, bool has_normal_map)
 {
 	// Set the textures
 	for (unsigned int i = 0; i < textures.size(); i++)
@@ -26,6 +26,8 @@ void Mesh::draw(GLuint shader_program)
 		glActiveTexture(GL_TEXTURE0 + i);
 		glBindTexture(GL_TEXTURE_2D, textures[i].id);
 	}
+
+	glUniform1i(glGetUniformLocation(shader_program, "has_normal_map"), has_normal_map);
 
 	// Draw mesh
 	glBindVertexArray(VAO);
@@ -61,6 +63,12 @@ void Mesh::setup_mesh()
 	// vertex texture coords
 	glEnableVertexAttribArray(2);
 	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, texCoord));
+	// vertex tangent
+	glEnableVertexAttribArray(3);
+	glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, tangent));
+	// vertex bitangent
+	glEnableVertexAttribArray(4);
+	glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, bitangent));
 
 	glBindVertexArray(0);
 }

@@ -130,7 +130,7 @@ void main()
 
 		// Specular
 		vec3 halfway = normalize(light_dir + view_dir);
-		float specular = pow(max(dot(normal, halfway), 0), 4.0); // TODO shineness is hardcoded
+		float specular = pow(max(dot(normal, halfway), 0), 1.0); // TODO shineness is hardcoded
 		vec3 Specular = specular * point_lights[i].color * spec;
 
 		// Calculate shadow
@@ -140,7 +140,7 @@ void main()
 
 		lighting += (Diffuse + Specular) * direct_lights[i].intensity * (1.0 - shadow);
 	}
-	
+
 	// Point light calculations
 	for (int i = 0; i < NUMBER_OF_POINT_LIGHTS; i++) // Calculate lighting for all lights
 	{
@@ -167,7 +167,7 @@ void main()
 		float shadow = point_shadow_calculation(i, frag_pos, 0.0);
 		lighting += (Diffuse + Specular) * (1.0 - shadow) * point_lights[i].intensity;
 	}
-	
+
 	lighting += Ambient; // Add ambient light at the end
 
 	OutColor = vec4(lighting, 1.0);

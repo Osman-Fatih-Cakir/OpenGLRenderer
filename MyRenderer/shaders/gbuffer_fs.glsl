@@ -10,14 +10,24 @@ in vec3 fNormal;
 
 uniform sampler2D diffuse_map;
 // TODO add specular map
-// TODO add bump map
+uniform sampler2D normal_map;
+
+uniform bool has_normal_map;
 
 void main()
 {
 	// Fragment position
 	gPosition = fFragPos;
 	// Fragment normal
-	gNormal = fNormal;
+	if (has_normal_map)
+	{
+		gNormal = texture(normal_map, fTexCoord).xyz;
+	}
+	else
+	{
+		gNormal = fNormal;
+	}
+	
 	// Diffuse
 	gAlbedoSpec.rgb = texture(diffuse_map, fTexCoord).rgb;
 	// Specular (float number)

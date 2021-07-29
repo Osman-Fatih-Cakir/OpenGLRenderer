@@ -19,6 +19,8 @@ public:
     Model(const char* path);
     ~Model();
 
+    bool has_normal_map = false;
+
     void translate(vec3 vec);
     // TODO rotate
     // TODO scale // TODO update_normal_matrix

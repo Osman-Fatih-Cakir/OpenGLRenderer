@@ -36,9 +36,7 @@ void Renderer::render()
 	// Start gBuffer program
 	GBuffer->start_program();
 
-	//scene->camera->camera_translate(vec3(0.f, -0.001f, 0.f));
-	//scene->camera->camera_rotate(vec3(0.f, 1.f, 0.f), delta / 10000); // Camera rotation smoothly
-	//scene->point_lights[0]->position = scene->camera->get_eye();
+	scene->camera->camera_rotate(vec3(0.f, 1.f, 0.f), delta / 100); // Camera rotation smoothly
 
 	// Set camera attributes
 	GBuffer->set_projection_matrix(scene->camera->get_projection_matrix());
@@ -177,9 +175,12 @@ void Renderer::render()
 	// Draw scene
 	for (unsigned int i = 0; i < scene->point_lights.size(); i++)
 	{
-		forwardRender->set_model_matrix(scene->point_lights[i]->model->get_model_matrix());
-		forwardRender->set_color(scene->point_lights[i]->color);
-		forwardRender->render(scene->point_lights[i]->model, forwardRender->get_shader_program());
+		if (scene->point_lights[i]->model != nullptr)
+		{
+			forwardRender->set_model_matrix(scene->point_lights[i]->model->get_model_matrix());
+			forwardRender->set_color(scene->point_lights[i]->color);
+			forwardRender->render(scene->point_lights[i]->model, forwardRender->get_shader_program());
+		}
 	}
 	
 	// Error check

@@ -15,6 +15,8 @@ struct Vertex
 	vec3 position;
 	vec3 normal;
 	vec2 texCoord;
+	vec3 tangent;
+	vec3 bitangent;
 };
 
 // Texture struct
@@ -39,7 +41,7 @@ public:
 	std::vector<Texture> textures;
 	GLuint VAO;
 
-	void draw(GLuint shader_program);
+	void draw(GLuint shader_program, bool has_normal_map);
 
 private:
 	GLuint VBO, EBO;

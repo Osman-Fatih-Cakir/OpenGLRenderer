@@ -12,7 +12,7 @@ DirectionalLight::DirectionalLight(vec3 dir, vec3 col)
 	view_matrix = mat4(0.0f);
 	space_matrix = mat4(0.0f);
 
-	intensity = 1.0f;
+	intensity = 0.2f;
 }
 
 // Destructor
