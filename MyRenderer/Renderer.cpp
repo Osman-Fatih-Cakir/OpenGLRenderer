@@ -37,7 +37,8 @@ void Renderer::render()
 	// Start gBuffer program
 	GBuffer->start_program();
 
-	scene->camera->camera_rotate(vec3(0.f, 1.f, 0.f), delta / 100); // Camera rotation smoothly
+	//scene->camera->camera_rotate(vec3(0.f, 1.f, 0.f), delta / 100); // Camera rotation smoothly
+	//scene->all_models[0]->rotate(vec3(0.f, 1.f, 0.f), delta / 25);
 
 	// Draw models of the scene
 	for (unsigned int i = 0; i < scene->all_models.size(); i++)

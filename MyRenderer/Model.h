@@ -22,8 +22,9 @@ public:
     bool has_normal_map = false;
 
     void translate(vec3 vec);
-    // TODO rotate
-    // TODO scale // TODO update_normal_matrix
+    void translate(float x, float y, float z);
+    void rotate(vec3 vec, float angle);
+    void scale(vec3 vec);
     mat4 get_model_matrix();
     mat4 get_normal_matrix();
     void draw(GLuint shader_program);

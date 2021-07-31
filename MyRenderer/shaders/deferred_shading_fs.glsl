@@ -135,8 +135,8 @@ void main()
 
 		// Calculate shadow
 		vec4 fPos_light_space = direct_lights[i].light_space_matrix * vec4(frag_pos, 1.0);
-		float dir_bias = max(0.0001 * (1.0 - dot(normal, light_dir)), 0.0001);
-		float shadow = directional_shadow_calculation(i, fPos_light_space, dir_bias);
+		float bias = max(0.001 * (1.0 - dot(normal, light_dir)), 0.001);
+		float shadow = directional_shadow_calculation(i, fPos_light_space, bias);
 
 		lighting += (Diffuse + Specular) * direct_lights[i].intensity * (1.0 - shadow);
 	}
@@ -163,8 +163,9 @@ void main()
 		float attenuation = 1.0 / (1.0 + point_lights[i].linear * distance + point_lights[i].quadratic * distance * distance);
 		Diffuse *= attenuation;
 		Specular *= attenuation;
-
-		float shadow = point_shadow_calculation(i, frag_pos, 0.0);
+		
+		float bias = max(0.0001 * (1.0 - dot(normal, light_dir)), 0.0001);
+		float shadow = point_shadow_calculation(i, frag_pos, bias);
 		lighting += (Diffuse + Specular) * (1.0 - shadow) * point_lights[i].intensity;
 	}
 

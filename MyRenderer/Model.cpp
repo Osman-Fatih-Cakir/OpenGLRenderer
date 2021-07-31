@@ -24,6 +24,23 @@ void Model::translate(vec3 vec)
 {
     model_matrix = glm::translate(model_matrix, vec);
 }
+void Model::translate(float x, float y, float z)
+{
+    model_matrix = glm::translate(model_matrix, vec3(x, y, z));
+}
+
+// Rotate model
+void Model::rotate(vec3 vec, float angle)
+{
+    model_matrix = glm::rotate(model_matrix, glm::radians(angle), vec);
+}
+
+// Scale mesh
+void Model::scale(vec3 vec)
+{
+    model_matrix = glm::scale(model_matrix, vec);
+    update_normal_matrix();
+}
 
 mat4 Model::get_model_matrix()
 {
