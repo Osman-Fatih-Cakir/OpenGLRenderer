@@ -4,6 +4,7 @@
 #include <gtc/matrix_transform.hpp>
 #include <init_shaders.h>
 
+// Constructor
 PointDepth::PointDepth()
 {
 	// Compiles shaders and generate program
@@ -13,10 +14,21 @@ PointDepth::PointDepth()
 	get_uniform_locations();
 }
 
-PointDepth::~PointDepth() {}
-
-void PointDepth::start_program()
+// Destructor
+PointDepth::~PointDepth() 
 {
+	delete light;
+}
+
+void PointDepth::start_program(PointLight* _light)
+{
+	light = _light;
+
+	// Set viewport and buffer
+	glViewport(0, 0, light->depth_map_width, light->depth_map_height); // Use shadow resolutions
+	glBindFramebuffer(GL_FRAMEBUFFER, light->depth_cubemap_fbo);
+	glClear(GL_DEPTH_BUFFER_BIT);
+
 	glUseProgram(program);
 }
 
@@ -46,14 +58,25 @@ void PointDepth::set_position(vec3 pos)
 }
 
 // Draw scene
-void PointDepth::render(Model* model, GLuint shader_program)
+void PointDepth::render(Model* model)
 {
 	glEnable(GL_CULL_FACE);
 	glCullFace(GL_FRONT);
 
-	model->draw(shader_program);
+	// Set model matrix
+	set_model_matrix(model->get_model_matrix());
+	// Set space matrices
+	set_space_matrices(light->space_matrices);
+	// Set far
+	set_far(light->shadow_projection_far);
+	// Set position
+	set_position(light->position);
+
+	// Draw call
+	model->draw(program);
 
 	glDisable(GL_CULL_FACE);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
 // Compiles shaders and generates program

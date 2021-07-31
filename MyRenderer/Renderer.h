@@ -24,8 +24,6 @@ private:
 
 	Scene* scene;
 
-	GLuint quad_VAO;
-
 	Timer* timer = nullptr;
 	gBuffer* GBuffer = nullptr;
 	DirectionalDepth* dirDepth = nullptr;
@@ -34,5 +32,4 @@ private:
 	DeferredShading* deferredShading = nullptr;
 
 	void init_shader_programs();
-	void init_quad();
 };

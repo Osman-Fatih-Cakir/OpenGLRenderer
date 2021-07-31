@@ -2,6 +2,7 @@
 
 #include <init_shaders.h>
 
+// Constructor
 ForwardRender::ForwardRender()
 {
 	// Compiles shaders and generate program
@@ -11,10 +12,23 @@ ForwardRender::ForwardRender()
 	get_uniform_locations();
 }
 
-ForwardRender::~ForwardRender() {}
-
-void ForwardRender::start_program()
+// Destructor
+ForwardRender::~ForwardRender() 
 {
+	delete GBuffer;
+}
+
+void ForwardRender::start_program(gBuffer* _GBuffer)
+{
+	GBuffer = _GBuffer;
+
+	// Attach depth buffer to default framebuffer
+	glBindFramebuffer(GL_FRAMEBUFFER, GBuffer->get_fbo());
+	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0); // Write to default framebuffer
+	glBlitFramebuffer(0, 0, GBuffer->get_width(), GBuffer->get_height(), 0, 0,
+		GBuffer->get_width(), GBuffer->get_height(), GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
 	glUseProgram(program);
 }
 
@@ -55,11 +69,16 @@ void ForwardRender::set_color(vec3 vec)
 }
 
 // Render the scene
-void ForwardRender::render(Model* model, GLuint shader_program)
+void ForwardRender::render(Camera* camera, Model* model)
 {
 	glViewport(0, 0, width, height);
 
-	model->draw(shader_program);
+	// Set camera attributes
+	set_projection_matrix(camera->get_projection_matrix());
+	set_view_matrix(camera->get_view_matrix());
+
+	// Draw call
+	model->draw(program);
 
 	glBindVertexArray(0);
 }

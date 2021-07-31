@@ -4,6 +4,7 @@
 #include <GL/freeglut.h>
 #include <glm.hpp>
 #include <Model.h>
+#include <gBuffer.h>
 
 typedef glm::mat4 mat4;
 typedef glm::vec3 vec3;
@@ -15,14 +16,14 @@ public:
 	ForwardRender();
 	~ForwardRender();
 
-	void start_program();
+	void start_program(gBuffer* _GBuffer);
 	void change_viewport_resolution(unsigned int w, unsigned int h);
 	GLuint get_shader_program();
 	void set_projection_matrix(mat4 mat);
 	void set_view_matrix(mat4 mat);
 	void set_model_matrix(mat4 mat);
 	void set_color(vec3 vec);
-	void render(Model* model, GLuint shader_program);
+	void render(Camera* camera, Model* model);
 
 private:
 
@@ -33,6 +34,7 @@ private:
 	GLuint loc_view_matrix;
 	GLuint loc_model_matrix;
 	GLuint loc_color;
+	gBuffer* GBuffer = nullptr;
 
 	void init_shaders();
 	void get_uniform_locations();

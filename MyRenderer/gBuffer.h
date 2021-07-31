@@ -4,6 +4,7 @@
 #include <GL/freeglut.h>
 #include <glm.hpp>
 #include <Model.h>
+#include <Camera.h>
 
 typedef glm::mat4 mat4;
 typedef glm::vec3 vec3;
@@ -32,7 +33,7 @@ public:
 	void set_diffuse_texture(GLuint id);
 	unsigned int get_width();
 	unsigned int get_height();
-	void render(Model* model, GLuint shader_program);
+	void render(Camera* camera, Model* model);
 
 private:
 

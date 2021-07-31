@@ -3,7 +3,7 @@
 
 #include <init_shaders.h>
 
-
+// Constructor
 DeferredShading::DeferredShading()
 {
 	// Initialize and compile shaders
@@ -11,17 +11,28 @@ DeferredShading::DeferredShading()
 
 	// Get uniform locations from program
 	get_uniform_locations();
+
+	// Create a quad for rendering as texture
+	init_quad();
 }
 
+// Destructor
 DeferredShading::~DeferredShading()
 {
+	delete GBuffer;
 }
 
-void DeferredShading::start_program()
+void DeferredShading::start_program(gBuffer* _GBuffer)
 {
-	glUseProgram(program);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glViewport(0, 0, width, height);
+
+	GBuffer = _GBuffer;
+
 	point_light_count = 0;
 	direct_light_count = 0;
+
+	glUseProgram(program);
 }
 
 void DeferredShading::change_viewport_resolution(unsigned int w, unsigned int h)
@@ -144,15 +155,18 @@ void DeferredShading::set_direct_light
 }
 
 // Renders the scene
-void DeferredShading::render(GLuint VAO, unsigned int vertex_count)
+void DeferredShading::render(Camera* camera)
 {
-	glViewport(0, 0, width, height);
-	
-	glBindVertexArray(VAO);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-	glDrawArrays(GL_TRIANGLES, 0, vertex_count);
+	set_viewer_pos(camera->get_eye());
+	// Set g-buffer color attachments
+	set_gPosition(GBuffer->get_gPosition());
+	set_gNormal(GBuffer->get_gNormal());
+	set_gAlbedoSpec(GBuffer->get_gAlbedoSpec());
 
-	glBindVertexArray(0);
+	// Draw call
+	draw_quad(program);
 }
 
 // Compiles the shaders and generates the shader program
@@ -170,4 +184,44 @@ void DeferredShading::get_uniform_locations()
 	loc_gPosition = glGetUniformLocation(program, "gPosition");
 	loc_gNormal = glGetUniformLocation(program, "gNormal");
 	loc_gAlbedoSpec = glGetUniformLocation(program, "gAlbedoSpec");
+}
+
+// Initialize a quad
+void DeferredShading::init_quad()
+{
+	float quadVertices[] = {
+
+		-1.0f, -1.0f, 0.0f, 0.0f, 0.0f, // 2
+		1.0f, -1.0f, 0.0f, 1.0f, 0.0f, // 4
+		1.0f,  1.0f, 0.0f, 1.0f, 1.0f, // 3
+
+		-1.0f, -1.0f, 0.0f, 0.0f, 0.0f, // 2
+		1.0f,  1.0f, 0.0f, 1.0f, 1.0f, // 3
+		-1.0f,  1.0f, 0.0f, 0.0f, 1.0f // 1
+	};
+
+	glGenVertexArrays(1, &quad_VAO);
+
+	// Setup quad VAO
+	GLuint quadVBO;
+	glGenBuffers(1, &quadVBO);
+	glBindVertexArray(quad_VAO);
+	glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), &quadVertices, GL_STATIC_DRAW);
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+
+	glBindVertexArray(0);
+}
+
+// Draw everything on a quad as a texture
+void DeferredShading::draw_quad(GLuint shader_program)
+{
+	glBindVertexArray(quad_VAO);
+
+	glDrawArrays(GL_TRIANGLES, 0, 6);
+
+	glBindVertexArray(0);
 }

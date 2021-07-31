@@ -4,6 +4,7 @@
 #include <GL/freeglut.h>
 #include <glm.hpp>
 #include <vector>
+#include <gBuffer.h>
 
 typedef glm::mat4 mat4;
 typedef glm::vec3 vec3;
@@ -15,7 +16,7 @@ public:
 	DeferredShading();
 	~DeferredShading();
 
-	void start_program();
+	void start_program(gBuffer* _GBuffer);
 	void change_viewport_resolution(unsigned int w, unsigned int h);
 	void set_viewer_pos(vec3 vec);
 	void set_gPosition(GLuint id);
@@ -38,7 +39,7 @@ public:
 		GLuint shadow_map,
 		mat4 light_space_matrix
 	);
-	void render(GLuint VAO, unsigned int vertex_count);
+	void render(Camera* camera);
 
 private:
 
@@ -49,10 +50,13 @@ private:
 	GLuint loc_gPosition;
 	GLuint loc_gNormal;
 	GLuint loc_gAlbedoSpec;
+	GLuint quad_VAO;
 	int point_light_count = 0;
 	int direct_light_count = 0;
+	gBuffer* GBuffer = nullptr;
 
 	void init_shaders();
 	void get_uniform_locations();
-
+	void init_quad();
+	void draw_quad(GLuint shader_program);
 };

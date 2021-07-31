@@ -16,11 +16,21 @@ DirectionalDepth::DirectionalDepth()
 }
 
 // Destructor
-DirectionalDepth::~DirectionalDepth() {}
+DirectionalDepth::~DirectionalDepth() 
+{
+	delete light;
+}
 
 // Starts the shader program
-void DirectionalDepth::start_program()
+void DirectionalDepth::start_program(DirectionalLight* _light)
 {
+	light = _light;
+
+	// Set viewport and buffers
+	glViewport(0, 0, light->depth_map_width, light->depth_map_height);
+	glBindFramebuffer(GL_FRAMEBUFFER, light->depth_map_fbo);
+	glClear(GL_DEPTH_BUFFER_BIT);
+
 	glUseProgram(program);
 }
 
@@ -42,14 +52,22 @@ void DirectionalDepth::set_model_matrix(mat4 mat)
 }
 
 // Renders the scene
-void DirectionalDepth::render(Model* model, GLuint shader_program)
+void DirectionalDepth::render(Model* model)
 {
 	glEnable(GL_CULL_FACE);
 	glCullFace(GL_BACK);
 
-	model->draw(shader_program);
+	// Space matrix
+	set_space_matrix(light->space_matrix);
+
+	// Model matrix
+	set_model_matrix(model->get_model_matrix());
+
+	// Draw call
+	model->draw(program);
 
 	glDisable(GL_CULL_FACE);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
 // Compiles shaders and generate program
