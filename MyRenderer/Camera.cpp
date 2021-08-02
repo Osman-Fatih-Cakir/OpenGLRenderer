@@ -1,9 +1,10 @@
 #include "Camera.h"
 
 #include <gtc/matrix_transform.hpp>
+#include <Window.h>
 
 
-Camera::Camera(vec3 _eye, vec3 _up, vec3 _center, Globals::Projection_Type proj_type)
+Camera::Camera(vec3 _eye, vec3 _up, vec3 _center, Projection_Type proj_type)
 {
 	eye = _eye;
 	up = _up;
@@ -15,13 +16,13 @@ Camera::Camera(vec3 _eye, vec3 _up, vec3 _center, Globals::Projection_Type proj_
 
 Camera::~Camera() {};
 
-void Camera::set_camera_projection(Globals::Projection_Type proj_type)
+void Camera::set_camera_projection(Projection_Type proj_type)
 {
-	if (proj_type == Globals::PERSPECTIVE) // Set perspective projection
+	if (proj_type == PERSPECTIVE) // Set perspective projection
 	{
-		set_perspective(75.f, (GLfloat)Globals::WIDTH / Globals::HEIGHT, 0.01f, 100.f);
+		set_perspective(75.f, (GLfloat)WINDOW_WIDTH / WINDOW_HEIGHT, 0.01f, 100.f);
 	}
-	else if (proj_type == Globals::ORTOGRAPHIC) // Set ortographic projection
+	else if (proj_type == ORTOGRAPHIC) // Set ortographic projection
 	{
 		set_ortho(-2.f, 2.f, -2.f, 2.f); // TODO check these numbers make sense
 	}
@@ -57,7 +58,7 @@ void Camera::camera_rotate(vec3 rot, float angle)
 //
 //// Getters and setters
 //
-Globals::Projection_Type Camera::get_projection_type()
+Projection_Type Camera::get_projection_type()
 {
 	return projection_type;
 }

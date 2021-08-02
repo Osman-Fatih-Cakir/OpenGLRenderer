@@ -3,6 +3,9 @@
 #include <GL/glew.h>
 #include <GL/freeglut.h>
 
+const int WINDOW_WIDTH = 1200;
+const int WINDOW_HEIGHT = 800;
+
 class Window
 {
 public:

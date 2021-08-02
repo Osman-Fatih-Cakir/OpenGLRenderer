@@ -9,6 +9,7 @@ layout(location = 4) in vec3 vBitangent;
 out vec3 fFragPos;
 out vec2 fTexCoord;
 out vec3 fNormal;
+out mat3 TBN;
 
 uniform mat4 projection_matrix;
 uniform mat4 view_matrix;
@@ -22,6 +23,10 @@ void main()
     // I use world coordinates for light calculations
     fFragPos = (model_matrix * vec4(vPos, 1.0)).xyz;
     fTexCoord = vTexCoord;
-    // TODO calculate normal using TBN
+    // Calculate TBN matrix
+    vec3 T = normalize(vec3(model_matrix * vec4(vTangent, 0.0)));
+    vec3 B = normalize(vec3(model_matrix * vec4(vBitangent, 0.0)));
+    vec3 N = normalize(vec3(model_matrix * vec4(vNormal, 0.0)));
+    TBN = mat3(T, B, N);
     fNormal = normalize(mat3(normal_matrix) * vNormal); // Multiply the normal with normal matrix
 }

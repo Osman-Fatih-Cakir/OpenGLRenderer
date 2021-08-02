@@ -155,7 +155,6 @@
     <ClCompile Include="DirectionalDepth.cpp" />
     <ClCompile Include="ForwardRender.cpp" />
     <ClCompile Include="gBuffer.cpp" />
-    <ClCompile Include="Globals.cpp" />
     <ClCompile Include="DirectionalLight.cpp" />
     <ClCompile Include="InputHandler.cpp" />
     <ClCompile Include="main.cpp" />
@@ -175,7 +174,6 @@
     <ClInclude Include="DirectionalDepth.h" />
     <ClInclude Include="ForwardRender.h" />
     <ClInclude Include="gBuffer.h" />
-    <ClInclude Include="Globals.h" />
     <ClInclude Include="DirectionalLight.h" />
     <ClInclude Include="InputHandler.h" />
     <ClInclude Include="Mesh.h" />
@@ -196,7 +194,7 @@
     <None Include="shaders\depth_vs.glsl" />
     <None Include="shaders\depth_fs.glsl" />
     <None Include="shaders\gbuffer_fs.glsl" />
-    <None Include="shaders\gBuffer_vs.glsl" />
+    <None Include="shaders\gbuffer_vs.glsl" />
     <None Include="shaders\point_depth_fs.glsl" />
     <None Include="shaders\point_depth_gs.glsl" />
     <None Include="shaders\point_depth_vs.glsl" />

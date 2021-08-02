@@ -61,7 +61,7 @@ void PointDepth::set_position(vec3 pos)
 void PointDepth::render(Model* model)
 {
 	glEnable(GL_CULL_FACE);
-	glCullFace(GL_FRONT);
+	glCullFace(GL_BACK);
 
 	// Set model matrix
 	set_model_matrix(model->get_model_matrix());
@@ -76,7 +76,6 @@ void PointDepth::render(Model* model)
 	model->draw(program);
 
 	glDisable(GL_CULL_FACE);
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
 // Compiles shaders and generates program

@@ -67,7 +67,6 @@ void DirectionalDepth::render(Model* model)
 	model->draw(program);
 
 	glDisable(GL_CULL_FACE);
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
 // Compiles shaders and generate program

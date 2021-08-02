@@ -6,7 +6,6 @@
 #include <iostream>
 #include <Window.h>
 #include <Camera.h>
-#include <Globals.h>
 #include <Model.h>
 #include <init_shaders.h>
 #include <DirectionalLight.h>
@@ -94,7 +93,7 @@ void Init_Glut_and_Glew(int argc, char* argv[])
 
 	// Create window
 	window = new Window();
-	window->create_window(Globals::WIDTH, Globals::HEIGHT);
+	window->create_window(WINDOW_WIDTH, WINDOW_HEIGHT);
 	
 	// Initialize Glew
 	glewExperimental = GL_TRUE;
@@ -119,7 +118,7 @@ void Init_Glut_and_Glew(int argc, char* argv[])
 // Initialize the parameters
 void init()
 {
-	Globals::Log("*****************Start************************");
+	std::cout << "*****************Start************************" << std::endl;
 
 	input_handler = new InputHandler();
 
@@ -167,10 +166,10 @@ void keyboard(unsigned char key, int x, int y)
 		scene->camera->camera_translate(vec3(0.f, 0.1f, 0.f));
 		break;
 	case 'z':
-		scene->camera->camera_rotate(vec3(0.f, 0.1f, 0.f), -5.f);
+		scene->camera->camera_rotate(vec3(0.1f, 0.f, 0.f), -5.f);
 		break;
 	case 'c':
-		scene->camera->camera_rotate(vec3(0.f, 0.1f, 0.f), 5.f);
+		scene->camera->camera_rotate(vec3(0.1f, 0.f, 0.f), 5.f);
 		break;
 	case 'r':
 		exit_app();
@@ -185,7 +184,7 @@ void resize_window(int w, int h)
 	if (h == 0) h = 1;
 
 	// Recalculate camera projection matrix
-	scene->camera->set_camera_projection(Globals::PERSPECTIVE);
+	scene->camera->set_camera_projection(PERSPECTIVE);
 	glViewport(0, 0, w, h); // Set the viewport
 }
 
@@ -193,19 +192,26 @@ void resize_window(int w, int h)
 void init_meshes()
 {
 	// Scene meshes
-	Model* model = new Model("mesh/backpack/backpack.obj");
+	Model* model = new Model("mesh/guitar/guitar.obj");
+	model->translate(-2.f, -1.f, 0.f);
+	model->scale(vec3(0.06f, 0.06f, 0.06f));
 	scene->add_model(model);
 
-	// Floor
-	Model* plane = new Model("mesh/floor.obj");
-	plane->translate(vec3(0.f, -2.f, 0.f));
-	scene->add_model(plane);
+	model = new Model("mesh/backpack/backpack.obj");
+	model->translate(3.f, -1.3f, 1.f);
+	model->scale(vec3(0.7f, 0.7f, 0.7f));
+	scene->add_model(model);
+
+	model = new Model("mesh/floor/floor.obj");
+	model->translate(vec3(0.f, -3.f, 0.f));
+	model->scale(vec3(0.1f, 0.1f, 0.1f));
+	scene->add_model(model);
 }
 
 // Initialize camera
 void init_camera(vec3 eye, vec3 up, vec3 center)
 {
-	Camera* camera = new Camera(eye, up, center, Globals::PERSPECTIVE);
+	Camera* camera = new Camera(eye, up, center, PERSPECTIVE);
 	scene->camera = camera;
 }
 
@@ -220,12 +226,12 @@ void init_lights()
 	// Light positions
 	for (int i = 0; i < point_light_count; i++)
 	{
-		vec3 _position = vec3(-3.f, 4.f, -1.f);
+		vec3 _position = vec3(0.f, 7.f, -3.f);
 		vec3 _color = vec3(1.f, 1.f, 1.f);
 
 		// Initialize light
 		PointLight* light = new PointLight(_position, _color);
-
+		light->intensity = 2.f;
 		// Draw a mesh for represent a light
 		Model* light_model = new Model("mesh/cube.obj");
 		light_model->translate(light->position);
@@ -242,7 +248,7 @@ void init_lights()
 
 	for (int i = 0; i < direct_light_count; i++)
 	{
-		DirectionalLight* light = new DirectionalLight(vec3(-1.0f, -1.0f, -1.0f), vec3(1.0f, 1.0f, 1.0f));
+		DirectionalLight* light = new DirectionalLight(vec3(-1.0f, -1.0f, -1.0f), vec3(1.f, 1.f, 1.f));
 		mat4 proj_mat = glm::ortho(-20.f, 20.f, -20.f, 20.f, 0.1f, 1000.f);
 		mat4 view_mat = glm::lookAt(vec3(5, 5, 5), vec3(0, 0, 0), vec3(-1, 1, -1));
 		light->calculate_space_matrix(proj_mat, view_mat);
@@ -263,7 +269,7 @@ void init_scene()
 
 	// Set camera parameters
 	init_camera(
-		vec3(0.f, 2.f, 10.f), // Eye
+		vec3(0.f, 0.f, 7.f), // Eye
 		vec3(0.f, 1.f, 0.f), // Up
 		vec3(0.f, 0.f, 0.f) // Center
 	);

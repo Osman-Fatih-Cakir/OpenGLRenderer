@@ -144,7 +144,6 @@ void main()
 	// Point light calculations
 	for (int i = 0; i < NUMBER_OF_POINT_LIGHTS; i++) // Calculate lighting for all lights
 	{
-		// Point light radius
 		// If the fragment is not inside the light radious, no need to make calculation for that light
 		if (length(point_lights[i].position - frag_pos) > point_lights[i].radius)
 			continue;

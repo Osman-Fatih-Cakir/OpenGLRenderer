@@ -33,6 +33,7 @@ void Model::translate(float x, float y, float z)
 void Model::rotate(vec3 vec, float angle)
 {
     model_matrix = glm::rotate(model_matrix, glm::radians(angle), vec);
+    update_normal_matrix();
 }
 
 // Scale mesh

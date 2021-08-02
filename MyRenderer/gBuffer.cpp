@@ -4,8 +4,8 @@
 #include <glm.hpp>
 #include <gtc/matrix_transform.hpp>
 
-#include <Globals.h>
 #include <init_shaders.h>
+#include <Window.h>
 
 typedef glm::mat3 mat3;
 typedef glm::mat4 mat4;
@@ -40,7 +40,7 @@ void gBuffer::attach_depthbuffer_to_framebuffer(GLuint framebuffer)
 	glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &current_fbo);
 
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, framebuffer);
-	glBlitFramebuffer(0, 0, Globals::WIDTH, Globals::HEIGHT, 0, 0, Globals::WIDTH, Globals::HEIGHT, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+	glBlitFramebuffer(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT, 0, 0, WINDOW_WIDTH, WINDOW_HEIGHT, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
 
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, current_fbo); // Set the last framebuffer back
 }
@@ -146,7 +146,7 @@ void gBuffer::render(Camera* camera, Model* model)
 	// Model matrix and normal matrix
 	set_model_matrix(model->get_model_matrix());
 	set_normal_matrix(model->get_normal_matrix());
-
+	
 	// Draw call
 	model->draw(program);
 
@@ -203,7 +203,7 @@ void gBuffer::create_framebuffer()
 	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rbo_depth);
 	// Check if framebuffer is complete
 	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-		Globals::Log("Framebuffer not complete!");
+		std::cout << "Framebuffer not complete!" << std::endl;
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0); // Prevent further modification
 }

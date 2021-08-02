@@ -4,8 +4,6 @@
 #include <GL/freeglut.h>
 #include <glm.hpp>
 
-#include "Globals.h"
-
 
 typedef glm::mat3 mat3;
 typedef glm::mat4 mat4;
@@ -13,16 +11,22 @@ typedef glm::vec3 vec3;
 typedef glm::vec4 vec4;
 typedef glm::vec2 vec2;
 
+enum Projection_Type
+{
+	PERSPECTIVE,
+	ORTOGRAPHIC
+};
+
 class Camera
 {
 public:
 
 	// Constructor and destructor
-	Camera(vec3 _eye, vec3 _up, vec3 _center, Globals::Projection_Type proj_type);
+	Camera(vec3 _eye, vec3 _up, vec3 _center, Projection_Type proj_type);
 	~Camera();
 
 	// Calculate camera attributes
-	void set_camera_projection(Globals::Projection_Type proj_type);
+	void set_camera_projection(Projection_Type proj_type);
 
 	// Set camera projection matrix
 	// The constructor calls them with default values
@@ -38,7 +42,7 @@ public:
 	void camera_rotate(vec3 rot, float angle);
 
 	// Getters and setters
-	Globals::Projection_Type get_projection_type();
+	Projection_Type get_projection_type();
 	mat4 get_projection_matrix();
 	void set_projection_matrix(mat4 mat);
 	mat4 get_view_matrix();
@@ -52,7 +56,7 @@ public:
 
 private:
 	// Projection type (Perspective or Ortographic)
-	Globals::Projection_Type projection_type = Globals::PERSPECTIVE;
+	Projection_Type projection_type = PERSPECTIVE;
 	// Projection matrix
 	mat4 projection_matrix = mat4(1.f);
 	// View matrix for camera

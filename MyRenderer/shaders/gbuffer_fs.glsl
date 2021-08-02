@@ -7,6 +7,7 @@ layout(location = 2) out vec4 gAlbedoSpec;
 in vec2 fTexCoord;
 in vec3 fFragPos;
 in vec3 fNormal;
+in mat3 TBN;
 
 uniform sampler2D diffuse_map;
 // TODO add specular map
@@ -21,10 +22,15 @@ void main()
 	// Fragment normal
 	if (has_normal_map)
 	{
-		gNormal = texture(normal_map, fTexCoord).xyz;
+		vec3 _gNormal = texture(normal_map, fTexCoord).xyz;
+		_gNormal = _gNormal * 2.0 - 1.0;
+		gNormal = normalize(TBN * _gNormal);
 	}
 	else
 	{
+		// TODO check here (Meshes without normal maps)
+		//vec3 _gNormal = fNormal * 2.0 - 1.0;
+		//gNormal = normalize(TBN * _gNormal);
 		gNormal = fNormal;
 	}
 	

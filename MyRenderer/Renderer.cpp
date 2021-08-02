@@ -1,6 +1,7 @@
 
 #include <Renderer.h>
 #include <gtc/matrix_transform.hpp>
+#include <window.h>
 
 // Constructor
 Renderer::Renderer(Scene* _scene)
@@ -34,12 +35,10 @@ void Renderer::render()
 	//// 1. GBuffer Pass: Generate geometry/color data into gBuffers
 	//
 
-	// Start gBuffer program
-	GBuffer->start_program();
-
 	//scene->camera->camera_rotate(vec3(0.f, 1.f, 0.f), delta / 100); // Camera rotation smoothly
-	//scene->all_models[0]->rotate(vec3(0.f, 1.f, 0.f), delta / 25);
+	scene->all_models[0]->rotate(vec3(1.f, 0.f, 0.f), delta / 25);
 
+	GBuffer->start_program();
 	// Draw models of the scene
 	for (unsigned int i = 0; i < scene->all_models.size(); i++)
 	{
@@ -124,6 +123,7 @@ void Renderer::render()
 
 	// Start forward rendering program
 	forwardRender->start_program(GBuffer);
+	forwardRender->change_viewport_resolution(WINDOW_WIDTH, WINDOW_HEIGHT);
 
 	// Draw scene
 	for (unsigned int i = 0; i < scene->point_lights.size(); i++)
@@ -151,7 +151,7 @@ void Renderer::init_shader_programs()
 	// Initialize g-buffer program
 	GBuffer = new gBuffer();
 	// Set resolution
-	GBuffer->set_gBuffer_resolution(Globals::WIDTH, Globals::HEIGHT);
+	GBuffer->set_gBuffer_resolution(WINDOW_WIDTH, WINDOW_HEIGHT);
 
 	// Initialize depth map program
 	dirDepth = new DirectionalDepth();
@@ -161,9 +161,9 @@ void Renderer::init_shader_programs()
 
 	// Deferred shading program
 	deferredShading = new DeferredShading();
-	deferredShading->change_viewport_resolution(Globals::WIDTH, Globals::HEIGHT);
+	deferredShading->change_viewport_resolution(WINDOW_WIDTH, WINDOW_HEIGHT);
 
 	// Forward render program
 	forwardRender = new ForwardRender();
-	forwardRender->change_viewport_resolution(Globals::WIDTH, Globals::HEIGHT);
+	forwardRender->change_viewport_resolution(WINDOW_WIDTH, WINDOW_HEIGHT);
 }
