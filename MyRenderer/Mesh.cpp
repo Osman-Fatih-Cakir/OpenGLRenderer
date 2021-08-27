@@ -22,8 +22,8 @@ void Mesh::draw(GLuint shader_program, bool has_normal_map)
 	for (unsigned int i = 0; i < textures.size(); i++)
 	{
 		std::string name = textures[i].type;
-		glUniform1i(glGetUniformLocation(shader_program, name.c_str()), i);
 		glActiveTexture(GL_TEXTURE0 + i);
+		glUniform1i(glGetUniformLocation(shader_program, name.c_str()), i);
 		glBindTexture(GL_TEXTURE_2D, textures[i].id);
 	}
 

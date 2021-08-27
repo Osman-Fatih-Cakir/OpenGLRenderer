@@ -36,7 +36,8 @@ void Renderer::render()
 	//
 
 	//scene->camera->camera_rotate(vec3(0.f, 1.f, 0.f), delta / 100); // Camera rotation smoothly
-	scene->all_models[0]->rotate(vec3(1.f, 0.f, 0.f), delta / 25);
+	for (int i = 0; i < 2; i++)
+		scene->all_models[i]->rotate(vec3(0.f, 1.f, 0.f), delta / 25);
 
 	GBuffer->start_program();
 	// Draw models of the scene
@@ -113,10 +114,10 @@ void Renderer::render()
 			scene->direct_lights[i]->space_matrix
 		);
 	}
-
-	// Render to quad
-	deferredShading->render(scene->camera);
 	
+	// Render with deferred shading
+	deferredShading->render(scene->camera);
+
 	//
 	//// 3. Pass: Draw light meshes (The meshes that are not lit but in the same scene with other meshes)
 	//

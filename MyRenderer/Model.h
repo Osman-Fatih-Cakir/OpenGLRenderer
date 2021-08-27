@@ -25,6 +25,7 @@ public:
     void translate(float x, float y, float z);
     void rotate(vec3 vec, float angle);
     void scale(vec3 vec);
+    void scale(float x, float y, float z);
     mat4 get_model_matrix();
     mat4 get_normal_matrix();
     void draw(GLuint shader_program);

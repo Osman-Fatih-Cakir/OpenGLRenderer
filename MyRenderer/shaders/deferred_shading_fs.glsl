@@ -7,6 +7,10 @@ in vec2 fTexCoord;
 uniform sampler2D gPosition;
 uniform sampler2D gNormal;
 uniform sampler2D gAlbedoSpec;
+// For gPbr_materials,
+//	R component : Roughness
+//	G component : Metallic
+uniform sampler2D gPbr_materials;
 
 struct Point_Light
 {

@@ -22,6 +22,7 @@ public:
 	void set_gPosition(GLuint id);
 	void set_gNormal(GLuint id);
 	void set_gAlbedoSpec(GLuint id);
+	void set_gPbr_materials(GLuint id);
 	void set_point_light(
 		vec3 position,
 		vec3 color,
@@ -50,10 +51,12 @@ private:
 	GLuint loc_gPosition;
 	GLuint loc_gNormal;
 	GLuint loc_gAlbedoSpec;
+	GLuint loc_gPbr_materials;
 	GLuint quad_VAO;
 	int point_light_count = 0;
 	int direct_light_count = 0;
 	gBuffer* GBuffer = nullptr;
+	unsigned int static_texture_uniform_count = 4;
 
 	void init_shaders();
 	void get_uniform_locations();

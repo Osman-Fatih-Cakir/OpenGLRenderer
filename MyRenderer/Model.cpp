@@ -42,6 +42,11 @@ void Model::scale(vec3 vec)
     model_matrix = glm::scale(model_matrix, vec);
     update_normal_matrix();
 }
+void Model::scale(float x, float y, float z)
+{
+    model_matrix = glm::scale(model_matrix, vec3(x, y, z));
+    update_normal_matrix();
+}
 
 mat4 Model::get_model_matrix()
 {
@@ -159,13 +164,19 @@ Mesh Model::process_mesh(aiMesh* mesh, const aiScene* scene)
     // Process materials
     aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
 
-    // Diffuse map
-    std::vector<Texture> diffuse_maps = load_material_textures(material, aiTextureType_DIFFUSE, "diffuse_map");
-    textures.insert(textures.end(), diffuse_maps.begin(), diffuse_maps.end());
+    // Albedo map
+    std::vector<Texture> albedo_maps = load_material_textures(material, aiTextureType_DIFFUSE, "albedo_map");
+    textures.insert(textures.end(), albedo_maps.begin(), albedo_maps.end());
     // Normal map
     std::vector<Texture> normal_maps = load_material_textures(material, aiTextureType_HEIGHT, "normal_map");
     if (normal_maps.size() > 0) has_normal_map = true;
     textures.insert(textures.end(), normal_maps.begin(), normal_maps.end());
+    // Metallic map
+    std::vector<Texture> metallic_maps = load_material_textures(material, aiTextureType_AMBIENT, "metallic_map");
+    textures.insert(textures.end(), metallic_maps.begin(), metallic_maps.end());
+    // Roughness map
+    std::vector<Texture> roughness_maps = load_material_textures(material, aiTextureType_SHININESS, "roughness_map");
+    textures.insert(textures.end(), roughness_maps.begin(), roughness_maps.end());
 
     // return a mesh object created from the extracted mesh data
     return Mesh(vertices, indices, textures);

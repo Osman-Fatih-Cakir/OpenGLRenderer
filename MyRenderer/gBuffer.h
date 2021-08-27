@@ -22,6 +22,7 @@ public:
 	GLuint get_gPosition();
 	GLuint get_gNormal();
 	GLuint get_gAlbedoSpec();
+	GLuint get_gPbr_materials();
 	GLuint get_fbo();
 	GLuint get_shader_program();
 
@@ -30,7 +31,6 @@ public:
 	void set_view_matrix(mat4 mat);
 	void set_model_matrix(mat4 mat);
 	void set_normal_matrix(mat4 mat);
-	void set_diffuse_texture(GLuint id);
 	unsigned int get_width();
 	unsigned int get_height();
 	void render(Camera* camera, Model* model);
@@ -45,10 +45,10 @@ private:
 	GLuint loc_view_matrix;
 	GLuint loc_model_matrix;
 	GLuint loc_normal_matrix;
-	GLuint loc_diffuse;
 	GLuint gPosition;
 	GLuint gNormal;
 	GLuint gAlbedoSpec;
+	GLuint gPbr_materials;
 
 	void init_shaders();
 	void create_framebuffer();

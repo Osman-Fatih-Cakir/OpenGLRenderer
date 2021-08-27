@@ -3,15 +3,17 @@
 layout(location = 0) out vec3 gPosition;
 layout(location = 1) out vec3 gNormal;
 layout(location = 2) out vec4 gAlbedoSpec;
+layout(location = 3) out vec3 gPbr_materials;
 
 in vec2 fTexCoord;
 in vec3 fFragPos;
 in vec3 fNormal;
 in mat3 TBN;
 
-uniform sampler2D diffuse_map;
-// TODO add specular map
+uniform sampler2D albedo_map;
 uniform sampler2D normal_map;
+uniform sampler2D metallic_map;
+uniform sampler2D roughness_map;
 
 uniform bool has_normal_map;
 
@@ -34,8 +36,13 @@ void main()
 		gNormal = fNormal;
 	}
 	
-	// Diffuse
-	gAlbedoSpec.rgb = texture(diffuse_map, fTexCoord).rgb;
+	// Albdedo
+	gAlbedoSpec.rgb = texture(albedo_map, fTexCoord).rgb;
 	// Specular (float number)
 	gAlbedoSpec.a = 0.5;
+
+	// Roughness
+	gPbr_materials.r = texture(roughness_map, fTexCoord).r;
+	// Metallic
+	gPbr_materials.g = texture(metallic_map, fTexCoord).r;
 }

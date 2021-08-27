@@ -19,7 +19,7 @@ gBuffer::gBuffer()
 	// Initialize and compile shaders, create shader program
 	init_shaders();
 
-	// Initialize g-buffer framebuffer and color attachments
+	// Initialize g-buffer framebuffer
 	create_framebuffer();
 
 	// Get uniform locations
@@ -68,6 +68,11 @@ GLuint gBuffer::get_gAlbedoSpec()
 {
 	return gAlbedoSpec;
 }
+// Returns g-buffer color attachment stores roughness and metallic
+GLuint gBuffer::get_gPbr_materials()
+{
+	return gPbr_materials;
+}
 
 // Returns framebuffer object of g-buffer
 GLuint gBuffer::get_fbo()
@@ -111,15 +116,6 @@ void gBuffer::set_model_matrix(mat4 mat)
 void gBuffer::set_normal_matrix(mat4 mat)
 {
 	glUniformMatrix4fv(loc_normal_matrix, 1, GL_FALSE, &mat[0][0]);
-}
-
-// Sets diffuse texture
-void gBuffer::set_diffuse_texture(GLuint id)
-{
-	GLuint loc_diff_texture = glGetUniformLocation(program, "diffuse_map");
-	glUniform1i(loc_diff_texture, 0);
-	glActiveTexture(GL_TEXTURE0 + 0);
-	glBindTexture(GL_TEXTURE_2D, id);
 }
 
 unsigned int gBuffer::get_width()
@@ -174,6 +170,7 @@ void gBuffer::create_framebuffer()
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, gPosition, 0);
+	glBindTexture(GL_TEXTURE_2D, 0);
 
 	// Normal color buffer
 	glGenTextures(1, &gNormal);
@@ -182,7 +179,9 @@ void gBuffer::create_framebuffer()
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, gNormal, 0);
+	glBindTexture(GL_TEXTURE_2D, 0);
 
+	// TODO change this (3 float is enough, no room for specular component)
 	// Color + Specular color buffer
 	glGenTextures(1, &gAlbedoSpec);
 	glBindTexture(GL_TEXTURE_2D, gAlbedoSpec);
@@ -190,10 +189,21 @@ void gBuffer::create_framebuffer()
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, gAlbedoSpec, 0);
+	glBindTexture(GL_TEXTURE_2D, 0);
+
+	// Rougness and metallic component
+	glGenTextures(1, &gPbr_materials);
+	glBindTexture(GL_TEXTURE_2D, gPbr_materials);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, gBuffer_width, gBuffer_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT3, GL_TEXTURE_2D, gPbr_materials, 0);
+	glBindTexture(GL_TEXTURE_2D, 0);
 
 	// Tell OpenGL which color attachments we'll use (of this framebuffer) for rendering 
-	GLuint attachments[3] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 };
-	glDrawBuffers(3, attachments);
+	GLuint attachments[4] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1,
+		GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3 };
+	glDrawBuffers(4, attachments);
 
 	// Create and attach depth buffer (renderbuffer)
 	GLuint rbo_depth;
@@ -215,5 +225,4 @@ void gBuffer::get_uniform_locations()
 	loc_view_matrix = glGetUniformLocation(program, "view_matrix");
 	loc_model_matrix = glGetUniformLocation(program, "model_matrix");
 	loc_normal_matrix = glGetUniformLocation(program, "normal_matrix");
-	loc_diffuse = glGetUniformLocation(program, "diffuse");
 }

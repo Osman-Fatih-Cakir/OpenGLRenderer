@@ -192,19 +192,14 @@ void resize_window(int w, int h)
 void init_meshes()
 {
 	// Scene meshes
-	Model* model = new Model("mesh/guitar/guitar.obj");
-	model->translate(-2.f, -1.f, 0.f);
-	model->scale(vec3(0.06f, 0.06f, 0.06f));
+	Model* model = new Model("mesh/Mandalorian_Helmet/Mandalorian_Helmet.obj");
+	model->translate(2.f, 0.f, 0.f);
+	model->scale(0.03f, 0.03f, 0.03f);
 	scene->add_model(model);
 
-	model = new Model("mesh/backpack/backpack.obj");
-	model->translate(3.f, -1.3f, 1.f);
-	model->scale(vec3(0.7f, 0.7f, 0.7f));
-	scene->add_model(model);
-
-	model = new Model("mesh/floor/floor.obj");
-	model->translate(vec3(0.f, -3.f, 0.f));
-	model->scale(vec3(0.1f, 0.1f, 0.1f));
+	model = new Model("mesh/Mandalorian_Helmet/Mandalorian_Helmet.obj");
+	model->translate(-2.f, 0.f, 0.f);
+	model->scale(0.03f, 0.03f, 0.03f);
 	scene->add_model(model);
 }
 
@@ -226,14 +221,14 @@ void init_lights()
 	// Light positions
 	for (int i = 0; i < point_light_count; i++)
 	{
-		vec3 _position = vec3(0.f, 7.f, -3.f);
+		vec3 _position = vec3(0.f, 0.f, 7.5f);
 		vec3 _color = vec3(1.f, 1.f, 1.f);
 
 		// Initialize light
 		PointLight* light = new PointLight(_position, _color);
 		light->intensity = 2.f;
 		// Draw a mesh for represent a light
-		Model* light_model = new Model("mesh/cube.obj");
+		Model* light_model = new Model("mesh/white_cube/cube.obj");
 		light_model->translate(light->position);
 		light->model = light_model;
 	

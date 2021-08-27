@@ -72,6 +72,14 @@ void DeferredShading::set_gAlbedoSpec(GLuint id)
 	glBindTexture(GL_TEXTURE_2D, id);
 }
 
+// Sets g-buffer roughness color attachment
+void DeferredShading::set_gPbr_materials(GLuint id)
+{
+	glUniform1i(loc_gPbr_materials, 3);
+	glActiveTexture(GL_TEXTURE0 + 3);
+	glBindTexture(GL_TEXTURE_2D, id);
+}
+
 void DeferredShading::set_point_light
 	(
 		vec3 position,
@@ -110,8 +118,8 @@ void DeferredShading::set_point_light
 
 	light_array_str = "point_lights[" + std::to_string(point_light_count) + "].point_shadow_map";
 	GLuint loc_light_cubemap = glGetUniformLocation(program, (GLchar*)light_array_str.c_str());
-	glUniform1i(loc_light_cubemap, 3 + point_light_count + direct_light_count);
-	glActiveTexture(GL_TEXTURE0 + 3 + point_light_count + direct_light_count);
+	glUniform1i(loc_light_cubemap, static_texture_uniform_count + point_light_count + direct_light_count);
+	glActiveTexture(GL_TEXTURE0 + static_texture_uniform_count + point_light_count + direct_light_count);
 	glBindTexture(GL_TEXTURE_CUBE_MAP, shadow_map);
 
 	light_array_str = "point_lights[" + std::to_string(point_light_count) + "].intensity";
@@ -144,8 +152,8 @@ void DeferredShading::set_direct_light
 
 	light_array_str = "direct_lights[" + std::to_string(direct_light_count) + "].directional_shadow_map";
 	GLuint loc_lights_sm = glGetUniformLocation(program, (GLchar*)light_array_str.c_str());
-	glUniform1i(loc_lights_sm, 3 + point_light_count + direct_light_count);
-	glActiveTexture(GL_TEXTURE0 + 3 + point_light_count + direct_light_count);
+	glUniform1i(loc_lights_sm, static_texture_uniform_count + point_light_count + direct_light_count);
+	glActiveTexture(GL_TEXTURE0 + static_texture_uniform_count + point_light_count + direct_light_count);
 	glBindTexture(GL_TEXTURE_2D, shadow_map);
 
 	light_array_str = "direct_lights[" + std::to_string(direct_light_count) + "].light_space_matrix";
@@ -165,7 +173,8 @@ void DeferredShading::render(Camera* camera)
 	set_gPosition(GBuffer->get_gPosition());
 	set_gNormal(GBuffer->get_gNormal());
 	set_gAlbedoSpec(GBuffer->get_gAlbedoSpec());
-
+	set_gPbr_materials(GBuffer->get_gPbr_materials());
+	
 	// Draw call
 	draw_quad(program);
 }
@@ -185,6 +194,7 @@ void DeferredShading::get_uniform_locations()
 	loc_gPosition = glGetUniformLocation(program, "gPosition");
 	loc_gNormal = glGetUniformLocation(program, "gNormal");
 	loc_gAlbedoSpec = glGetUniformLocation(program, "gAlbedoSpec");
+	loc_gPbr_materials = glGetUniformLocation(program, "gPbr_materials");
 }
 
 // Initialize a quad
@@ -221,8 +231,8 @@ void DeferredShading::init_quad()
 void DeferredShading::draw_quad(GLuint shader_program)
 {
 	glBindVertexArray(quad_VAO);
-
+	GLuint err = glGetError(); if (err) fprintf(stderr, "%s\n", gluErrorString(err));
 	glDrawArrays(GL_TRIANGLES, 0, 6);
-
+	GLuint errr = glGetError(); if (errr) fprintf(stderr, "%s\n", gluErrorString(errr));
 	glBindVertexArray(0);
 }
