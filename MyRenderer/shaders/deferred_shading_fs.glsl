@@ -184,7 +184,7 @@ void main()
 
 	// Outgoing light
 	vec3 Lo = vec3(0.0);
-
+	/*
 	// Directional light calculations
 	for (int i = 0; i < NUMBER_OF_DIRECT_LIGHTS; i++)
 	{
@@ -194,6 +194,14 @@ void main()
 		vec3 light_dir = normalize(-direct_lights[i].direction);
 		// Halfway vector
 		vec3 halfway = normalize(view_dir + light_dir);
+
+		// Calculate shadow
+		float bias = max(0.001 * (1.0 - dot(normal, light_dir)), 0.001);
+		float shadow = directional_shadow_calculation(i, frag_pos, bias);
+
+		// If the fragment is in the shadow, there is no need for lighting calculations
+		if (shadow == 1.0)
+			continue;
 
 		// Surface reflection at zero incidence (F0)
 		vec3 F0 = vec3(0.04);
@@ -214,15 +222,11 @@ void main()
 		float denominator = 4.0 * max(dot(normal, view_dir), 0.0) * max(dot(normal, light_dir), 0.0);
 		vec3 specular = numerator / max(denominator, 0.001);
 
-		// Calculate shadow
-		float bias = max(0.001 * (1.0 - dot(normal, light_dir)), 0.001);
-		float shadow = directional_shadow_calculation(i, frag_pos, bias);
-
 		// Calculate Lo
 		float angle = max(dot(normal, light_dir), 0.0);
 		Lo += (kD * albedo / PI + specular) * angle;
 		Lo *= (1.0 - shadow) * direct_lights[i].intensity;
-	}
+	}*/
 	
 	// Point light calculations
 	for (int i = 0; i < NUMBER_OF_POINT_LIGHTS; i++) // Calculate lighting for all lights
@@ -237,6 +241,14 @@ void main()
 		vec3 light_dir = normalize(point_lights[i].position - frag_pos);
 		// Halfway vector
 		vec3 halfway = normalize(view_dir + light_dir);
+
+		// Calculate shadow
+		float bias = max(0.0001 * (1.0 - dot(normal, light_dir)), 0.0001);
+		float shadow = point_shadow_calculation(i, frag_pos, bias);
+
+		// If the fragment is in the shadow, there is no need for lighting calculations
+		if (shadow == 1.0)
+			continue;
 
 		// Surface reflection at zero incidence (F0)
 		vec3 F0 = vec3(0.04);
@@ -260,10 +272,6 @@ void main()
 		// Attenuation
 		float distance = length(point_lights[i].position - frag_pos);
 		float attenuation = 1.0 / (1.0 + point_lights[i].linear * distance + point_lights[i].quadratic * distance * distance);
-		
-		// Calculate shadow
-		float bias = max(0.0001 * (1.0 - dot(normal, light_dir)), 0.0001);
-		float shadow = point_shadow_calculation(i, frag_pos, bias);
 
 		// Calculate Lo
 		float angle = max(dot(normal, light_dir), 0.0);

@@ -1,20 +1,29 @@
 # OpenGLRenderer
 An OpenGL renderer.
 
+Note:
+In this project, my goal is to build a renderer using OpenGL. I will try to learn and implement common realtime computer graphics techniques.
+Since I am new to computer graphics, I would be happy to receive suggestions about the project and how I can improve myself :).
+
+
 In order to run on Visual Studio, make the solution platform to x86.
 
 Techniques that I used so far:
+- PBR (Cook-Torrance specular BRDF)
 - Deferred shading
 - Point light
 - Directional light
 - Shadows for all light types (shadow map)
 - Load objects with assimp
-- Normal map
 - Forward rendering
 
-Note:
-In this project, my goal is to build a renderer using OpenGL. I will try to learn and implement common realtime computer graphics techniques.
-Since I am new to computer graphics, I would be happy to receive suggestions about the project and how I can improve myself :).
+## Material file read (Probably bad)
+map_Ka	: Metallic map
+map_Kd	: Albedo map
+map_bump: Normal map
+map_Ns 	: Roughness map
+map_d 	: AO map
+
 
 ## Resources
 - https://learnopengl.com/
