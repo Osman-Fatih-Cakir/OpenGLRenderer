@@ -1,8 +1,8 @@
 #version 450 core
 
-out vec4 OutColor;
-
 in vec2 fTexCoord;
+
+out vec4 OutColor;
 
 uniform sampler2D gPosition;
 uniform sampler2D gNormal;
@@ -42,6 +42,8 @@ const int NUMBER_OF_DIRECT_LIGHTS = 1; // TODO hardcoded
 uniform Direct_Light direct_lights[NUMBER_OF_DIRECT_LIGHTS];
 
 uniform vec3 viewer_pos;
+
+const float PI = 3.14159265359;
 
 // Returns shadow value for directional light, (1.0: shadow, 0.0: non-shadow) 
 float directional_shadow_calculation(int light_index, vec4 _fPos_light_space, float bias)
@@ -111,20 +113,73 @@ float point_shadow_calculation(int light_index, vec3 _fPos, float bias)
 	return shadow;
 }
 
+// Calculate the ratio of surface reflection with Fresnel equation
+vec3 fresnel_schlick(float cos_theta, vec3 F0)
+{
+	return F0 + (1.0 - F0) * pow(max(1.0 - cos_theta, 0.0), 5.0);
+}
+
+// Calculate normal distribution property
+float distribution_GGX(vec3 N, vec3 H, float roughness)
+{
+	float a = roughness * roughness;
+	float a2 = a * a;
+	float NdotH = max(dot(N, H), 0.0);
+	float NdotH2 = NdotH * NdotH;
+
+	float num = a2;
+	float denom = (NdotH2 * (a2 - 1.0) + 1.0);
+	denom = PI * denom * denom;
+
+	return num / denom;
+}
+
+// Calculates geometry-schlick equation
+float geometry_schlick_GGX(float NdotV, float roughness)
+{
+	float r = (roughness + 1.0);
+	float k = (r * r) / 8.0;
+
+	float num = NdotV;
+	float denom = NdotV * (1.0 - k) + k;
+
+	return num / denom;
+}
+
+// Calculate self-shadowing property using Schlick-GGX with Smith method
+float geometry_smith(vec3 N, vec3 V, vec3 L, float roughness)
+{
+	float NdotV = max(dot(N, V), 0.0);
+	float NdotL = max(dot(N, L), 0.0);
+	float ggx2 = geometry_schlick_GGX(NdotV, roughness);
+	float ggx1 = geometry_schlick_GGX(NdotL, roughness);
+
+	return ggx1 * ggx2;
+}
+
+// TODO fill these after pbr is done
+// Calculate point lighting
+float calculate_point_light()
+{
+	return 0.0;
+}
+// Calculate directional lighting
+float calculate_direct_light()
+{
+	return 0.0;
+}
+
 void main()
 {
 	// Sample the data from gBuffer
 	vec3 frag_pos = texture(gPosition, fTexCoord).rgb;
 	vec3 normal = texture(gNormal, fTexCoord).rgb;
-	vec3 diffuse = texture(gAlbedoSpec, fTexCoord).rgb;
+	vec3 albedo = texture(gAlbedoSpec, fTexCoord).rgb;
 	float spec = texture(gAlbedoSpec, fTexCoord).a;
+	float roughness = texture(gPbr_materials, fTexCoord).r;
+	float metallic = texture(gPbr_materials, fTexCoord).g;
 
-	vec3 Ambient = diffuse * 0.005;
-	// Calculate the lighting using Blinn-Phong
-	vec3 view_dir = normalize(viewer_pos - frag_pos);
-
-	vec3 lighting = vec3(0.0);
-	
+	/*
 	// Directional light calculations
 	for (int i = 0; i < NUMBER_OF_DIRECT_LIGHTS; i++)
 	{
@@ -144,6 +199,10 @@ void main()
 
 		lighting += (Diffuse + Specular) * direct_lights[i].intensity * (1.0 - shadow);
 	}
+	*/
+
+	// Outgoing light
+	vec3 Lo = vec3(0.0);
 
 	// Point light calculations
 	for (int i = 0; i < NUMBER_OF_POINT_LIGHTS; i++) // Calculate lighting for all lights
@@ -152,27 +211,49 @@ void main()
 		if (length(point_lights[i].position - frag_pos) > point_lights[i].radius)
 			continue;
 
-		// Diffuse
+		// View direction
+		vec3 view_dir = normalize(viewer_pos - frag_pos);
+		// Light direction
 		vec3 light_dir = normalize(point_lights[i].position - frag_pos);
-		vec3 Diffuse = max(dot(normal, light_dir), 0.0) * diffuse * point_lights[i].color;
-		
-		// Specular
-		vec3 halfway = normalize(light_dir + view_dir);
-		float specular = pow(max(dot(normal, halfway), 0), 4.0); // TODO shineness is hardcoded
-		vec3 Specular = specular * point_lights[i].color * spec;
+		// Halfway vector
+		vec3 halfway = normalize(view_dir + light_dir);
+
+		// Surface reflection at zero incidence (F0)
+		vec3 F0 = vec3(0.04);
+		F0 = mix(F0, albedo, metallic);
+
+		// Cook-Torrance specular BRDF variables
+		float NDF = distribution_GGX(normal, halfway, roughness);
+		float G = geometry_smith(normal, view_dir, light_dir, roughness);
+		vec3 F = fresnel_schlick(max(dot(halfway, view_dir), 0.0), F0);
+
+		// Calculate refracted light (kD)
+		vec3 kS = F;
+		vec3 kD = vec3(1.0) - kS;
+		kD *= 1.0 - metallic;
+
+		// Calculate Cook-Torrance specular BRDF
+		vec3 numerator = NDF * G * F;
+		float denominator = 4.0 * max(dot(normal, view_dir), 0.0) * max(dot(normal, light_dir), 0.0);
+		vec3 specular = numerator / max(denominator, 0.001);
 
 		// Attenuation
 		float distance = length(point_lights[i].position - frag_pos);
 		float attenuation = 1.0 / (1.0 + point_lights[i].linear * distance + point_lights[i].quadratic * distance * distance);
-		Diffuse *= attenuation;
-		Specular *= attenuation;
 		
+		// Calculate shadow
 		float bias = max(0.0001 * (1.0 - dot(normal, light_dir)), 0.0001);
 		float shadow = point_shadow_calculation(i, frag_pos, bias);
-		lighting += (Diffuse + Specular) * (1.0 - shadow) * point_lights[i].intensity;
+
+		// Calculate Lo
+		float angle = max(dot(normal, light_dir), 0.0);
+		Lo += (kD * albedo / PI + specular) * attenuation * angle;
+		Lo *= (1.0 - shadow) * point_lights[i].intensity;
+		//lighting += (Diffuse + Specular) * (1.0 - shadow) * point_lights[i].intensity;
 	}
 
-	lighting += Ambient; // Add ambient light at the end
+	vec3 ambient = vec3(0.03) * albedo * vec3(1.0, 1.0, 1.0); // AO component is white for now
+	Lo += ambient; // Add ambient light at the end
 
-	OutColor = vec4(lighting, 1.0);
+	OutColor = vec4(Lo, 1.0);
 }

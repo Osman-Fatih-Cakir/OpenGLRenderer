@@ -131,7 +131,6 @@ void Renderer::render()
 	{
 		if (scene->point_lights[i]->model != nullptr)
 		{
-			// TODO change forward rendering attributes
 			forwardRender->set_model_matrix(scene->point_lights[i]->model->get_model_matrix());
 			forwardRender->set_color(scene->point_lights[i]->color);
 			forwardRender->render(scene->camera, scene->point_lights[i]->model);
