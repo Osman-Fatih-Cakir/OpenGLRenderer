@@ -184,7 +184,7 @@ void main()
 
 	// Outgoing light
 	vec3 Lo = vec3(0.0);
-	/*
+	
 	// Directional light calculations
 	for (int i = 0; i < NUMBER_OF_DIRECT_LIGHTS; i++)
 	{
@@ -226,7 +226,7 @@ void main()
 		float angle = max(dot(normal, light_dir), 0.0);
 		Lo += (kD * albedo / PI + specular) * angle;
 		Lo *= (1.0 - shadow) * direct_lights[i].intensity;
-	}*/
+	}
 	
 	// Point light calculations
 	for (int i = 0; i < NUMBER_OF_POINT_LIGHTS; i++) // Calculate lighting for all lights
