@@ -221,12 +221,12 @@ void init_lights()
 	// Light positions
 	for (int i = 0; i < point_light_count; i++)
 	{
-		vec3 _position = vec3(2.f, 3.f, 3.f);
+		vec3 _position = vec3(-3.f, 1.f, 3.f);
 		vec3 _color = vec3(1.f, 1.f, 1.f);
 
 		// Initialize light
 		PointLight* light = new PointLight(_position, _color);
-		light->intensity = 20.f;
+		light->intensity = 4.f;
 		// Draw a mesh for represent a light
 		Model* light_model = new Model("mesh/white_cube/cube.obj");
 		light_model->translate(light->position);
@@ -244,6 +244,7 @@ void init_lights()
 	for (int i = 0; i < direct_light_count; i++)
 	{
 		DirectionalLight* light = new DirectionalLight(vec3(-1.0f, -1.0f, -1.0f), vec3(1.f, 1.f, 1.f));
+		light->intensity = 2.0f;
 		mat4 proj_mat = glm::ortho(-20.f, 20.f, -20.f, 20.f, 0.1f, 1000.f);
 		mat4 view_mat = glm::lookAt(vec3(5, 5, 5), vec3(0, 0, 0), vec3(-1, 1, -1));
 		light->calculate_space_matrix(proj_mat, view_mat);

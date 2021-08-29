@@ -46,10 +46,11 @@ uniform vec3 viewer_pos;
 const float PI = 3.14159265359;
 
 // Returns shadow value for directional light, (1.0: shadow, 0.0: non-shadow) 
-float directional_shadow_calculation(int light_index, vec4 _fPos_light_space, float bias)
+float directional_shadow_calculation(int light_index, vec3 _fPos, float bias)
 {
 	// Perspective divide
-	vec3 proj_coord = _fPos_light_space.xyz / _fPos_light_space.w;
+	vec4 frag_pos_for_light = direct_lights[light_index].light_space_matrix * vec4(_fPos, 1.0);
+	vec3 proj_coord = frag_pos_for_light.xyz / frag_pos_for_light.w;
 
 	// Transform to [1,0] range
 	proj_coord = proj_coord * 0.5 + 0.5;
@@ -179,31 +180,48 @@ void main()
 	float roughness = texture(gPbr_materials, fTexCoord).r;
 	float metallic = texture(gPbr_materials, fTexCoord).g;
 
-	/*
-	// Directional light calculations
-	for (int i = 0; i < NUMBER_OF_DIRECT_LIGHTS; i++)
-	{
-		// Diffuse
-		vec3 light_dir = normalize(-direct_lights[i].direction);
-		vec3 Diffuse = max(dot(normal, light_dir), 0.0) * diffuse * direct_lights[i].color;
-
-		// Specular
-		vec3 halfway = normalize(light_dir + view_dir);
-		float specular = pow(max(dot(normal, halfway), 0), 1.0); // TODO shineness is hardcoded
-		vec3 Specular = specular * point_lights[i].color * spec;
-
-		// Calculate shadow
-		vec4 fPos_light_space = direct_lights[i].light_space_matrix * vec4(frag_pos, 1.0);
-		float bias = max(0.001 * (1.0 - dot(normal, light_dir)), 0.001);
-		float shadow = directional_shadow_calculation(i, fPos_light_space, bias);
-
-		lighting += (Diffuse + Specular) * direct_lights[i].intensity * (1.0 - shadow);
-	}
-	*/
-
 	// Outgoing light
 	vec3 Lo = vec3(0.0);
 
+	// Directional light calculations
+	for (int i = 0; i < NUMBER_OF_DIRECT_LIGHTS; i++)
+	{
+		// View direction
+		vec3 view_dir = normalize(viewer_pos - frag_pos);
+		// Light direction
+		vec3 light_dir = normalize(-direct_lights[i].direction);
+		// Halfway vector
+		vec3 halfway = normalize(view_dir + light_dir);
+
+		// Surface reflection at zero incidence (F0)
+		vec3 F0 = vec3(0.04);
+		F0 = mix(F0, albedo, metallic);
+
+		// Cook-Torrance specular BRDF variables
+		float NDF = distribution_GGX(normal, halfway, roughness);
+		float G = geometry_smith(normal, view_dir, light_dir, roughness);
+		vec3 F = fresnel_schlick(max(dot(halfway, view_dir), 0.0), F0);
+
+		// Calculate refracted light (kD)
+		vec3 kS = F;
+		vec3 kD = vec3(1.0) - kS;
+		kD *= 1.0 - metallic;
+
+		// Calculate Cook-Torrance specular BRDF
+		vec3 numerator = NDF * G * F;
+		float denominator = 4.0 * max(dot(normal, view_dir), 0.0) * max(dot(normal, light_dir), 0.0);
+		vec3 specular = numerator / max(denominator, 0.001);
+
+		// Calculate shadow
+		float bias = max(0.001 * (1.0 - dot(normal, light_dir)), 0.001);
+		float shadow = directional_shadow_calculation(i, frag_pos, bias);
+
+		// Calculate Lo
+		float angle = max(dot(normal, light_dir), 0.0);
+		Lo += (kD * albedo / PI + specular) * angle;
+		Lo *= (1.0 - shadow) * direct_lights[i].intensity;
+	}
+	
 	// Point light calculations
 	for (int i = 0; i < NUMBER_OF_POINT_LIGHTS; i++) // Calculate lighting for all lights
 	{
@@ -249,7 +267,6 @@ void main()
 		float angle = max(dot(normal, light_dir), 0.0);
 		Lo += (kD * albedo / PI + specular) * attenuation * angle;
 		Lo *= (1.0 - shadow) * point_lights[i].intensity;
-		//lighting += (Diffuse + Specular) * (1.0 - shadow) * point_lights[i].intensity;
 	}
 
 	vec3 ambient = vec3(0.03) * albedo * vec3(1.0, 1.0, 1.0); // AO component is white for now

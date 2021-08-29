@@ -38,8 +38,6 @@ void main()
 	
 	// Albdedo
 	gAlbedoSpec.rgb = texture(albedo_map, fTexCoord).rgb;
-	// Specular (float number)
-	gAlbedoSpec.a = 0.5;
 
 	// Roughness
 	gPbr_materials.r = texture(roughness_map, fTexCoord).r;
