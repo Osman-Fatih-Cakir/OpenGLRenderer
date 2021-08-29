@@ -177,6 +177,9 @@ Mesh Model::process_mesh(aiMesh* mesh, const aiScene* scene)
     // Roughness map
     std::vector<Texture> roughness_maps = load_material_textures(material, aiTextureType_SHININESS, "roughness_map");
     textures.insert(textures.end(), roughness_maps.begin(), roughness_maps.end());
+    // AO map
+    std::vector<Texture> ao_maps = load_material_textures(material, aiTextureType_OPACITY, "ao_map");
+    textures.insert(textures.end(), ao_maps.begin(), ao_maps.end());
 
     // return a mesh object created from the extracted mesh data
     return Mesh(vertices, indices, textures);

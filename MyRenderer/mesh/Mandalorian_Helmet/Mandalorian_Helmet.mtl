@@ -9,3 +9,4 @@ map_Ka textures\Metallic.png
 map_Kd textures\Albedo.png
 map_bump textures\Normal.png
 map_Ns textures\Roughness.png
+map_d textures\AO.png

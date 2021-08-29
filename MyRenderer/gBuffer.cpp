@@ -181,8 +181,7 @@ void gBuffer::create_framebuffer()
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, gNormal, 0);
 	glBindTexture(GL_TEXTURE_2D, 0);
 
-	// TODO change this (3 float is enough, no room for specular component)
-	// Color + Specular color buffer
+	// Albedo color buffer
 	glGenTextures(1, &gAlbedoSpec);
 	glBindTexture(GL_TEXTURE_2D, gAlbedoSpec);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, gBuffer_width, gBuffer_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
@@ -191,7 +190,7 @@ void gBuffer::create_framebuffer()
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, gAlbedoSpec, 0);
 	glBindTexture(GL_TEXTURE_2D, 0);
 
-	// Rougness and metallic component
+	// Rougness, metallic, ao component
 	glGenTextures(1, &gPbr_materials);
 	glBindTexture(GL_TEXTURE_2D, gPbr_materials);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, gBuffer_width, gBuffer_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);

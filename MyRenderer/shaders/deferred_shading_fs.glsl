@@ -10,6 +10,7 @@ uniform sampler2D gAlbedoSpec;
 // For gPbr_materials,
 //	R component : Roughness
 //	G component : Metallic
+//	B component : AO (Ambient Occlusion)
 uniform sampler2D gPbr_materials;
 
 struct Point_Light
@@ -179,6 +180,7 @@ void main()
 	float spec = texture(gAlbedoSpec, fTexCoord).a;
 	float roughness = texture(gPbr_materials, fTexCoord).r;
 	float metallic = texture(gPbr_materials, fTexCoord).g;
+	float ao = texture(gPbr_materials, fTexCoord).b;
 
 	// Outgoing light
 	vec3 Lo = vec3(0.0);
@@ -269,7 +271,7 @@ void main()
 		Lo *= (1.0 - shadow) * point_lights[i].intensity;
 	}
 
-	vec3 ambient = vec3(0.03) * albedo * vec3(1.0, 1.0, 1.0); // AO component is white for now
+	vec3 ambient = vec3(0.03) * albedo * ao; // AO component
 	Lo += ambient; // Add ambient light at the end
 
 	OutColor = vec4(Lo, 1.0);
