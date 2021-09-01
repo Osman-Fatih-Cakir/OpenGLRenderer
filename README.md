@@ -26,7 +26,7 @@ map_d 	: AO map
 
 ## Resources
 - https://learnopengl.com/
-Models:
+## Models:
 - https://www.cgtrader.com/free-3d-models/military/armor/mandalorian-helmet-e1903ae2-3218-43bc-a22c-a102284d230e
 
 ## Note:
