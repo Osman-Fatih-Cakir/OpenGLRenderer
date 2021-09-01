@@ -25,9 +25,11 @@
 #define DBG_NEW new
 #endif
 #ifdef _DEBUG
+/*
 #define new new( _NORMAL_BLOCK , __FILE__ , __LINE__ )
 #else
 #define new new
+*/
 #endif
 ////////////////
 
@@ -67,7 +69,8 @@ void render();
 
 // Initial function
 int main(int argc, char* argv[])
-{	
+{
+	_CrtDumpMemoryLeaks();
 	Init_Glut_and_Glew(argc, argv);
 
 	// Main function that prepares the scene and program
@@ -98,8 +101,7 @@ void Init_Glut_and_Glew(int argc, char* argv[])
 	// Initialize Glew
 	glewExperimental = GL_TRUE;
 	GLenum err = glewInit();
-	// TODO After updating glew version, delete this
-	GLuint errr = glGetError(); if (errr) fprintf(stderr, "%s\n", gluErrorString(errr));
+
 	if (GLEW_OK != err)
 	{
 		std::cout << "Unable to initalize Glew ! " << std::endl;
@@ -129,12 +131,10 @@ void init()
 // Exit from the application
 void exit_app()
 {
-	// Destroy window
-	window->destroy_window();
-
 	// Deallocate all pointers
 	delete window;
 	delete renderer;
+	delete input_handler;
 
 	// Check for leaks
 	_CrtDumpMemoryLeaks();
@@ -191,16 +191,32 @@ void resize_window(int w, int h)
 // Initailize spheres
 void init_meshes()
 {
+	
 	// Scene meshes
 	Model* model = new Model("mesh/Mandalorian_Helmet/Mandalorian_Helmet.obj");
 	model->translate(2.f, 0.f, 0.f);
 	model->scale(0.03f, 0.03f, 0.03f);
 	scene->add_model(model);
-
+	
 	model = new Model("mesh/Mandalorian_Helmet/Mandalorian_Helmet.obj");
 	model->translate(-2.f, 0.f, 0.f);
 	model->scale(0.03f, 0.03f, 0.03f);
 	scene->add_model(model);
+	
+	/*
+	Model* model = new Model("mesh/test/sphere.obj");
+	model->translate(2.f, 0.f, 0.f);
+	scene->add_model(model);
+
+	model = new Model("mesh/test/sphere.obj");
+	model->translate(-2.f, 0.f, 0.f);
+	scene->add_model(model);
+
+	model = new Model("mesh/test/plane.obj");
+	model->translate(0.f, -1.f, 0.f);
+	model->scale(5.f, 1.f, 5.f);
+	scene->add_model(model);
+	*/
 }
 
 // Initialize camera
@@ -213,6 +229,7 @@ void init_camera(vec3 eye, vec3 up, vec3 center)
 // Initialize light paramters
 void init_lights()
 {
+	
 	//
 	//// Point lights 
 	//
@@ -221,12 +238,12 @@ void init_lights()
 	// Light positions
 	for (int i = 0; i < point_light_count; i++)
 	{
-		vec3 _position = vec3(-3.f, 2.f, 3.f);
+		vec3 _position = vec3(-1.f, 3.f, 3.f);
 		vec3 _color = vec3(1.f, 1.f, 1.f);
 
 		// Initialize light
 		PointLight* light = new PointLight(_position, _color);
-		light->intensity = 4.f;
+		light->intensity = 2.f;
 		// Draw a mesh for represent a light
 		Model* light_model = new Model("mesh/white_cube/cube.obj");
 		light_model->translate(light->position);
@@ -236,15 +253,16 @@ void init_lights()
 		light->create_depth_map_framebuffer();
 		scene->add_point_light(light);
 	}
-
+	
 	//
 	//// Directional lights
 	//
 
 	for (int i = 0; i < direct_light_count; i++)
 	{
-		DirectionalLight* light = new DirectionalLight(vec3(-1.0f, -1.0f, -1.0f), vec3(1.f, 1.f, 1.f));
-		light->intensity = 2.0f;
+		DirectionalLight* light = new DirectionalLight(/*vec3(-1.0f, -1.0f, -1.0f)*/vec3(-1.f, -1.f, 0.f), vec3(1.f, 1.f, 1.f));
+		light->intensity = 2.f;
+		// TODO calculate shadow variables elsewhere
 		mat4 proj_mat = glm::ortho(-20.f, 20.f, -20.f, 20.f, 0.1f, 1000.f);
 		mat4 view_mat = glm::lookAt(vec3(5, 5, 5), vec3(0, 0, 0), vec3(-1, 1, -1));
 		light->calculate_space_matrix(proj_mat, view_mat);
@@ -265,14 +283,14 @@ void init_scene()
 
 	// Set camera parameters
 	init_camera(
-		vec3(0.f, 0.f, 7.f), // Eye
+		vec3(0.f, 2.f, 7.f), // Eye
 		vec3(0.f, 1.f, 0.f), // Up
 		vec3(0.f, 0.f, 0.f) // Center
 	);
-
+	
 	// Initialize lights
 	init_lights();
-
+	
 	// Initialize renderer
 	renderer = new Renderer(scene);
 }

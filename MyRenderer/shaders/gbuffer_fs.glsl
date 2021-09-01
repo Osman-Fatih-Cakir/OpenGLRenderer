@@ -32,9 +32,11 @@ void main()
 	else
 	{
 		// TODO check here (Meshes without normal maps)
-		//vec3 _gNormal = fNormal * 2.0 - 1.0;
-		//gNormal = normalize(TBN * _gNormal);
-		gNormal = fNormal;
+		/*
+		vec3 _gNormal = fNormal * 2.0 - 1.0;
+		gNormal = normalize(TBN * _gNormal);
+		*/
+		gNormal = normalize(fNormal);
 	}
 	
 	// Albdedo

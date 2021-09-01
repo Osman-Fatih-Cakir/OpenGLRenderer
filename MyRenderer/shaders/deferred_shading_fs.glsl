@@ -100,7 +100,7 @@ float point_shadow_calculation(int light_index, vec3 _fPos, float bias)
 		vec3(0, 1, 1), vec3(0, -1, 1), vec3(0, -1, -1), vec3(0, 1, -1)
 	);
 
-	float radius = 0.08;
+	float radius = 0.03;
 
 	for (int i = 0; i < 20; i++)
 	{
@@ -111,7 +111,7 @@ float point_shadow_calculation(int light_index, vec3 _fPos, float bias)
 	}
 
 	shadow /= 20.f;
-
+	
 	return shadow;
 }
 
@@ -177,10 +177,16 @@ void main()
 	vec3 frag_pos = texture(gPosition, fTexCoord).rgb;
 	vec3 normal = texture(gNormal, fTexCoord).rgb;
 	vec3 albedo = texture(gAlbedoSpec, fTexCoord).rgb;
-	float spec = texture(gAlbedoSpec, fTexCoord).a;
 	float roughness = texture(gPbr_materials, fTexCoord).r;
 	float metallic = texture(gPbr_materials, fTexCoord).g;
 	float ao = texture(gPbr_materials, fTexCoord).b;
+
+	////////////////////////////////////////////////////////
+	//albedo = vec3(0.0, 0.5, 1.0);
+	//roughness = 0.2;
+	//metallic = 0.0;
+	//ao = 1.0;
+	////////////////////////////////////////////////////////
 
 	// Outgoing light
 	vec3 Lo = vec3(0.0);
@@ -196,12 +202,14 @@ void main()
 		vec3 halfway = normalize(view_dir + light_dir);
 
 		// Calculate shadow
-		float bias = max(0.001 * (1.0 - dot(normal, light_dir)), 0.001);
+		float max_bias = 0.003;//0.002;
+		float min_bias = 0.0003;//0.001;
+		float bias = max(max_bias * (1.0 - dot(normal, light_dir)), min_bias);
 		float shadow = directional_shadow_calculation(i, frag_pos, bias);
 
 		// If the fragment is in the shadow, there is no need for lighting calculations
-		if (shadow == 1.0)
-			continue;
+		//if (shadow == 1.0)
+		//	continue;
 
 		// Surface reflection at zero incidence (F0)
 		vec3 F0 = vec3(0.04);
@@ -225,7 +233,7 @@ void main()
 		// Calculate Lo
 		float angle = max(dot(normal, light_dir), 0.0);
 		Lo += (kD * albedo / PI + specular) * angle;
-		Lo *= (1.0 - shadow) * direct_lights[i].intensity;
+		Lo *= direct_lights[i].intensity * (1.0 - shadow);
 	}
 	
 	// Point light calculations
@@ -243,12 +251,14 @@ void main()
 		vec3 halfway = normalize(view_dir + light_dir);
 
 		// Calculate shadow
-		float bias = max(0.0001 * (1.0 - dot(normal, light_dir)), 0.0001);
+		float max_bias = 0.5;
+		float min_bias = 0.1;
+		float bias = max(max_bias * (1.0 - dot(normal, light_dir)), min_bias);
 		float shadow = point_shadow_calculation(i, frag_pos, bias);
 
 		// If the fragment is in the shadow, there is no need for lighting calculations
-		if (shadow == 1.0)
-			continue;
+		//if (shadow >= 1.0)
+		//	continue;
 
 		// Surface reflection at zero incidence (F0)
 		vec3 F0 = vec3(0.04);
@@ -276,11 +286,15 @@ void main()
 		// Calculate Lo
 		float angle = max(dot(normal, light_dir), 0.0);
 		Lo += (kD * albedo / PI + specular) * attenuation * angle;
-		Lo *= (1.0 - shadow) * point_lights[i].intensity;
+		Lo *= point_lights[i].intensity * (1.0 - shadow);
 	}
+	
+	//vec3 ambient = vec3(0.03) * albedo * ao; // AO component
+	//Lo += ambient; // Add ambient light at the end
 
-	vec3 ambient = vec3(0.03) * albedo * ao; // AO component
-	Lo += ambient; // Add ambient light at the end
+	// Gamma correction
+	//Lo = Lo / (Lo + vec3(1.0));
+	//Lo = pow(Lo, vec3(1.0 / 2.2));
 
 	OutColor = vec4(Lo, 1.0);
 }

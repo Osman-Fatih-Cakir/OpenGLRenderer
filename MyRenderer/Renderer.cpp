@@ -35,7 +35,6 @@ void Renderer::render()
 	//// 1. GBuffer Pass: Generate geometry/color data into gBuffers
 	//
 
-	//scene->camera->camera_rotate(vec3(0.f, 1.f, 0.f), delta / 100); // Camera rotation smoothly
 	for (int i = 0; i < 2; i++)
 		scene->all_models[i]->rotate(vec3(0.f, 1.f, 0.f), delta / 25);
 

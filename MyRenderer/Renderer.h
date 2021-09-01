@@ -23,7 +23,6 @@ public:
 private:
 
 	Scene* scene;
-
 	Timer* timer = nullptr;
 	gBuffer* GBuffer = nullptr;
 	DirectionalDepth* dirDepth = nullptr;

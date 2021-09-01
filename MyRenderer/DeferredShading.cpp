@@ -19,7 +19,7 @@ DeferredShading::DeferredShading()
 // Destructor
 DeferredShading::~DeferredShading()
 {
-	delete GBuffer;
+	
 }
 
 void DeferredShading::start_program(gBuffer* _GBuffer)

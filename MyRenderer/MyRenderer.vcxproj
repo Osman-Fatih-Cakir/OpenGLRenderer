@@ -157,7 +157,7 @@
     <ClCompile Include="gBuffer.cpp" />
     <ClCompile Include="DirectionalLight.cpp" />
     <ClCompile Include="InputHandler.cpp" />
-    <ClCompile Include="main.cpp" />
+    <ClCompile Include="Start.cpp" />
     <ClCompile Include="Mesh.cpp" />
     <ClCompile Include="init_shaders.cpp" />
     <ClCompile Include="Model.cpp" />

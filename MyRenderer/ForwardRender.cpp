@@ -15,7 +15,7 @@ ForwardRender::ForwardRender()
 // Destructor
 ForwardRender::~ForwardRender() 
 {
-	delete GBuffer;
+	
 }
 
 void ForwardRender::start_program(gBuffer* _GBuffer)

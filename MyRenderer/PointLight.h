@@ -37,8 +37,8 @@ public:
 	float quadratic;
 	float intensity;
 
-	int depth_map_width = 1024;
-	int depth_map_height = 1024;
+	int depth_map_width = 2048;
+	int depth_map_height = 2048;
 
 private:
 	void init_space_matrices();

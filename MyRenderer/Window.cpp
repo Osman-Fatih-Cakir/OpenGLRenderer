@@ -7,6 +7,7 @@ Window::Window()
 
 Window::~Window()
 {
+	destroy_window();
 }
 
 // Creates a window

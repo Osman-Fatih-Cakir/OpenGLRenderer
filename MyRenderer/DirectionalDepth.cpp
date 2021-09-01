@@ -18,7 +18,7 @@ DirectionalDepth::DirectionalDepth()
 // Destructor
 DirectionalDepth::~DirectionalDepth() 
 {
-	delete light;
+	
 }
 
 // Starts the shader program

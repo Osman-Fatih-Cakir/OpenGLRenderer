@@ -17,7 +17,7 @@ PointDepth::PointDepth()
 // Destructor
 PointDepth::~PointDepth() 
 {
-	delete light;
+	
 }
 
 void PointDepth::start_program(PointLight* _light)
