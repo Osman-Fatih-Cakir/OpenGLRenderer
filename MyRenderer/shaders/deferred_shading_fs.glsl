@@ -26,7 +26,7 @@ struct Point_Light
 	float quadratic;
 	float intensity;
 };
-const int NUMBER_OF_POINT_LIGHTS = 4; // TODO number of lights is hardcoded
+const int NUMBER_OF_POINT_LIGHTS = 2; // TODO number of lights is hardcoded
 uniform Point_Light point_lights[NUMBER_OF_POINT_LIGHTS];
 
 struct Direct_Light
@@ -291,13 +291,6 @@ void main()
 	float metallic = texture(gPbr_materials, fTexCoord).g;
 	float ao = texture(gPbr_materials, fTexCoord).b;
 
-	////////////////////////////////////////////////////////
-	//albedo = vec3(0.0, 0.5, 1.0);
-	//roughness = 0.2;
-	//metallic = 0.0;
-	//ao = 1.0;
-	////////////////////////////////////////////////////////
-
 	// Outgoing light
 	vec3 Lo = vec3(0.0);
 
@@ -305,14 +298,13 @@ void main()
 	Lo += calculate_point_light(frag_pos, normal, albedo, roughness, metallic);
 
 	// Direct light calculation
-	//Lo += calculate_direct_light(frag_pos, normal, albedo, roughness, metallic);
+	Lo += calculate_direct_light(frag_pos, normal, albedo, roughness, metallic);
 	
-	vec3 ambient = vec3(0.03) * albedo * ao; // AO component
+	vec3 ambient = Lo * vec3(0.03) * albedo * ao; // AO component
 	Lo += ambient; // Add ambient light at the end
 
 	// Gamma correction
-	//Lo = Lo / (Lo + vec3(1.0));
-	//Lo = pow(Lo, vec3(1.0 / 2.2));
+	Lo = pow(Lo, vec3(1.0 / 2.2));
 
 	OutColor = vec4(Lo, 1.0);
 }

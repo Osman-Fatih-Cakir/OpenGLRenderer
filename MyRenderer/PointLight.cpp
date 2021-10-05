@@ -9,6 +9,13 @@ PointLight::PointLight(vec3 pos, vec3 col)
 	position = pos;
 	color = col;
 
+	intensity = 1.0f;
+	shadow_projection_far = 100.0f;
+	depth_cubemap = -1;
+	depth_cubemap_fbo = -1;
+	for (int i = 0; i < 6; i++)
+		space_matrices[i] = mat4(0.0f);
+
 	// Calculate light radius
 	float constant = 1.0f;
 	linear = 0.009f;
@@ -16,15 +23,7 @@ PointLight::PointLight(vec3 pos, vec3 col)
 	float lightMax = std::fmaxf(std::fmaxf(color.r, color.g), color.b);
 	float _radius = (float)(-linear + std::sqrtf(linear * linear - 4 * quadratic * (constant - (256.0f / 5.0f) * lightMax)))
 			/ (2 * quadratic);
-	radius = _radius;
-
-	intensity = 1.0f;
-	shadow_projection_far = 100.0f;
-
-	depth_cubemap = -1;
-	depth_cubemap_fbo = -1;
-	for (int i = 0; i < 6; i++)
-		space_matrices[i] = mat4(0.0f);
+	radius = _radius * intensity * 1.5f;
 
 	init_space_matrices();
 

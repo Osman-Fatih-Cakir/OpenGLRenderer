@@ -35,8 +35,8 @@ void Renderer::render()
 	//// 1. GBuffer Pass: Generate geometry/color data into gBuffers
 	//
 
-	//for (int i = 0; i < 2; i++)
-	//	scene->all_models[i]->rotate(vec3(0.f, 1.f, 0.f), delta / (50*(i+1)));
+	for (int i = 0; i < 1; i++)
+		scene->all_models[i]->rotate(vec3(0.f, 1.f, 0.f), delta / (50*(i+1)));
 
 	GBuffer->start_program();
 	// Draw models of the scene
