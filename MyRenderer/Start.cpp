@@ -40,7 +40,7 @@ typedef glm::vec4 vec4;
 typedef glm::vec2 vec2;
 
 // Point lights
-const int point_light_count = 1;
+const int point_light_count = 4;
 const int direct_light_count = 1;
 
 // Window
@@ -192,31 +192,21 @@ void resize_window(int w, int h)
 void init_meshes()
 {
 	
-	// Scene meshes
-	Model* model = new Model("mesh/Mandalorian_Helmet/Mandalorian_Helmet.obj");
-	model->translate(2.f, 0.f, 0.f);
-	model->scale(0.03f, 0.03f, 0.03f);
-	scene->add_model(model);
-	
-	model = new Model("mesh/Mandalorian_Helmet/Mandalorian_Helmet.obj");
-	model->translate(-2.f, 0.f, 0.f);
-	model->scale(0.03f, 0.03f, 0.03f);
-	scene->add_model(model);
-	
-	/*
-	Model* model = new Model("mesh/test/sphere.obj");
-	model->translate(2.f, 0.f, 0.f);
-	scene->add_model(model);
+	//// Scene meshes
+	//Model* model = new Model("mesh/Mandalorian_Helmet/Mandalorian_Helmet.obj");
+	//model->translate(2.f, 0.f, 0.f);
+	//model->scale(0.03f, 0.03f, 0.03f);
+	//scene->add_model(model);
+	//
+	//model = new Model("mesh/Mandalorian_Helmet/Mandalorian_Helmet.obj");
+	//model->translate(-2.f, 0.f, 0.f);
+	//model->scale(0.03f, 0.03f, 0.03f);
+	//scene->add_model(model);
 
-	model = new Model("mesh/test/sphere.obj");
-	model->translate(-2.f, 0.f, 0.f);
+	Model* model = new Model("mesh/floor/floor.obj");
+	model->translate(0.f, -10.f, 0.f);
+	model->scale(50.f, 1.f, 50.f);
 	scene->add_model(model);
-
-	model = new Model("mesh/test/plane.obj");
-	model->translate(0.f, -1.f, 0.f);
-	model->scale(5.f, 1.f, 5.f);
-	scene->add_model(model);
-	*/
 }
 
 // Initialize camera
@@ -229,21 +219,31 @@ void init_camera(vec3 eye, vec3 up, vec3 center)
 // Initialize light paramters
 void init_lights()
 {
-	
 	//
 	//// Point lights 
 	//
-	srand((unsigned int)time(NULL));
+	//srand((unsigned int)time(NULL));
+
+	vec3 _positions[] = {
+		vec3(-10.f, 2.f, -10.f),
+		vec3(10.f, 2.f, -10.f),
+		vec3(10.f, 2.f, 10.f),
+		vec3(-10.f, 2.f, 10.f)
+	};
+	vec3 _colors[] = {
+		vec3(1.f, 0.f, 0.f),
+		vec3(0.f, 0.f, 1.f),
+		vec3(0.f, 1.f, 0.f),
+		vec3(1.f, 1.f, 1.f)
+	};
 
 	// Light positions
 	for (int i = 0; i < point_light_count; i++)
 	{
-		vec3 _position = vec3(-1.f, 3.f, 3.f);
-		vec3 _color = vec3(1.f, 1.f, 1.f);
-
 		// Initialize light
-		PointLight* light = new PointLight(_position, _color);
-		light->intensity = 2.f;
+		PointLight* light = new PointLight(_positions[i], _colors[i]);
+		light->intensity = 3.f;
+		light->radius = 10000.f;
 		// Draw a mesh for represent a light
 		Model* light_model = new Model("mesh/white_cube/cube.obj");
 		light_model->translate(light->position);
@@ -253,7 +253,7 @@ void init_lights()
 		light->create_depth_map_framebuffer();
 		scene->add_point_light(light);
 	}
-	
+
 	//
 	//// Directional lights
 	//
@@ -261,7 +261,7 @@ void init_lights()
 	for (int i = 0; i < direct_light_count; i++)
 	{
 		DirectionalLight* light = new DirectionalLight(/*vec3(-1.0f, -1.0f, -1.0f)*/vec3(-1.f, -1.f, 0.f), vec3(1.f, 1.f, 1.f));
-		light->intensity = 2.f;
+		light->intensity = 1.f;
 		// TODO calculate shadow variables elsewhere
 		mat4 proj_mat = glm::ortho(-20.f, 20.f, -20.f, 20.f, 0.1f, 1000.f);
 		mat4 view_mat = glm::lookAt(vec3(5, 5, 5), vec3(0, 0, 0), vec3(-1, 1, -1));
@@ -283,7 +283,7 @@ void init_scene()
 
 	// Set camera parameters
 	init_camera(
-		vec3(0.f, 2.f, 7.f), // Eye
+		vec3(0.f, 20.f, 40.f), // Eye
 		vec3(0.f, 1.f, 0.f), // Up
 		vec3(0.f, 0.f, 0.f) // Center
 	);

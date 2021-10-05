@@ -126,7 +126,7 @@ void DeferredShading::set_point_light
 	GLuint loc_light_int = glGetUniformLocation(program, (GLchar*)light_array_str.c_str());
 	glUniform1f(loc_light_int, (GLfloat) intensity);
 
-	point_light_count += 1; // Count lights
+	point_light_count++; // Count lights
 }
 
 void DeferredShading::set_direct_light

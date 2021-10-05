@@ -26,7 +26,7 @@ struct Point_Light
 	float quadratic;
 	float intensity;
 };
-const int NUMBER_OF_POINT_LIGHTS = 1; // TODO number of lights is hardcoded
+const int NUMBER_OF_POINT_LIGHTS = 4; // TODO number of lights is hardcoded
 uniform Point_Light point_lights[NUMBER_OF_POINT_LIGHTS];
 
 struct Direct_Light
@@ -162,11 +162,13 @@ float geometry_smith(vec3 N, vec3 V, vec3 L, float roughness)
 // Calculate point lighting
 vec3 calculate_point_light(vec3 frag_pos, vec3 normal, vec3 albedo, float roughness, float metallic)
 {
-	vec3 Lo = vec3(0.0);
+	vec3 col = vec3(0.0);
 
 	// Point light calculations
 	for (int i = 0; i < NUMBER_OF_POINT_LIGHTS; i++) // Calculate lighting for all lights
 	{
+		vec3 Lo = vec3(0.0);
+
 		// If the fragment is not inside the light radious, no need to make calculation for that light
 		if (length(point_lights[i].position - frag_pos) > point_lights[i].radius)
 			continue;
@@ -214,20 +216,24 @@ vec3 calculate_point_light(vec3 frag_pos, vec3 normal, vec3 albedo, float roughn
 		// Calculate Lo
 		float angle = max(dot(normal, light_dir), 0.0);
 		Lo += (kD * albedo / PI + specular) * attenuation * angle;
-		Lo *= point_lights[i].intensity * (1.0 - shadow);
+		Lo *= point_lights[i].intensity * (1.0 - shadow) * point_lights[i].color;
+
+		col += Lo;
 	}
 
-	return Lo;
+	return col;
 }
 
 // Calculate directional lighting
 vec3 calculate_direct_light(vec3 frag_pos, vec3 normal, vec3 albedo, float roughness, float metallic)
 {
-	vec3 Lo = vec3(0.0);
+	vec3 col = vec3(0.0);
 
 	// Directional light calculations
 	for (int i = 0; i < NUMBER_OF_DIRECT_LIGHTS; i++)
 	{
+		vec3 Lo = vec3(0.0);
+
 		// View direction
 		vec3 view_dir = normalize(viewer_pos - frag_pos);
 		// Light direction
@@ -267,10 +273,12 @@ vec3 calculate_direct_light(vec3 frag_pos, vec3 normal, vec3 albedo, float rough
 		// Calculate Lo
 		float angle = max(dot(normal, light_dir), 0.0);
 		Lo += (kD * albedo / PI + specular) * angle;
-		Lo *= direct_lights[i].intensity * (1.0 - shadow);
+		Lo *= direct_lights[i].intensity * (1.0 - shadow) * direct_lights[i].color;
+
+		col += Lo;
 	}
 
-	return Lo;
+	return col;
 }
 
 void main()
@@ -297,14 +305,14 @@ void main()
 	Lo += calculate_point_light(frag_pos, normal, albedo, roughness, metallic);
 
 	// Direct light calculation
-	Lo += calculate_direct_light(frag_pos, normal, albedo, roughness, metallic);
+	//Lo += calculate_direct_light(frag_pos, normal, albedo, roughness, metallic);
 	
 	vec3 ambient = vec3(0.03) * albedo * ao; // AO component
 	Lo += ambient; // Add ambient light at the end
 
 	// Gamma correction
-	Lo = Lo / (Lo + vec3(1.0));
-	Lo = pow(Lo, vec3(1.0 / 2.2));
+	//Lo = Lo / (Lo + vec3(1.0));
+	//Lo = pow(Lo, vec3(1.0 / 2.2));
 
 	OutColor = vec4(Lo, 1.0);
 }
