@@ -28,4 +28,4 @@ map_d 	: AO map
 - https://www.sharetextures.com/textures/floor/tiling_46/
 
 ## Note:
-There are memory leaks in project (which I assume caused by assimp library), I will fix it somehow soon
+There are memory leaks in project (which I assume caused by assimp library), I found no way to fix it. I will check that later for now since it cost me so much time
