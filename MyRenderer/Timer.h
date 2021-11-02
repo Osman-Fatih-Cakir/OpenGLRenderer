@@ -1,18 +1,24 @@
 #pragma once
 
+#include <GL/glew.h>
+#include <GL/freeglut.h>
 
 class Timer
 {
 public:
+	Timer() = default;
+	~Timer() = default;
 
-	Timer();
-	~Timer();
-
-	float get_delta_time();
+	float get_delta_time()
+	{
+		cur_time = (float)glutGet(GLUT_ELAPSED_TIME);
+		float delta = cur_time - old_time;
+		old_time = cur_time;
+		return delta;
+	}
 
 private:
 
-	float old_time = 0.0f;
-	float cur_time = 0.0f;
-
+	float old_time;
+	float cur_time;
 };

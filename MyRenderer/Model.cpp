@@ -20,31 +20,33 @@ Model::Model(const char* path)
 Model::~Model() {}
 
 // Translate mesh
-void Model::translate(vec3 vec)
+void Model::translate(vec3 vec, float delta)
 {
-    model_matrix = glm::translate(model_matrix, vec);
+    vec3 _vec = vec3(vec.x * delta, vec.y * delta, vec.z * delta);
+    model_matrix = glm::translate(model_matrix, _vec);
 }
-void Model::translate(float x, float y, float z)
+void Model::translate(float x, float y, float z, float delta)
 {
-    model_matrix = glm::translate(model_matrix, vec3(x, y, z));
+    model_matrix = glm::translate(model_matrix, vec3(x * delta, y * delta, z * delta));
 }
 
 // Rotate model
-void Model::rotate(vec3 vec, float angle)
+void Model::rotate(vec3 vec, float angle, float delta)
 {
-    model_matrix = glm::rotate(model_matrix, glm::radians(angle), vec);
+    model_matrix = glm::rotate(model_matrix, glm::radians(angle * delta), vec);
     update_normal_matrix();
 }
 
 // Scale mesh
-void Model::scale(vec3 vec)
+void Model::scale(vec3 vec, float delta)
 {
-    model_matrix = glm::scale(model_matrix, vec);
+    vec3 _vec = vec3(vec.x * delta, vec.y * delta, vec.z * delta);
+    model_matrix = glm::scale(model_matrix, _vec);
     update_normal_matrix();
 }
-void Model::scale(float x, float y, float z)
+void Model::scale(float x, float y, float z, float delta)
 {
-    model_matrix = glm::scale(model_matrix, vec3(x, y, z));
+    model_matrix = glm::scale(model_matrix, vec3(x * delta, y * delta, z * delta));
     update_normal_matrix();
 }
 

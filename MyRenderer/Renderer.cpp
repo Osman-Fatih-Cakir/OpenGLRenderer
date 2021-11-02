@@ -7,7 +7,7 @@
 Renderer::Renderer(Scene* _scene)
 {
 	scene = _scene;
-	timer = new Timer();
+	
 
 	init_shader_programs();
 }
@@ -22,21 +22,17 @@ Renderer::~Renderer()
 	delete pointDepth;
 	delete forwardRender;
 	delete deferredShading;
-	delete timer;
 }
 
 // Renders the scene
-void Renderer::render()
+void Renderer::render(float delta)
 {
-	// Get delta time
-	float delta = timer->get_delta_time();
-
 	//
 	//// 1. GBuffer Pass: Generate geometry/color data into gBuffers
 	//
 
 	for (int i = 0; i < 1; i++)
-		scene->all_models[i]->rotate(vec3(0.f, 1.f, 0.f), delta / (50*(i+1)));
+		scene->all_models[i]->rotate(vec3(0.f, 1.f, 0.f), (2*(i+1)), delta/100);
 
 	GBuffer->start_program();
 	// Draw models of the scene

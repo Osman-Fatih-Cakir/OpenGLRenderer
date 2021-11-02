@@ -44,15 +44,19 @@ void Camera::lookAt(vec3 eye, vec3 up, vec3 center)
 }
 
 // Camera translate
-void Camera::translate(vec3 tra)
+void Camera::translate(vec3 tra, float delta)
 {
-	view_matrix = glm::translate(view_matrix, tra);
+	view_matrix = glm::translate(view_matrix, tra * delta);
+}
+void Camera::translate(float x, float y, float z, float delta)
+{
+	view_matrix = glm::translate(view_matrix, vec3(x, y, z) * delta);
 }
 
 // Camera rotate
-void Camera::rotate(vec3 rot, float angle)
+void Camera::rotate(vec3 rot, float angle, float delta)
 {
-	view_matrix = glm::rotate(view_matrix, glm::radians(angle), rot);
+	view_matrix = glm::rotate(view_matrix, glm::radians(angle), rot * delta);
 }
 
 //

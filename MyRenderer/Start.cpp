@@ -53,6 +53,9 @@ Input* input = nullptr;
 // Scene pointer
 Scene* scene = nullptr;
 
+// Timer pointer
+Timer* timer = nullptr;
+
 // Renderer
 Renderer* renderer = nullptr;
 
@@ -126,6 +129,7 @@ void init()
 	std::cout << "*****************Start************************" << std::endl;
 
 	input = new Input();
+	timer = new Timer();
 
 	// Initialize scene
 	init_scene();
@@ -138,6 +142,7 @@ void exit_app()
 	delete window;
 	delete renderer;
 	delete input;
+	delete timer;
 
 	// Check for leaks
 	_CrtDumpMemoryLeaks();
@@ -231,13 +236,13 @@ void init_meshes()
 {
 	// Scene meshes
 	Model* model = new Model("mesh/Mandalorian_Helmet/Mandalorian_Helmet.obj");
-	model->translate(0.f, 1.2f, 0.f);
-	model->scale(0.03f, 0.03f, 0.03f);
+	model->translate(0.f, 1.2f, 0.f, 1.0f);
+	model->scale(0.03f, 0.03f, 0.03f, 1.0f);
 	scene->add_model(model);
 
 	model = new Model("mesh/floor/floor.obj");
-	model->translate(0.f, 0.f, 0.f);
-	model->scale(20.f, 1.f, 20.f);
+	model->translate(0.f, 0.f, 0.f, 1.0f);
+	model->scale(20.f, 1.f, 20.f, 1.0f);
 	scene->add_model(model);
 }
 
@@ -274,9 +279,9 @@ void init_lights()
 		light->intensity = 4.f;
 		// Draw a mesh for represent a light
 		Model* light_model = new Model("mesh/white_cube/cube.obj");
-		light_model->translate(light->position);
-		light_model->scale(1.f, 1.f, 1.f);
-		//light_model->scale(5.f, 5.f, 5.f); // This cube is 1:1:1 after scaling it
+		light_model->translate(light->position, 1.0f);
+		light_model->scale(1.f, 1.f, 1.f, 1.0f);
+		//light_model->scale(5.f, 5.f, 5.f, 1.0f); // This cube is 1:1:1 after scaling it
 		light->model = light_model;
 	
 		// Create depth map framebuffer for each light
@@ -328,22 +333,41 @@ void init_scene()
 // Renders the scene
 void render()
 {
-	//input_handler->update();
-	renderer->render();
+	// Get delta time
+	float delta = timer->get_delta_time();
 
+	//input_handler->update();
+	renderer->render(delta);
 	
 	if (input->hold_key(Key::KEY_W))
 	{
-
+		scene->camera->translate(0.f, 0.f, 3.f, delta/1000);
+	}
+	if (input->hold_key(Key::KEY_S))
+	{
+		scene->camera->translate(0.f, 0.f, -3.f, delta / 1000);
 	}
 	if (input->hold_key(Key::KEY_A))
 	{
-		std::cout << "A key holds\n";
+		scene->camera->translate(3.f, 0.f, 0.f, delta / 1000);
+	}
+	if (input->hold_key(Key::KEY_D))
+	{
+		scene->camera->translate(-3.f, 0.f, 0.f, delta / 1000);
+	}
+	if (input->hold_key(Key::KEY_Q))
+	{
+		scene->camera->translate(0.f, 3.f, 0.f, delta / 1000);
+	}
+	if (input->hold_key(Key::KEY_E))
+	{
+		scene->camera->translate(0.f, -3.f, 0.f, delta / 1000);
 	}
 	if (input->press_key(Key::KEY_R))
 	{
-		std::cout << "R key pressed\n";
+		exit_app();
 	}
+
 	/*
 	if (Input.HoldMouseButton("left"))
 	{

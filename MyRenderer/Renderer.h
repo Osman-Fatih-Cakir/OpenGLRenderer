@@ -18,12 +18,11 @@ public:
 	Renderer(Scene* _scene);
 	~Renderer();
 
-	void render();
+	void render(float delta);
 
 private:
 
 	Scene* scene;
-	Timer* timer = nullptr;
 	gBuffer* GBuffer = nullptr;
 	DirectionalDepth* dirDepth = nullptr;
 	PointDepth* pointDepth = nullptr;
