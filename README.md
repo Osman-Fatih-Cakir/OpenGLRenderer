@@ -23,6 +23,7 @@ map_d 	: AO map
 
 ## Resources
 - https://learnopengl.com/
+- https://www.youtube.com/c/TheChernoProject
 ## Models:
 - https://www.cgtrader.com/free-3d-models/military/armor/mandalorian-helmet-e1903ae2-3218-43bc-a22c-a102284d230e
 - https://www.sharetextures.com/textures/floor/tiling_46/

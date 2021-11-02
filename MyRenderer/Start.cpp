@@ -10,9 +10,10 @@
 #include <init_shaders.h>
 #include <DirectionalLight.h>
 #include <PointLight.h>
-#include <InputHandler.h>
 #include <Scene.h>
 #include <Renderer.h>
+#include <Input.h>
+#include <Keys.h>
 
 ////////////////
 // Debugging memory leaks
@@ -47,7 +48,7 @@ const int direct_light_count = 1;
 Window* window = nullptr;
 
 // Input handler
-InputHandler* input_handler = nullptr;
+Input* input = nullptr;
 
 // Scene pointer
 Scene* scene = nullptr;
@@ -59,6 +60,7 @@ void Init_Glut_and_Glew(int argc, char* argv[]);
 void init();
 void exit_app();
 void keyboard(unsigned char key, int x, int y);
+void keyboard_up(unsigned char key, int x, int y);
 void resize_window(int w, int h);
 void init_meshes();
 void init_camera(vec3 eye, vec3 center, vec3 up);
@@ -114,6 +116,7 @@ void Init_Glut_and_Glew(int argc, char* argv[])
 	// Function bindings
 	glutReshapeFunc(resize_window);
 	glutKeyboardFunc(keyboard);
+	glutKeyboardUpFunc(keyboard_up);
 	glutDisplayFunc(render);
 }
 
@@ -122,7 +125,7 @@ void init()
 {
 	std::cout << "*****************Start************************" << std::endl;
 
-	input_handler = new InputHandler();
+	input = new Input();
 
 	// Initialize scene
 	init_scene();
@@ -134,7 +137,7 @@ void exit_app()
 	// Deallocate all pointers
 	delete window;
 	delete renderer;
-	delete input_handler;
+	delete input;
 
 	// Check for leaks
 	_CrtDumpMemoryLeaks();
@@ -142,37 +145,72 @@ void exit_app()
 	exit(0);
 }
 
-// Keyboard inputs
+// Keyboard key press
 void keyboard(unsigned char key, int x, int y)
 {
 	switch (key)
 	{
 	case 'w':
-		scene->camera->camera_translate(vec3(0.f, 0.f, -0.1f));
+		input->add_key(Key::KEY_W);
 		break;
 	case 's':
-		scene->camera->camera_translate(vec3(0.f, 0.f, 0.1f));
+		input->add_key(Key::KEY_S);
 		break;
 	case 'd':
-		scene->camera->camera_translate(vec3(0.1f, 0.f, 0.f));
+		input->add_key(Key::KEY_D);
 		break;
 	case 'a':
-		scene->camera->camera_translate(vec3(-0.1f, 0.f, 0.f));
+		input->add_key(Key::KEY_A);
 		break;
 	case 'q':
-		scene->camera->camera_translate(vec3(0.f, -0.1f, 0.f));
+		input->add_key(Key::KEY_Q);
 		break;
 	case 'e':
-		scene->camera->camera_translate(vec3(0.f, 0.1f, 0.f));
+		input->add_key(Key::KEY_E);
 		break;
 	case 'z':
-		scene->camera->camera_rotate(vec3(0.1f, 0.f, 0.f), -5.f);
+		input->add_key(Key::KEY_Z);
 		break;
 	case 'c':
-		scene->camera->camera_rotate(vec3(0.1f, 0.f, 0.f), 5.f);
+		input->add_key(Key::KEY_C);
 		break;
 	case 'r':
-		exit_app();
+		input->add_key(Key::KEY_R);
+		break;
+	}
+}
+
+// Keyboard key release 
+void keyboard_up(unsigned char key, int x, int y)
+{
+	switch (key)
+	{
+	case 'w':
+		input->remove_key(Key::KEY_W);
+		break;
+	case 's':
+		input->remove_key(Key::KEY_S);
+		break;
+	case 'd':
+		input->remove_key(Key::KEY_D);
+		break;
+	case 'a':
+		input->remove_key(Key::KEY_A);
+		break;
+	case 'q':
+		input->remove_key(Key::KEY_Q);
+		break;
+	case 'e':
+		input->remove_key(Key::KEY_E);
+		break;
+	case 'z':
+		input->remove_key(Key::KEY_Z);
+		break;
+	case 'c':
+		input->remove_key(Key::KEY_C);
+		break;
+	case 'r':
+		input->remove_key(Key::KEY_R);
 		break;
 	}
 }
@@ -290,6 +328,37 @@ void init_scene()
 // Renders the scene
 void render()
 {
-	renderer->render();
 	//input_handler->update();
+	renderer->render();
+
+	
+	if (input->hold_key(Key::KEY_W))
+	{
+
+	}
+	if (input->hold_key(Key::KEY_A))
+	{
+		std::cout << "A key holds\n";
+	}
+	if (input->press_key(Key::KEY_R))
+	{
+		std::cout << "R key pressed\n";
+	}
+	/*
+	if (Input.HoldMouseButton("left"))
+	{
+		//translate camera
+	}
+	if (Input.HoldMouseButton("right"))
+	{
+		//translate camera
+	}
+	if (Input.PressMouseButton("middle"))
+	{
+		//translate camera more
+	}
+	std::cout << "MouseX: " << Mouse.X << std::endl;
+	std::cout << "MouseY: " << Mouse.Y << std::endl;
+
+	*/
 }

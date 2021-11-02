@@ -11,7 +11,7 @@ Camera::Camera(vec3 _eye, vec3 _up, vec3 _center, Projection_Type proj_type)
 	center = _center;
 	projection_type = proj_type;
 	set_camera_projection(proj_type); // Set projection matrix
-	camera_lookAt(eye, up, center); // Set view matrix
+	lookAt(eye, up, center); // Set view matrix
 }
 
 Camera::~Camera() {};
@@ -38,19 +38,19 @@ void Camera::set_perspective(GLfloat fovy, GLfloat aspect, GLfloat _near, GLfloa
 	projection_matrix = glm::perspective(glm::radians(fovy), aspect, _near, _far);
 }
 // Look at function
-void Camera::camera_lookAt(vec3 eye, vec3 up, vec3 center)
+void Camera::lookAt(vec3 eye, vec3 up, vec3 center)
 {
 	view_matrix = glm::lookAt(eye, center, up);
 }
 
 // Camera translate
-void Camera::camera_translate(vec3 tra)
+void Camera::translate(vec3 tra)
 {
 	view_matrix = glm::translate(view_matrix, tra);
 }
 
 // Camera rotate
-void Camera::camera_rotate(vec3 rot, float angle)
+void Camera::rotate(vec3 rot, float angle)
 {
 	view_matrix = glm::rotate(view_matrix, glm::radians(angle), rot);
 }

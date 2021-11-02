@@ -32,7 +32,6 @@ PointLight::PointLight(vec3 pos, vec3 col)
 // Destructor
 PointLight::~PointLight()
 {
-	std::cout << "DELETE MESH" << std::endl;
 	delete model;
 }
 

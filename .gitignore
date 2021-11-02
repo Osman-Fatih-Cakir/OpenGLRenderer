@@ -1,7 +1,6 @@
 
 .vs/
 *.sln
-/MyRenderer/
 /x64/
 /Debug/
 MyRenderer/Debug/

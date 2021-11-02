@@ -98,6 +98,7 @@
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard_C>Default</LanguageStandard_C>
+      <LanguageStandard>stdcpp14</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -127,6 +128,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -156,7 +158,6 @@
     <ClCompile Include="ForwardRender.cpp" />
     <ClCompile Include="gBuffer.cpp" />
     <ClCompile Include="DirectionalLight.cpp" />
-    <ClCompile Include="InputHandler.cpp" />
     <ClCompile Include="Start.cpp" />
     <ClCompile Include="Mesh.cpp" />
     <ClCompile Include="init_shaders.cpp" />
@@ -175,7 +176,8 @@
     <ClInclude Include="ForwardRender.h" />
     <ClInclude Include="gBuffer.h" />
     <ClInclude Include="DirectionalLight.h" />
-    <ClInclude Include="InputHandler.h" />
+    <ClInclude Include="Input.h" />
+    <ClInclude Include="Keys.h" />
     <ClInclude Include="Mesh.h" />
     <ClInclude Include="init_shaders.h" />
     <ClInclude Include="Model.h" />

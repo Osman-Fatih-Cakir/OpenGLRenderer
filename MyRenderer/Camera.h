@@ -35,11 +35,11 @@ public:
 	void set_perspective(GLfloat fovy, GLfloat aspect, GLfloat _near, GLfloat _far);
 
 	// Look at function
-	void camera_lookAt(vec3 eye, vec3 center, vec3 up);
+	void lookAt(vec3 eye, vec3 center, vec3 up);
 
 	// Camera transformation
-	void camera_translate(vec3 tra);
-	void camera_rotate(vec3 rot, float angle);
+	void translate(vec3 tra);
+	void rotate(vec3 rot, float angle);
 
 	// Getters and setters
 	Projection_Type get_projection_type();
