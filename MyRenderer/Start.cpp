@@ -64,6 +64,8 @@ void init();
 void exit_app();
 void keyboard(unsigned char key, int x, int y);
 void keyboard_up(unsigned char key, int x, int y);
+void mouse_click(int button, int state, int x, int y);
+void mouse_passive(int x, int y);
 void resize_window(int w, int h);
 void init_meshes();
 void init_camera(vec3 eye, vec3 center, vec3 up);
@@ -120,6 +122,8 @@ void Init_Glut_and_Glew(int argc, char* argv[])
 	glutReshapeFunc(resize_window);
 	glutKeyboardFunc(keyboard);
 	glutKeyboardUpFunc(keyboard_up);
+	glutMouseFunc(mouse_click);
+	glutPassiveMotionFunc(mouse_passive);
 	glutDisplayFunc(render);
 }
 
@@ -218,6 +222,38 @@ void keyboard_up(unsigned char key, int x, int y)
 		input->remove_key(Key::KEY_R);
 		break;
 	}
+}
+
+// Mouse click
+void mouse_click(int button, int state, int x, int y)
+{
+	switch (button)
+	{
+	case GLUT_LEFT_BUTTON:
+		if (state == GLUT_DOWN)
+			input->add_mouse_click(MouseButton::LButton);
+		else if (state == GLUT_UP)
+			input->remove_mouse_click(MouseButton::LButton);
+		break;
+	case GLUT_MIDDLE_BUTTON:
+		if (state == GLUT_DOWN)
+			input->add_mouse_click(MouseButton::MButton);
+		else if (state == GLUT_UP)
+			input->remove_mouse_click(MouseButton::MButton);
+		break;
+	case GLUT_RIGHT_BUTTON:
+		if (state == GLUT_DOWN)
+			input->add_mouse_click(MouseButton::RButton);
+		else if (state == GLUT_UP)
+			input->remove_mouse_click(MouseButton::RButton);
+		break;
+	}
+}
+
+// Mouse position
+void mouse_passive(int x, int y)
+{
+	input->set_mouse(x, y);
 }
 
 // Resize window
@@ -341,7 +377,7 @@ void render()
 	
 	if (input->hold_key(Key::KEY_W))
 	{
-		scene->camera->translate(0.f, 0.f, 3.f, delta/1000);
+		scene->camera->translate(0.f, 0.f, 3.f, delta / 1000);
 	}
 	if (input->hold_key(Key::KEY_S))
 	{
@@ -368,21 +404,4 @@ void render()
 		exit_app();
 	}
 
-	/*
-	if (Input.HoldMouseButton("left"))
-	{
-		//translate camera
-	}
-	if (Input.HoldMouseButton("right"))
-	{
-		//translate camera
-	}
-	if (Input.PressMouseButton("middle"))
-	{
-		//translate camera more
-	}
-	std::cout << "MouseX: " << Mouse.X << std::endl;
-	std::cout << "MouseY: " << Mouse.Y << std::endl;
-
-	*/
 }

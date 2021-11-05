@@ -1,5 +1,11 @@
 #pragma once
 
+enum class MouseButton
+{
+	LButton,
+	RButton,
+	MButton
+};
 
 enum class Key
 {

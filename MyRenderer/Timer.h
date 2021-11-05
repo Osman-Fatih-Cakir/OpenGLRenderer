@@ -17,6 +17,11 @@ public:
 		return delta;
 	}
 
+	float get_current_time()
+	{
+		return (float)glutGet(GLUT_ELAPSED_TIME);
+	}
+
 private:
 
 	float old_time;
