@@ -15,11 +15,11 @@ Techniques that I used so far:
 - Forward rendering
 
 ## Material file read (Probably bad)
-map_Ka	: Metallic map
-map_Kd	: Albedo map
-map_bump: Normal map
-map_Ns 	: Roughness map
-map_d 	: AO map
+- map_Ka	: Metallic map
+- map_Kd	: Albedo map
+- map_bump: Normal map
+- map_Ns 	: Roughness map
+- map_d 	: AO map
 
 ## Resources
 - https://learnopengl.com/
