@@ -403,5 +403,4 @@ void render()
 	{
 		exit_app();
 	}
-
 }

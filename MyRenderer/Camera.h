@@ -54,6 +54,8 @@ public:
 	void set_up(vec3 vec);
 	vec3 get_center();
 	void set_center(vec3 vec);
+	vec3 get_position();
+	void set_position(vec3 vec);
 
 private:
 	// Projection type (Perspective or Ortographic)
@@ -68,4 +70,9 @@ private:
 	vec3 up = vec3(0.f);
 	// Center
 	vec3 center = vec3(0.f);
+
+	// Camera location in world
+	vec3 position = vec3(0.f);
+
+	// TODO camera forward vector
 };

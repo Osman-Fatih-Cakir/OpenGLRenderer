@@ -168,7 +168,7 @@ void DeferredShading::render(Camera* camera)
 {
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-	set_viewer_pos(camera->get_eye());
+	set_viewer_pos(camera->get_position());
 	// Set g-buffer color attachments
 	set_gPosition(GBuffer->get_gPosition());
 	set_gNormal(GBuffer->get_gNormal());

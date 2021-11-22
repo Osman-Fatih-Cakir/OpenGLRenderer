@@ -6,6 +6,7 @@
 
 Camera::Camera(vec3 _eye, vec3 _up, vec3 _center, Projection_Type proj_type)
 {
+	position = _eye;
 	eye = _eye;
 	up = _up;
 	center = _center;
@@ -47,10 +48,13 @@ void Camera::lookAt(vec3 eye, vec3 up, vec3 center)
 void Camera::translate(vec3 tra, float delta)
 {
 	view_matrix = glm::translate(view_matrix, tra * delta);
+	position -= tra * delta;
 }
+
 void Camera::translate(float x, float y, float z, float delta)
 {
 	view_matrix = glm::translate(view_matrix, vec3(x, y, z) * delta);
+	position -= vec3(x, y, z) * delta;
 }
 
 // Camera rotate
@@ -114,4 +118,14 @@ vec3 Camera::get_center()
 void Camera::set_center(vec3 vec)
 {
 	center = vec;
+}
+
+vec3 Camera::get_position()
+{
+	return position;
+}
+
+void Camera::set_position(vec3 vec)
+{
+	position = vec;
 }
