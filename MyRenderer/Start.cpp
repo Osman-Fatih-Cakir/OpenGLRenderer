@@ -273,11 +273,11 @@ void init_meshes()
 	// Scene meshes
 	Model* model = new Model("mesh/Mandalorian_Helmet/Mandalorian_Helmet.obj");
 	model->translate(0.f, 1.2f, 0.f, 1.0f);
-	model->scale(0.03f, 0.03f, 0.03f, 1.0f);
+	model->scale(0.1f, 0.1f, 0.1f, 1.0f);
 	scene->add_model(model);
 
 	model = new Model("mesh/floor/floor.obj");
-	model->translate(0.f, 0.f, 0.f, 1.0f);
+	model->translate(0.f, -2.f, 0.f, 1.0f);
 	model->scale(20.f, 1.f, 20.f, 1.0f);
 	scene->add_model(model);
 }
@@ -298,8 +298,8 @@ void init_lights()
 	//srand((unsigned int)time(NULL));
 
 	vec3 _positions[] = {
-		vec3(3.f, 4.f, -2.f),
-		vec3(-3.f, 4.f, -2.f)
+		vec3(6.f, 6.f, -4.f),
+		vec3(-5.f, 6.f, -4.f)
 	};
 
 	vec3 _colors[] = {
@@ -312,7 +312,7 @@ void init_lights()
 	{
 		// Initialize light
 		PointLight* light = new PointLight(_positions[i], _colors[i]);
-		light->intensity = 4.f;
+		light->intensity = 10.f;
 		// Draw a mesh for represent a light
 		Model* light_model = new Model("mesh/white_cube/cube.obj");
 		light_model->translate(light->position, 1.0f);
@@ -354,7 +354,7 @@ void init_scene()
 
 	// Set camera parameters
 	init_camera(
-		vec3(0.f, 1.5f, 5.f), // Eye
+		vec3(0.f, 3.f, 10.f), // Eye
 		vec3(0.f, 1.f, 0.f), // Up
 		vec3(0.f, 0.f, 0.f) // Center
 	);
@@ -375,29 +375,30 @@ void render()
 	//input_handler->update();
 	renderer->render(delta);
 	
+	float camera_speed = 7.5f;
 	if (input->hold_key(Key::KEY_W))
 	{
-		scene->camera->translate(0.f, 0.f, 3.f, delta / 1000);
+		scene->camera->translate(0.f, 0.f, camera_speed, delta / 1000);
 	}
 	if (input->hold_key(Key::KEY_S))
 	{
-		scene->camera->translate(0.f, 0.f, -3.f, delta / 1000);
+		scene->camera->translate(0.f, 0.f, -camera_speed, delta / 1000);
 	}
 	if (input->hold_key(Key::KEY_A))
 	{
-		scene->camera->translate(3.f, 0.f, 0.f, delta / 1000);
+		scene->camera->translate(camera_speed, 0.f, 0.f, delta / 1000);
 	}
 	if (input->hold_key(Key::KEY_D))
 	{
-		scene->camera->translate(-3.f, 0.f, 0.f, delta / 1000);
+		scene->camera->translate(-camera_speed, 0.f, 0.f, delta / 1000);
 	}
 	if (input->hold_key(Key::KEY_Q))
 	{
-		scene->camera->translate(0.f, 3.f, 0.f, delta / 1000);
+		scene->camera->translate(0.f, camera_speed, 0.f, delta / 1000);
 	}
 	if (input->hold_key(Key::KEY_E))
 	{
-		scene->camera->translate(0.f, -3.f, 0.f, delta / 1000);
+		scene->camera->translate(0.f, -camera_speed, 0.f, delta / 1000);
 	}
 	if (input->press_key(Key::KEY_R))
 	{
