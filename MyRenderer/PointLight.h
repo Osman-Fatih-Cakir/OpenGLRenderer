@@ -21,6 +21,8 @@ public:
 	GLfloat* get_position_pointer();
 	GLfloat* get_color_pointer();
 	void create_depth_map_framebuffer();
+	void translate(float x, float y, float z, float delta);
+	void rotate();
 
 	Model* model = nullptr;
 

@@ -55,7 +55,6 @@ void DirectionalDepth::set_model_matrix(mat4 mat)
 void DirectionalDepth::render(Model* model)
 {
 	glEnable(GL_CULL_FACE);
-	glCullFace(GL_BACK);
 
 	// Space matrix
 	set_space_matrix(light->space_matrix);

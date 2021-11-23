@@ -272,7 +272,7 @@ void init_meshes()
 {
 	// Scene meshes
 	Model* model = new Model("mesh/Mandalorian_Helmet/Mandalorian_Helmet.obj");
-	model->translate(0.f, 1.2f, 0.f, 1.0f);
+	model->translate(0.f, 1.4f, 0.f, 1.0f);
 	model->scale(0.1f, 0.1f, 0.1f, 1.0f);
 	scene->add_model(model);
 
@@ -299,7 +299,7 @@ void init_lights()
 
 	vec3 _positions[] = {
 		vec3(6.f, 6.f, -4.f),
-		vec3(-5.f, 6.f, -4.f)
+		vec3(-7.f, 6.f, -3.f)
 	};
 
 	vec3 _colors[] = {
@@ -331,11 +331,11 @@ void init_lights()
 
 	for (int i = 0; i < direct_light_count; i++)
 	{
-		DirectionalLight* light = new DirectionalLight(/*vec3(-1.0f, -1.0f, -1.0f)*/vec3(-1.f, -1.f, 0.f), vec3(1.f, 1.f, 1.f));
+		DirectionalLight* light = new DirectionalLight(vec3(-1.f, -1.0f, -1.0f), vec3(1.f, 1.f, 1.f));
 		light->intensity = 0.9f;
 		// TODO calculate shadow variables elsewhere
-		mat4 proj_mat = glm::ortho(-20.f, 20.f, -20.f, 20.f, 0.1f, 1000.f);
-		mat4 view_mat = glm::lookAt(vec3(5, 5, 5), vec3(0, 0, 0), vec3(-1, 1, -1));
+		mat4 proj_mat = glm::ortho(-20.f, 20.f, -20.f, 20.f, 0.01f, 1000.f);
+		mat4 view_mat = glm::lookAt(vec3(10, 10, 10), vec3(0, 0, 0), vec3(-1, 1, -1));
 		light->calculate_space_matrix(proj_mat, view_mat);
 		// Create depth map framebuffer
 		light->create_depth_map_framebuffer();
@@ -354,7 +354,7 @@ void init_scene()
 
 	// Set camera parameters
 	init_camera(
-		vec3(0.f, 3.f, 10.f), // Eye
+		vec3(0.f, 5.f, 18.f), // Eye
 		vec3(0.f, 1.f, 0.f), // Up
 		vec3(0.f, 0.f, 0.f) // Center
 	);
@@ -371,6 +371,13 @@ void render()
 {
 	// Get delta time
 	float delta = timer->get_delta_time();
+
+	//scene->point_lights[0]->position += vec3(1.f, 0.f, 0.f) * (delta/1000);
+	//std::cout << scene->point_lights[0]->position.x << " " << scene->point_lights[0]->position.z << "\n";
+	//std::cout << "DELTA: " << delta << "\n";
+
+	if (input->hold_key(Key::KEY_Z))
+		scene->all_models[0]->translate(-1.f, 0.f, -1.f, delta / 100);
 
 	//input_handler->update();
 	renderer->render(delta);

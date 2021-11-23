@@ -32,7 +32,9 @@ void Renderer::render(float delta)
 	//
 
 	for (int i = 0; i < 1; i++)
-		scene->all_models[i]->rotate(vec3(0.f, 1.f, 0.f), (2*(i+1)), delta/100);
+	{
+		scene->all_models[i]->rotate(vec3(0.f, 1.f, 0.f), (2 * (i + 1)), delta / 100);
+	}
 
 	GBuffer->start_program();
 	// Draw models of the scene
