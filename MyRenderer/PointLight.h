@@ -20,7 +20,8 @@ public:
 	GLfloat* get_space_matrices_pointer();
 	GLfloat* get_position_pointer();
 	GLfloat* get_color_pointer();
-	void create_depth_map_framebuffer();
+	mat4 get_model_matrix();
+	void create_shadow();
 	void translate(float x, float y, float z, float delta);
 	void rotate();
 
@@ -43,5 +44,9 @@ public:
 	int depth_map_height = 2048;
 
 private:
+	void create_depth_map_framebuffer();
 	void init_space_matrices();
+
+	bool shadow_calculated = false;
+	mat4 model_matrix = mat4(1.f);
 };

@@ -6,7 +6,7 @@
 // Constructor
 PointLight::PointLight(vec3 pos, vec3 col)
 {
-	position = pos;
+	translate(pos.x, pos.y, pos.z, 1.0f);
 	color = col;
 
 	intensity = 1.0f;
@@ -24,8 +24,6 @@ PointLight::PointLight(vec3 pos, vec3 col)
 	float _radius = (float)(-linear + std::sqrtf(linear * linear - 4 * quadratic * (constant - (256.0f / 5.0f) * lightMax)))
 			/ (2 * quadratic);
 	radius = _radius * intensity * 1.5f;
-
-	init_space_matrices();
 
 }
 
@@ -51,6 +49,39 @@ GLfloat* PointLight::get_position_pointer()
 GLfloat* PointLight::get_color_pointer()
 {
 	return &color[0];
+}
+
+// Return model matrix
+mat4 PointLight::get_model_matrix()
+{
+	return model_matrix;
+}
+
+// Translate
+void PointLight::translate(float x, float y, float z, float delta)
+{
+	position.x += x * delta;
+	position.y += y * delta;
+	position.z += z * delta;
+
+	// Calculate model matrix
+	model_matrix = glm::translate(model_matrix, vec3(x * delta, y * delta, z * delta));
+
+	if (shadow_calculated)
+	{
+		init_space_matrices();
+	}
+}
+
+// Create point light shadow maps
+void PointLight::create_shadow()
+{
+	// Create depth map buffers
+	create_depth_map_framebuffer();
+	// Calculate space matrices
+	init_space_matrices();
+
+	shadow_calculated = true;
 }
 
 void PointLight::create_depth_map_framebuffer()

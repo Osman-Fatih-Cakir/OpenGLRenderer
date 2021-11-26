@@ -315,13 +315,12 @@ void init_lights()
 		light->intensity = 10.f;
 		// Draw a mesh for represent a light
 		Model* light_model = new Model("mesh/white_cube/cube.obj");
-		light_model->translate(light->position, 1.0f);
 		light_model->scale(1.f, 1.f, 1.f, 1.0f);
 		//light_model->scale(5.f, 5.f, 5.f, 1.0f); // This cube is 1:1:1 after scaling it
 		light->model = light_model;
-	
 		// Create depth map framebuffer for each light
-		light->create_depth_map_framebuffer();
+		light->create_shadow();
+		// Add light to scene
 		scene->add_point_light(light);
 	}
 
@@ -331,14 +330,12 @@ void init_lights()
 
 	for (int i = 0; i < direct_light_count; i++)
 	{
-		DirectionalLight* light = new DirectionalLight(vec3(-1.f, -1.0f, -1.0f), vec3(1.f, 1.f, 1.f));
+		DirectionalLight* light = new DirectionalLight(vec3(-1.0f, -1.0f, -1.0f), vec3(1.f, 1.f, 1.f));
 		light->intensity = 0.9f;
-		// TODO calculate shadow variables elsewhere
-		mat4 proj_mat = glm::ortho(-20.f, 20.f, -20.f, 20.f, 0.01f, 1000.f);
-		mat4 view_mat = glm::lookAt(vec3(10, 10, 10), vec3(0, 0, 0), vec3(-1, 1, -1));
-		light->calculate_space_matrix(proj_mat, view_mat);
-		// Create depth map framebuffer
-		light->create_depth_map_framebuffer();
+		light->create_shadow(
+			-20.f, 20.f, -20.f, 20.f, 0.01f, 1000.f,
+			vec3(10.f, 10.f, 10.f), vec3(0.f, 0.f, 0.f), vec3(-1.f, 1.f, -1.f)
+		);
 		scene->add_direct_light(light);
 	}
 }
@@ -372,12 +369,12 @@ void render()
 	// Get delta time
 	float delta = timer->get_delta_time();
 
-	//scene->point_lights[0]->position += vec3(1.f, 0.f, 0.f) * (delta/1000);
-	//std::cout << scene->point_lights[0]->position.x << " " << scene->point_lights[0]->position.z << "\n";
-	//std::cout << "DELTA: " << delta << "\n";
-
 	if (input->hold_key(Key::KEY_Z))
-		scene->all_models[0]->translate(-1.f, 0.f, -1.f, delta / 100);
+	{
+		/////////////
+		
+		/////////////
+	}
 
 	//input_handler->update();
 	renderer->render(delta);

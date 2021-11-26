@@ -31,6 +31,19 @@ void DirectionalLight::set_projection(float left, float right, float bottom, flo
 {
 	projection_matrix = glm::ortho(left, right, bottom, top, zNear, zFar);
 }
+
+void DirectionalLight::create_shadow(float left, float right, float bottom, float top,
+	float _near, float _far, vec3 eye, vec3 center, vec3 up)
+{
+	// Initialize shadow map buffers
+	create_depth_map_framebuffer();
+
+	// Calcualte shadow projection and space matrices
+	set_projection(left, right, bottom, top, _near, _far);
+	set_view(eye, center, up);
+	calculate_space_matrix();
+}
+
 // Calculating space matrices from view and projection matrices
 // This function should be called after setting view and projection matrices
 void DirectionalLight::calculate_space_matrix()
@@ -91,4 +104,30 @@ GLfloat* DirectionalLight::get_direction_pointer()
 GLfloat* DirectionalLight::get_color_pointer()
 {
 	return &color[0];
+}
+
+vec3 DirectionalLight::get_color()
+{
+	return color;
+}
+
+vec3 DirectionalLight::get_direction()
+{
+	return direction;
+}
+
+void DirectionalLight::set_direction(vec3 mat)
+{
+	//TODOdirection = mat;
+
+}
+
+GLuint DirectionalLight::get_depth_map()
+{
+	return depth_map;
+}
+
+mat4 DirectionalLight::get_space_matrix()
+{
+	return space_matrix;
 }

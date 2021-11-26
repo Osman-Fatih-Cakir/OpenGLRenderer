@@ -33,7 +33,7 @@ void Renderer::render(float delta)
 
 	for (int i = 0; i < 1; i++)
 	{
-		scene->all_models[i]->rotate(vec3(0.f, 1.f, 0.f), (2 * (i + 1)), delta / 100);
+		scene->all_models[i]->rotate(vec3(0.f, 1.f, 0.f), (float)(2 * (i + 1)), delta / 100.f);
 	}
 
 	GBuffer->start_program();
@@ -104,11 +104,11 @@ void Renderer::render(float delta)
 	for (unsigned int i = 0; i < scene->direct_lights.size(); i++)
 	{
 		deferredShading->set_direct_light(
-			scene->direct_lights[i]->color,
-			scene->direct_lights[i]->direction,
+			scene->direct_lights[i]->get_color(),
+			scene->direct_lights[i]->get_direction(),
 			scene->direct_lights[i]->intensity,
-			scene->direct_lights[i]->depth_map,
-			scene->direct_lights[i]->space_matrix
+			scene->direct_lights[i]->get_depth_map(),
+			scene->direct_lights[i]->get_space_matrix()
 		);
 	}
 	
@@ -128,7 +128,7 @@ void Renderer::render(float delta)
 	{
 		if (scene->point_lights[i]->model != nullptr)
 		{
-			forwardRender->set_model_matrix(scene->point_lights[i]->model->get_model_matrix());
+			forwardRender->set_model_matrix(scene->point_lights[i]->get_model_matrix());
 			forwardRender->set_color(scene->point_lights[i]->color);
 			forwardRender->render(scene->camera, scene->point_lights[i]->model);
 		}
