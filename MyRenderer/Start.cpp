@@ -369,14 +369,6 @@ void render()
 	// Get delta time
 	float delta = timer->get_delta_time();
 
-	if (input->hold_key(Key::KEY_Z))
-	{
-		/////////////
-		
-		/////////////
-	}
-
-	//input_handler->update();
 	renderer->render(delta);
 	
 	float camera_speed = 7.5f;
@@ -404,8 +396,13 @@ void render()
 	{
 		scene->camera->translate(0.f, -camera_speed, 0.f, delta / 1000);
 	}
+	if (input->hold_key(Key::KEY_Z))
+	{
+		scene->camera->rotate(vec3(0.f, 1.f, 0.f), 2.f, delta / 100);
+	}
 	if (input->press_key(Key::KEY_R))
 	{
 		exit_app();
 	}
+
 }

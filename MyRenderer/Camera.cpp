@@ -61,6 +61,8 @@ void Camera::translate(float x, float y, float z, float delta)
 void Camera::rotate(vec3 rot, float angle, float delta)
 {
 	view_matrix = glm::rotate(view_matrix, glm::radians(angle), rot * delta);
+	mat4 inv = glm::inverse(view_matrix);
+	position = vec3(inv[3][0], inv[3][1], inv[3][2]);
 }
 
 //
