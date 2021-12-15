@@ -17,13 +17,19 @@ public:
 private:
 
 	void generate_skybox_map();
-	void generate_irradiance_map();
+	void generate_irradiance_map(); // TODO implement
 	void load_hdr_file(const char* path);
 	void render_cube();
+	void init_shader();
+	void create_cubemap();
+	void create_framebuffer();
 
 	GLuint equirectangular_map;
 	GLuint skybox_map;
 	GLuint irradiance_map;
-	GLuint cubeVAO = 0;
-	GLuint cubeVBO = 0;
+	GLuint program;
+	GLuint captureFBO;
+
+	unsigned int width = 512;
+	unsigned int height = 512;
 };

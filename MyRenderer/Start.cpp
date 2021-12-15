@@ -388,9 +388,7 @@ void render()
 	* 
 	* renderer->render(delta);
 	*/
-
 	Skybox* skybox = new Skybox("mesh/ibl_test/museum_2k.hdr");
-
 	//renderer->render(delta);
 	
 	float camera_speed = 7.5f;
