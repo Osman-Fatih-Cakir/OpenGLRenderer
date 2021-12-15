@@ -63,6 +63,9 @@
     <ClCompile Include="Model.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Skybox.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Mesh.h">
@@ -116,6 +119,9 @@
     <ClInclude Include="Keys.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Skybox.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\gbuffer_vs.glsl" />
@@ -129,5 +135,7 @@
     <None Include="shaders\point_depth_vs.glsl" />
     <None Include="shaders\point_depth_gs.glsl" />
     <None Include="shaders\point_depth_fs.glsl" />
+    <None Include="shaders\skybox_debug_vs.glsl" />
+    <None Include="shaders\skybox_debug_fs.glsl" />
   </ItemGroup>
 </Project>

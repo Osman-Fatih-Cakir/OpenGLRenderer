@@ -14,6 +14,7 @@
 #include <Renderer.h>
 #include <Input.h>
 #include <Keys.h>
+#include <Skybox.h>
 
 ////////////////
 // Debugging memory leaks
@@ -67,7 +68,7 @@ void keyboard_up(unsigned char key, int x, int y);
 void mouse_click(int button, int state, int x, int y);
 void mouse_passive(int x, int y);
 void resize_window(int w, int h);
-void init_meshes();
+void init_models();
 void init_camera(vec3 eye, vec3 center, vec3 up);
 void init_lights();
 void init_scene();
@@ -268,8 +269,9 @@ void resize_window(int w, int h)
 }
 
 // Initailize spheres
-void init_meshes()
+void init_models()
 {
+	/*
 	// Scene meshes
 	Model* model = new Model("mesh/Mandalorian_Helmet/Mandalorian_Helmet.obj");
 	model->translate(0.f, 1.4f, 0.f, 1.0f);
@@ -279,6 +281,11 @@ void init_meshes()
 	model = new Model("mesh/floor/floor.obj");
 	model->translate(0.f, -2.f, 0.f, 1.0f);
 	model->scale(20.f, 1.f, 20.f, 1.0f);
+	scene->add_model(model);
+	*/
+
+	Model* model = new Model("mesh/ibl_test/sphere.obj");
+	model->scale(2.f, 2.f, 2.f, 1.0f);
 	scene->add_model(model);
 }
 
@@ -347,11 +354,11 @@ void init_scene()
 	scene = new Scene();
 	
 	// Load sphere mesh
-	init_meshes();
+	init_models();
 
 	// Set camera parameters
 	init_camera(
-		vec3(0.f, 5.f, 18.f), // Eye
+		vec3(0.f, 1.f, 8.f), // Eye
 		vec3(0.f, 1.f, 0.f), // Up
 		vec3(0.f, 0.f, 0.f) // Center
 	);
@@ -369,7 +376,22 @@ void render()
 	// Get delta time
 	float delta = timer->get_delta_time();
 
-	renderer->render(delta);
+	/*
+	* Skybox skybox = new Skybox("skybox.hdr");
+	* scene->skybox = skybox->skyboxmap // generate_skyboxmap() generate_irradiencemap()
+	* /////
+	* scene->irradiencemap = skybox->irradiencemap
+	* 
+	* model->cubemap = scene->skybox
+	* model->irradiencemap = scene->irradience_map
+	* ...
+	* 
+	* renderer->render(delta);
+	*/
+
+	Skybox* skybox = new Skybox("mesh/ibl_test/museum_2k.hdr");
+
+	//renderer->render(delta);
 	
 	float camera_speed = 7.5f;
 	if (input->hold_key(Key::KEY_W))
@@ -400,9 +422,12 @@ void render()
 	{
 		scene->camera->rotate(vec3(0.f, 1.f, 0.f), 2.f, delta / 100);
 	}
+	if (input->hold_key(Key::KEY_C))
+	{
+		scene->camera->rotate(vec3(0.f, -1.f, 0.f), 2.f, delta / 100);
+	}
 	if (input->press_key(Key::KEY_R))
 	{
 		exit_app();
 	}
-
 }
