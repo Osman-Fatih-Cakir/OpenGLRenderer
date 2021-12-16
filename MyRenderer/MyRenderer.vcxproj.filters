@@ -137,5 +137,7 @@
     <None Include="shaders\point_depth_fs.glsl" />
     <None Include="shaders\equirect_to_cube_vs.glsl" />
     <None Include="shaders\equirect_to_cube_fs.glsl" />
+    <None Include="shaders\skybox_vs.glsl" />
+    <None Include="shaders\skybox_fs.glsl" />
   </ItemGroup>
 </Project>

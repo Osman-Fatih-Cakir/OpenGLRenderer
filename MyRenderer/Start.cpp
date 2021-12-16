@@ -271,22 +271,21 @@ void resize_window(int w, int h)
 // Initailize spheres
 void init_models()
 {
-	/*
 	// Scene meshes
 	Model* model = new Model("mesh/Mandalorian_Helmet/Mandalorian_Helmet.obj");
 	model->translate(0.f, 1.4f, 0.f, 1.0f);
-	model->scale(0.1f, 0.1f, 0.1f, 1.0f);
+	model->scale(0.075f, 0.075f, 0.075f, 1.0f);
 	scene->add_model(model);
-
+	/*
 	model = new Model("mesh/floor/floor.obj");
 	model->translate(0.f, -2.f, 0.f, 1.0f);
 	model->scale(20.f, 1.f, 20.f, 1.0f);
 	scene->add_model(model);
-	*/
-
+	*//*
 	Model* model = new Model("mesh/ibl_test/sphere.obj");
 	model->scale(2.f, 2.f, 2.f, 1.0f);
 	scene->add_model(model);
+	*/
 }
 
 // Initialize camera
@@ -321,7 +320,7 @@ void init_lights()
 		PointLight* light = new PointLight(_positions[i], _colors[i]);
 		light->intensity = 10.f;
 		// Draw a mesh for represent a light
-		Model* light_model = new Model("mesh/white_cube/cube.obj");
+		Model* light_model = new Model("mesh/white_cube/cube.obj"); 
 		light_model->scale(1.f, 1.f, 1.f, 1.0f);
 		//light_model->scale(5.f, 5.f, 5.f, 1.0f); // This cube is 1:1:1 after scaling it
 		light->model = light_model;
@@ -353,12 +352,15 @@ void init_scene()
 	// Initlialize scene class
 	scene = new Scene();
 	
+	Skybox* skybox = new Skybox("mesh/ibl_test/hall_2k.hdr");
+	scene->skybox = skybox;
+
 	// Load sphere mesh
 	init_models();
 
 	// Set camera parameters
 	init_camera(
-		vec3(0.f, 1.f, 8.f), // Eye
+		vec3(0.f, 3.f, 8.f), // Eye
 		vec3(0.f, 1.f, 0.f), // Up
 		vec3(0.f, 0.f, 0.f) // Center
 	);
@@ -388,8 +390,8 @@ void render()
 	* 
 	* renderer->render(delta);
 	*/
-	Skybox* skybox = new Skybox("mesh/ibl_test/museum_2k.hdr");
-	//renderer->render(delta);
+	
+	renderer->render(delta);
 	
 	float camera_speed = 7.5f;
 	if (input->hold_key(Key::KEY_W))

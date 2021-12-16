@@ -5,6 +5,7 @@
 #include <Camera.h>
 #include <DirectionalLight.h>
 #include <PointLight.h>
+#include <Skybox.h>
 
 class Scene
 {
@@ -14,6 +15,7 @@ public:
 	~Scene();
 
 	Camera* camera;
+	Skybox* skybox = nullptr;
 	std::vector<Model*> all_models;
 	std::vector<DirectionalLight*> direct_lights;
 	std::vector<PointLight*> point_lights;
@@ -23,5 +25,5 @@ public:
 	void add_direct_light(DirectionalLight* d);
 
 private:
-
+	
 };

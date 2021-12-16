@@ -12,6 +12,7 @@ Skybox::Skybox(const char* path)
 {
 	load_hdr_file(path);
     init_shader();
+    get_uniform_location();
 	generate_skybox_map();
 	//generate_irradiance_map();
 }
@@ -28,10 +29,10 @@ void Skybox::generate_skybox_map()
     mat4 views[] =
     {
         // TODO check these views are correct
-        glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f)),
         glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(-1.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f)),
-        glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, 0.0f, -1.0f)),
+        glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f)),
         glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f)),
+        glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, 0.0f, -1.0f)),
         glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(0.0f, 1.0f, 0.0f)),
         glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f))
     };
@@ -63,8 +64,6 @@ void Skybox::generate_skybox_map()
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     
     GLuint err = glGetError(); if (err) fprintf(stderr, "Generating cubemap: %s\n", gluErrorString(err));
-    glutSwapBuffers();
-    glutPostRedisplay(); // Render loop
 }
 
 void Skybox::create_framebuffer()
@@ -99,12 +98,40 @@ void Skybox::init_shader()
     GLuint vertex_shader = initshaders(GL_VERTEX_SHADER, "shaders/equirect_to_cube_vs.glsl");
     GLuint fragment_shader = initshaders(GL_FRAGMENT_SHADER, "shaders/equirect_to_cube_fs.glsl");
     program = initprogram(vertex_shader, fragment_shader);
+
+    vertex_shader = initshaders(GL_VERTEX_SHADER, "shaders/skybox_vs.glsl");
+    fragment_shader = initshaders(GL_FRAGMENT_SHADER, "shaders/skybox_fs.glsl");
+    render_program = initprogram(vertex_shader, fragment_shader);
+}
+
+void Skybox::get_uniform_location()
+{
+    // TODO space matrix?
+    loc_projection_matrix = glGetUniformLocation(render_program, "projection");
+    loc_view_matrix = glGetUniformLocation(render_program, "view");
+
+    loc_skybox_map = glGetUniformLocation(render_program, "skybox_map");
+}
+
+void Skybox::set_view_matrix(mat4 mat)
+{
+    glUniformMatrix4fv(loc_view_matrix, 1, GL_FALSE, &mat[0][0]);
+}
+void Skybox::set_projection_matrix(mat4 mat)
+{
+    glUniformMatrix4fv(loc_projection_matrix, 1, GL_FALSE, &mat[0][0]);
+}
+void Skybox::set_skybox_map()
+{
+    glUniform1i(loc_skybox_map, 0);
+    glActiveTexture(GL_TEXTURE0 + 0);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, skybox_map);
 }
 
 void Skybox::load_hdr_file(const char* path)
 {
 	// why flip?
-	stbi_set_flip_vertically_on_load(true);
+	//stbi_set_flip_vertically_on_load(true);
 
 	int width, height, nrComponents;
 	float* data = stbi_loadf(path, &width, &height, &nrComponents, 0);
@@ -176,6 +203,7 @@ void Skybox::render_cube()
         -1.0f,  1.0f, -1.0f,
         -1.0f,  1.0f,  1.0f       
     };
+    
     glGenVertexArrays(1, &cubeVAO);
     glGenBuffers(1, &cubeVBO);
     // fill buffer
@@ -193,6 +221,19 @@ void Skybox::render_cube()
     glBindVertexArray(0);
 }
 
+void Skybox::render(Camera* camera)
+{
+    // TODO draw skybox!
+    glUseProgram(render_program);
+    glDepthFunc(GL_LEQUAL);
+    set_projection_matrix(camera->get_projection_matrix());
+    set_view_matrix(camera->get_view_matrix());
+    set_skybox_map();
+    render_cube();
+    
+    glDepthFunc(GL_LESS); // Return to default depth test
+}
+
 GLuint Skybox::get_equirectangular_map()
 {
 	return equirectangular_map;
@@ -204,4 +245,12 @@ GLuint Skybox::get_skybox_map()
 GLuint Skybox::get_irradiance_map()
 {
 	return irradiance_map;
+}
+GLuint Skybox::get_width()
+{
+    return width;
+}
+GLuint Skybox::get_height()
+{
+    return height;
 }

@@ -37,6 +37,7 @@ void Renderer::render(float delta)
 	}
 
 	GBuffer->start_program();
+
 	// Draw models of the scene
 	for (unsigned int i = 0; i < scene->all_models.size(); i++)
 	{
@@ -133,6 +134,8 @@ void Renderer::render(float delta)
 			forwardRender->render(scene->camera, scene->point_lights[i]->model);
 		}
 	}
+
+	scene->skybox->render(scene->camera);
 	
 	// Error check
 	GLuint err = glGetError(); if (err) fprintf(stderr, "%s\n", gluErrorString(err));

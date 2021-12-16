@@ -204,6 +204,8 @@
     <None Include="shaders\point_depth_vs.glsl" />
     <None Include="shaders\equirect_to_cube_fs.glsl" />
     <None Include="shaders\equirect_to_cube_vs.glsl" />
+    <None Include="shaders\skybox_fs.glsl" />
+    <None Include="shaders\skybox_vs.glsl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

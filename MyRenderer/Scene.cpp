@@ -34,6 +34,9 @@ Scene::~Scene()
 	}
 	point_lights.clear();
 
+	// Skybox
+	delete skybox;
+
 	// Camera
 	delete camera;
 }
