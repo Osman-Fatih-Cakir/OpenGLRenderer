@@ -378,19 +378,6 @@ void render()
 	// Get delta time
 	float delta = timer->get_delta_time();
 
-	/*
-	* Skybox skybox = new Skybox("skybox.hdr");
-	* scene->skybox = skybox->skyboxmap // generate_skyboxmap() generate_irradiencemap()
-	* /////
-	* scene->irradiencemap = skybox->irradiencemap
-	* 
-	* model->cubemap = scene->skybox
-	* model->irradiencemap = scene->irradience_map
-	* ...
-	* 
-	* renderer->render(delta);
-	*/
-	
 	renderer->render(delta);
 	
 	float camera_speed = 7.5f;

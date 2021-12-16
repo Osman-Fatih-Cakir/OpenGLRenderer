@@ -139,5 +139,7 @@
     <None Include="shaders\equirect_to_cube_fs.glsl" />
     <None Include="shaders\skybox_vs.glsl" />
     <None Include="shaders\skybox_fs.glsl" />
+    <None Include="shaders\irradiance_map_vs.glsl" />
+    <None Include="shaders\irradiance_map_fs.glsl" />
   </ItemGroup>
 </Project>

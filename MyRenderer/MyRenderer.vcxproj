@@ -199,6 +199,8 @@
     <None Include="shaders\depth_fs.glsl" />
     <None Include="shaders\gbuffer_fs.glsl" />
     <None Include="shaders\gbuffer_vs.glsl" />
+    <None Include="shaders\irradiance_map_fs.glsl" />
+    <None Include="shaders\irradiance_map_vs.glsl" />
     <None Include="shaders\point_depth_fs.glsl" />
     <None Include="shaders\point_depth_gs.glsl" />
     <None Include="shaders\point_depth_vs.glsl" />

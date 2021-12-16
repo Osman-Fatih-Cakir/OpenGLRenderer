@@ -14,17 +14,16 @@ Skybox::Skybox(const char* path)
     init_shader();
     get_uniform_location();
 	generate_skybox_map();
-	//generate_irradiance_map();
+	generate_irradiance_map();
 }
 
 void Skybox::generate_skybox_map()
 {
-    create_cubemap();
+    create_skybox_map();
     create_framebuffer();
     
-    // A view matrix for each face
     // TODO try sending space matrices rather than projection and view seperately
-
+    // A view matrix for each face
     mat4 p = glm::perspective(glm::radians(90.f), 1.f, 0.1f, 10.f);
     mat4 views[] =
     {
@@ -45,9 +44,8 @@ void Skybox::generate_skybox_map()
     // Bind framebuffer to get texture from color attachemnts
     glBindFramebuffer(GL_FRAMEBUFFER, captureFBO);
     
-    // Projection matrix
+    // Set the uniforms
     glUniformMatrix4fv(glGetUniformLocation(program, "projection"), 1, GL_FALSE, &p[0][0]);
-    // Equirectangular_map
     glActiveTexture(GL_TEXTURE0);
     glUniform1i(glGetUniformLocation(program, "equirectangular_map"), 0);
     glBindTexture(GL_TEXTURE_2D, equirectangular_map);
@@ -63,12 +61,73 @@ void Skybox::generate_skybox_map()
     }
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     
-    GLuint err = glGetError(); if (err) fprintf(stderr, "Generating cubemap: %s\n", gluErrorString(err));
+    GLuint err = glGetError(); if (err) fprintf(stderr, "Generating skybox: %s\n", gluErrorString(err));
+}
+
+void Skybox::generate_irradiance_map()
+{
+    create_irradiance_map();
+
+    mat4 p = glm::perspective(glm::radians(90.f), 1.f, 0.1f, 10.f);
+    mat4 views[] =
+    {
+        // TODO check these views are correct
+        glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(-1.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f)),
+        glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f)),
+        glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f)),
+        glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, 0.0f, -1.0f)),
+        glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(0.0f, 1.0f, 0.0f)),
+        glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f))
+    };
+
+    glUseProgram(irradiance_program);
+
+    glViewport(0, 0, irradiance_width, irradiance_height);
+
+    // Bind framebuffer and render buffer with irradiance map sizes
+    glBindFramebuffer(GL_FRAMEBUFFER, captureFBO);
+    glBindRenderbuffer(GL_RENDERBUFFER, captureRBO);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, irradiance_width, irradiance_height);
+
+    // Set the uniforms
+    glUniformMatrix4fv(glGetUniformLocation(irradiance_program, "projection"), 1, GL_FALSE, &p[0][0]);
+    glActiveTexture(GL_TEXTURE0);
+    glUniform1i(glGetUniformLocation(irradiance_program, "skybox_map"), 0);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, skybox_map);
+    
+    // Render 6 times for each face of the cube
+    for (int i = 0; i < 6; i++)
+    {
+        glUniformMatrix4fv(glGetUniformLocation(irradiance_program, "view"), 1, GL_FALSE, &views[i][0][0]);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+            GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, irradiance_map, 0);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        render_cube();
+    }
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    GLuint err = glGetError(); if (err) fprintf(stderr, "Generating irradiance map: %s\n",
+        gluErrorString(err));
+}
+
+void Skybox::create_irradiance_map()
+{
+    glGenTextures(1, &irradiance_map);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, irradiance_map);
+    for (unsigned int i = 0; i < 6; ++i)
+    {
+        glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB16F,
+            irradiance_width, irradiance_height, 0, GL_RGB, GL_FLOAT, nullptr);
+    }
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 }
 
 void Skybox::create_framebuffer()
 {
-    GLuint captureRBO;
     glGenFramebuffers(1, &captureFBO);
     glGenRenderbuffers(1, &captureRBO);
 
@@ -78,7 +137,7 @@ void Skybox::create_framebuffer()
     glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, captureRBO);
 }
 
-void Skybox::create_cubemap()
+void Skybox::create_skybox_map()
 {
     glGenTextures(1, &skybox_map);
     glBindTexture(GL_TEXTURE_CUBE_MAP, skybox_map);
@@ -102,6 +161,10 @@ void Skybox::init_shader()
     vertex_shader = initshaders(GL_VERTEX_SHADER, "shaders/skybox_vs.glsl");
     fragment_shader = initshaders(GL_FRAGMENT_SHADER, "shaders/skybox_fs.glsl");
     render_program = initprogram(vertex_shader, fragment_shader);
+
+    vertex_shader = initshaders(GL_VERTEX_SHADER, "shaders/irradiance_map_vs.glsl");
+    fragment_shader = initshaders(GL_FRAGMENT_SHADER, "shaders/irradiance_map_fs.glsl");
+    irradiance_program = initprogram(vertex_shader, fragment_shader);
 }
 
 void Skybox::get_uniform_location()
@@ -109,7 +172,6 @@ void Skybox::get_uniform_location()
     // TODO space matrix?
     loc_projection_matrix = glGetUniformLocation(render_program, "projection");
     loc_view_matrix = glGetUniformLocation(render_program, "view");
-
     loc_skybox_map = glGetUniformLocation(render_program, "skybox_map");
 }
 
@@ -223,7 +285,6 @@ void Skybox::render_cube()
 
 void Skybox::render(Camera* camera)
 {
-    // TODO draw skybox!
     glUseProgram(render_program);
     glDepthFunc(GL_LEQUAL);
     set_projection_matrix(camera->get_projection_matrix());
