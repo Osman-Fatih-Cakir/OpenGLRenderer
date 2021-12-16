@@ -60,6 +60,9 @@ Timer* timer = nullptr;
 // Renderer
 Renderer* renderer = nullptr;
 
+// Global variables for application
+int skybox_id = 0;
+
 void Init_Glut_and_Glew(int argc, char* argv[]);
 void init();
 void exit_app();
@@ -416,6 +419,27 @@ void render()
 	}
 	if (input->press_key(Key::KEY_R))
 	{
-		exit_app();
+		Skybox* _skybox;
+		// TODO use X for this, re assign R for exit_app()
+		switch (skybox_id)
+		{
+		case 0:
+			_skybox = new Skybox("mesh/ibl_test/hall_2k.hdr");
+			scene->skybox = _skybox;
+			break;
+		case 1:
+			_skybox = new Skybox("mesh/ibl_test/museum_2k.hdr");
+			scene->skybox = _skybox;
+			break;
+		case 2:
+			_skybox = new Skybox("mesh/ibl_test/veranda_2k.hdr");
+			scene->skybox = _skybox;
+			break;
+		default:
+			break;
+		}
+		skybox_id++;
+		skybox_id = skybox_id % 3;
+		//exit_app();
 	}
 }
