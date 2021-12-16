@@ -80,6 +80,14 @@ void DeferredShading::set_gPbr_materials(GLuint id)
 	glBindTexture(GL_TEXTURE_2D, id);
 }
 
+// Set irradiance map to the uniform
+void DeferredShading::set_irradiance_map(GLuint id)
+{
+	glUniform1i(loc_irradiance_map, 4);
+	glActiveTexture(GL_TEXTURE0 + 4);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, id);
+}
+
 void DeferredShading::set_point_light
 	(
 		vec3 position,
@@ -164,7 +172,7 @@ void DeferredShading::set_direct_light
 }
 
 // Renders the scene
-void DeferredShading::render(Camera* camera)
+void DeferredShading::render(Camera* camera, GLuint irradiance_map)
 {
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
@@ -174,6 +182,7 @@ void DeferredShading::render(Camera* camera)
 	set_gNormal(GBuffer->get_gNormal());
 	set_gAlbedoSpec(GBuffer->get_gAlbedoSpec());
 	set_gPbr_materials(GBuffer->get_gPbr_materials());
+	set_irradiance_map(irradiance_map);
 	
 	// Draw call
 	draw_quad(program);
@@ -195,6 +204,7 @@ void DeferredShading::get_uniform_locations()
 	loc_gNormal = glGetUniformLocation(program, "gNormal");
 	loc_gAlbedoSpec = glGetUniformLocation(program, "gAlbedoSpec");
 	loc_gPbr_materials = glGetUniformLocation(program, "gPbr_materials");
+	loc_irradiance_map = glGetUniformLocation(program, "irradiance_map");
 }
 
 // Initialize a quad
@@ -231,8 +241,6 @@ void DeferredShading::init_quad()
 void DeferredShading::draw_quad(GLuint shader_program)
 {
 	glBindVertexArray(quad_VAO);
-	GLuint err = glGetError(); if (err) fprintf(stderr, "%s\n", gluErrorString(err));
 	glDrawArrays(GL_TRIANGLES, 0, 6);
-	GLuint errr = glGetError(); if (errr) fprintf(stderr, "%s\n", gluErrorString(errr));
 	glBindVertexArray(0);
 }

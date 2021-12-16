@@ -12,6 +12,7 @@ uniform sampler2D gAlbedoSpec;
 //	G component : Metallic
 //	B component : AO (Ambient Occlusion)
 uniform sampler2D gPbr_materials;
+uniform samplerCube irradiance_map;
 
 struct Point_Light
 {
@@ -159,6 +160,12 @@ float geometry_smith(vec3 N, vec3 V, vec3 L, float roughness)
 	return ggx1 * ggx2;
 }
 
+// Calculate irradiance with injecting a roughness term in the Fresnel-Schlick equation
+vec3 fresnel_schlick_roughness(float cosTheta, vec3 F0, float roughness)
+{
+	return F0 + (max(vec3(1.0 - roughness), F0) - F0) * pow(clamp(1.0 - cosTheta, 0.0, 1.0), 5.0);
+}
+
 // Calculate point lighting
 vec3 calculate_point_light(vec3 frag_pos, vec3 normal, vec3 albedo, float roughness, float metallic)
 {
@@ -216,7 +223,7 @@ vec3 calculate_point_light(vec3 frag_pos, vec3 normal, vec3 albedo, float roughn
 		// Calculate Lo
 		float angle = max(dot(normal, light_dir), 0.0);
 		Lo += (kD * albedo / PI + specular) * attenuation * angle;
-		Lo *= point_lights[i].intensity * (1.0 - shadow) * point_lights[i].color;
+		Lo *= point_lights[i].intensity * (1.0 - shadow) * point_lights[i].color;	
 
 		col += Lo;
 	}
@@ -248,8 +255,8 @@ vec3 calculate_direct_light(vec3 frag_pos, vec3 normal, vec3 albedo, float rough
 		float shadow = directional_shadow_calculation(i, frag_pos, bias);
 
 		// If the fragment is in the shadow, there is no need for lighting calculations
-		if (shadow == 1.0)
-			continue;
+		//if (shadow == 1.0)
+		//	continue;
 
 		// Surface reflection at zero incidence (F0)
 		vec3 F0 = vec3(0.04);
@@ -277,7 +284,6 @@ vec3 calculate_direct_light(vec3 frag_pos, vec3 normal, vec3 albedo, float rough
 
 		col += Lo;
 	}
-
 	return col;
 }
 
@@ -299,12 +305,19 @@ void main()
 
 	// Direct light calculation
 	Lo += calculate_direct_light(frag_pos, normal, albedo, roughness, metallic);
-	
-	vec3 ambient = Lo * vec3(0.03) * albedo * ao; // AO component
-	Lo += ambient; // Add ambient light at the end
+
+	vec3 F0 = vec3(0.04);
+	F0 = mix(F0, albedo, metallic);
+	vec3 view_dir = normalize(viewer_pos - frag_pos);
+	vec3 kS = fresnel_schlick_roughness(max(dot(normal, view_dir), 0.0), F0, roughness);
+	vec3 kD = 1.0 - kS;
+	vec3 irradiance = texture(irradiance_map, normal).rgb;
+	vec3 diffuse = irradiance * albedo;
+	vec3 ambient = (kD * diffuse) * ao;
+	Lo += ambient;
 
 	// Gamma correction
 	Lo = pow(Lo, vec3(1.0 / 2.2));
-
+	
 	OutColor = vec4(Lo, 1.0);
 }

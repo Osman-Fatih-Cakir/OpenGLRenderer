@@ -33,7 +33,7 @@ void Renderer::render(float delta)
 
 	for (int i = 0; i < 1; i++)
 	{
-		scene->all_models[i]->rotate(vec3(0.f, 1.f, 0.f), (float)(2 * (i + 1)), delta / 100.f);
+		//scene->all_models[i]->rotate(vec3(0.f, 1.f, 0.f), (float)(2 * (i + 1)), delta / 100.f);
 	}
 
 	GBuffer->start_program();
@@ -114,7 +114,7 @@ void Renderer::render(float delta)
 	}
 	
 	// Render with deferred shading
-	deferredShading->render(scene->camera);
+	deferredShading->render(scene->camera, scene->skybox->get_irradiance_map());
 
 	//
 	//// 3. Pass: Draw light meshes (The meshes that are not lit but in the same scene with other meshes)

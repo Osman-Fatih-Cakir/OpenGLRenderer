@@ -23,6 +23,7 @@ public:
 	void set_gNormal(GLuint id);
 	void set_gAlbedoSpec(GLuint id);
 	void set_gPbr_materials(GLuint id);
+	void set_irradiance_map(GLuint id);
 	void set_point_light(
 		vec3 position,
 		vec3 color,
@@ -40,7 +41,7 @@ public:
 		GLuint shadow_map,
 		mat4 light_space_matrix
 	);
-	void render(Camera* camera);
+	void render(Camera* camera, GLuint irradiance_map);
 
 private:
 
@@ -52,6 +53,7 @@ private:
 	GLuint loc_gNormal;
 	GLuint loc_gAlbedoSpec;
 	GLuint loc_gPbr_materials;
+	GLuint loc_irradiance_map;
 	GLuint quad_VAO;
 	int point_light_count = 0;
 	int direct_light_count = 0;

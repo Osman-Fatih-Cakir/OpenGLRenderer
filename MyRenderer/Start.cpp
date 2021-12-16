@@ -281,7 +281,8 @@ void init_models()
 	model->translate(0.f, -2.f, 0.f, 1.0f);
 	model->scale(20.f, 1.f, 20.f, 1.0f);
 	scene->add_model(model);
-	*//*
+	*/
+	/*
 	Model* model = new Model("mesh/ibl_test/sphere.obj");
 	model->scale(2.f, 2.f, 2.f, 1.0f);
 	scene->add_model(model);
@@ -352,7 +353,7 @@ void init_scene()
 	// Initlialize scene class
 	scene = new Scene();
 	
-	Skybox* skybox = new Skybox("mesh/ibl_test/hall_2k.hdr");
+	Skybox* skybox = new Skybox("mesh/ibl_test/museum_2k.hdr");
 	scene->skybox = skybox;
 
 	// Load sphere mesh
