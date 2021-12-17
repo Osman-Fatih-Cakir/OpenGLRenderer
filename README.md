@@ -36,4 +36,4 @@ Techniques that I used so far:
 - https://polyhaven.com/a/veranda
 
 ## Note:
-There are memory leaks in project (which I assume caused by assimp library), I found no way to fix it. I will check that later for now since it cost me so much time
+There are memory leaks in project (which I assume caused by assimp library), I found no way to fix it. I will check that later since it has cost me so much time.
