@@ -306,6 +306,13 @@ void main()
 	// Direct light calculation
 	Lo += calculate_direct_light(frag_pos, normal, albedo, roughness, metallic);
 
+	////////////////////////////////////
+	metallic = 1.0;
+	roughness = 0.1;
+	albedo = vec3(0.8, 0.6, 0.1);
+	ao = 1.0;
+	////////////////////////////////////
+
 	vec3 F0 = vec3(0.04);
 	F0 = mix(F0, albedo, metallic);
 	vec3 view_dir = normalize(viewer_pos - frag_pos);

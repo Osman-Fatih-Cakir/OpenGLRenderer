@@ -275,22 +275,23 @@ void resize_window(int w, int h)
 // Initailize spheres
 void init_models()
 {
+	/*
 	// Scene meshes
 	Model* model = new Model("mesh/Mandalorian_Helmet/Mandalorian_Helmet.obj");
 	model->translate(0.f, 1.4f, 0.f, 1.0f);
 	model->scale(0.075f, 0.075f, 0.075f, 1.0f);
 	scene->add_model(model);
-	/*
+	
 	model = new Model("mesh/floor/floor.obj");
 	model->translate(0.f, -2.f, 0.f, 1.0f);
 	model->scale(20.f, 1.f, 20.f, 1.0f);
 	scene->add_model(model);
 	*/
-	/*
+	
 	Model* model = new Model("mesh/ibl_test/sphere.obj");
 	model->scale(2.f, 2.f, 2.f, 1.0f);
 	scene->add_model(model);
-	*/
+	
 }
 
 // Initialize skyboxes
@@ -332,7 +333,7 @@ void init_lights()
 	{
 		// Initialize light
 		PointLight* light = new PointLight(_positions[i], _colors[i]);
-		light->intensity = 10.f;
+		light->intensity = 0.f;//10.f;
 		// Draw a mesh for represent a light
 		Model* light_model = new Model("mesh/white_cube/cube.obj"); 
 		light_model->scale(1.f, 1.f, 1.f, 1.0f);
@@ -351,7 +352,7 @@ void init_lights()
 	for (int i = 0; i < direct_light_count; i++)
 	{
 		DirectionalLight* light = new DirectionalLight(vec3(-1.0f, -1.0f, -1.0f), vec3(1.f, 1.f, 1.f));
-		light->intensity = 0.9f;
+		light->intensity = 0.f;//0.9f;
 		light->create_shadow(
 			-20.f, 20.f, -20.f, 20.f, 0.01f, 1000.f,
 			vec3(10.f, 10.f, 10.f), vec3(0.f, 0.f, 0.f), vec3(-1.f, 1.f, -1.f)
@@ -420,7 +421,7 @@ void render()
 	}
 	if (input->hold_key(Key::KEY_Z))
 	{
-		scene->camera->rotate(vec3(0.f, 1.f, 0.f), 2.f, delta / 100);
+		scene->camera->rotate(vec3(1.f, 0.f, 0.f), 2.f, delta / 100);
 	}
 	if (input->hold_key(Key::KEY_C))
 	{
