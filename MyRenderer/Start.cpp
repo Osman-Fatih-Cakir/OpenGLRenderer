@@ -60,7 +60,7 @@ Timer* timer = nullptr;
 // Renderer
 Renderer* renderer = nullptr;
 
-// Global variables for application
+// Global variables for test the application
 int skybox_id = 0;
 
 void Init_Glut_and_Glew(int argc, char* argv[]);
@@ -72,6 +72,7 @@ void mouse_click(int button, int state, int x, int y);
 void mouse_passive(int x, int y);
 void resize_window(int w, int h);
 void init_models();
+void init_skyboxes();
 void init_camera(vec3 eye, vec3 center, vec3 up);
 void init_lights();
 void init_scene();
@@ -292,6 +293,15 @@ void init_models()
 	*/
 }
 
+// Initialize skyboxes
+void init_skyboxes()
+{
+	scene->add_skybox("mesh/ibl_test/hall_2k.hdr", 1);
+	scene->add_skybox("mesh/ibl_test/museum_2k.hdr", 2);
+	scene->add_skybox("mesh/ibl_test/veranda_2k.hdr", 3);
+	scene->render_skybox_id(3);
+}
+
 // Initialize camera
 void init_camera(vec3 eye, vec3 up, vec3 center)
 {
@@ -356,8 +366,7 @@ void init_scene()
 	// Initlialize scene class
 	scene = new Scene();
 	
-	Skybox* skybox = new Skybox("mesh/ibl_test/museum_2k.hdr");
-	scene->skybox = skybox;
+	init_skyboxes();
 
 	// Load sphere mesh
 	init_models();
@@ -419,25 +428,8 @@ void render()
 	}
 	if (input->press_key(Key::KEY_R))
 	{
-		Skybox* _skybox;
 		// TODO use X for this, re assign R for exit_app()
-		switch (skybox_id)
-		{
-		case 0:
-			_skybox = new Skybox("mesh/ibl_test/hall_2k.hdr");
-			scene->skybox = _skybox;
-			break;
-		case 1:
-			_skybox = new Skybox("mesh/ibl_test/museum_2k.hdr");
-			scene->skybox = _skybox;
-			break;
-		case 2:
-			_skybox = new Skybox("mesh/ibl_test/veranda_2k.hdr");
-			scene->skybox = _skybox;
-			break;
-		default:
-			break;
-		}
+		scene->render_skybox_id(skybox_id+1);
 		skybox_id++;
 		skybox_id = skybox_id % 3;
 		//exit_app();

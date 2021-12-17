@@ -8,13 +8,15 @@
 typedef glm::vec3 vec3;
 typedef glm::mat4 mat4;
 
-Skybox::Skybox(const char* path)
+Skybox::Skybox(const char* path, int _id)
 {
 	load_hdr_file(path);
     init_shader();
     get_uniform_location();
 	generate_skybox_map();
 	generate_irradiance_map();
+
+    id = _id;
 }
 
 void Skybox::generate_skybox_map()
@@ -314,4 +316,8 @@ GLuint Skybox::get_width()
 GLuint Skybox::get_height()
 {
     return height;
+}
+int Skybox::get_id()
+{
+    return id;
 }

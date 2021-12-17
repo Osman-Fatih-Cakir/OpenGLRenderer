@@ -8,7 +8,7 @@ class Skybox
 {
 public:
 	// Constrctor takes path to .hdr file
-	Skybox(const char* path);
+	Skybox(const char* path, int id);
 
 	void get_uniform_location();
 	void set_view_matrix(mat4 mat);
@@ -21,9 +21,11 @@ public:
 	GLuint get_irradiance_map();
 	GLuint get_width();
 	GLuint get_height();
+	int get_id();
 	
 
 private:
+	Skybox();
 
 	void generate_skybox_map();
 	void generate_irradiance_map();
@@ -35,6 +37,7 @@ private:
 	void create_framebuffer();
 	void set_skybox_map();
 
+	int id = -1;
 	GLuint equirectangular_map;
 	GLuint skybox_map;
 	GLuint irradiance_map;
