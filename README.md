@@ -7,12 +7,15 @@ Since I am new to computer graphics, I would be happy to receive suggestions abo
 
 Techniques that I used so far:
 - PBR (Cook-Torrance specular BRDF)
+- IBL
+	- Diffuse irradiance
 - Deferred shading
 - Point light
 - Directional light
 - Shadows for all light types (shadow map)
 - Load objects with assimp
 - Forward rendering
+- Skybox (.hdr files)
 
 ## Material file read (Probably bad)
 - map_Ka	: Metallic map
