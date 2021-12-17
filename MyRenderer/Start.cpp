@@ -122,6 +122,8 @@ void Init_Glut_and_Glew(int argc, char* argv[])
 	
 	// Enable depth test
 	glEnable(GL_DEPTH_TEST);
+	// Enable linear filtering across the cubemap faces
+	glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
 
 	// Function bindings
 	glutReshapeFunc(resize_window);

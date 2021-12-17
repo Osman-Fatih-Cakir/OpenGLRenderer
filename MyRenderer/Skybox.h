@@ -29,11 +29,14 @@ private:
 
 	void generate_skybox_map();
 	void generate_irradiance_map();
+	void generate_prefilter_map();
+	void generate_skybox_mipmaps();
 	void load_hdr_file(const char* path);
 	void render_cube();
 	void init_shader();
 	void create_skybox_map();
 	void create_irradiance_map();
+	void create_prefilter_map();
 	void create_framebuffer();
 	void set_skybox_map();
 
@@ -41,9 +44,11 @@ private:
 	GLuint equirectangular_map;
 	GLuint skybox_map;
 	GLuint irradiance_map;
+	GLuint prefilter_map;
 	GLuint program; // TODO rename program->skybox_program
 	GLuint render_program;
 	GLuint irradiance_program;
+	GLuint prefilter_program;
 	GLuint captureFBO;
 	GLuint captureRBO;
 
@@ -51,8 +56,12 @@ private:
 	GLuint loc_view_matrix;
 	GLuint loc_skybox_map;
 
+	unsigned int max_mip_level = 5;
+
 	GLuint width = 512;
 	GLuint height = 512;
 	GLuint irradiance_width = 32;
 	GLuint irradiance_height = 32;
+	GLuint prefilter_width = 128;
+	GLuint prefilter_height = 128;
 };

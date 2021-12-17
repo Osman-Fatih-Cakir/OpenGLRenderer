@@ -114,6 +114,8 @@ void Renderer::render(float delta)
 	}
 	
 	// Render with deferred shading
+	// TODO deferredShading->render(scene->camera, scene->get_render_skybox());
+	// and take the maps in render() of deferred_shading
 	deferredShading->render(scene->camera, scene->get_render_skybox()->get_irradiance_map());
 
 	//

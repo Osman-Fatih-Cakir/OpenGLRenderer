@@ -13,8 +13,10 @@ Skybox::Skybox(const char* path, int _id)
 	load_hdr_file(path);
     init_shader();
     get_uniform_location();
+    create_framebuffer();
 	generate_skybox_map();
 	generate_irradiance_map();
+    generate_prefilter_map();
 
     id = _id;
 }
@@ -22,7 +24,6 @@ Skybox::Skybox(const char* path, int _id)
 void Skybox::generate_skybox_map()
 {
     create_skybox_map();
-    create_framebuffer();
     
     // TODO try sending space matrices rather than projection and view seperately
     // A view matrix for each face
@@ -62,7 +63,9 @@ void Skybox::generate_skybox_map()
     }
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     
-    GLuint err = glGetError(); if (err) fprintf(stderr, "Generating skybox: %s\n", gluErrorString(err));
+    GLuint err = glGetError(); if (err) fprintf(stderr, "ERROR: Generating skybox: %s\n", gluErrorString(err));
+
+    generate_skybox_mipmaps();
 }
 
 void Skybox::generate_irradiance_map()
@@ -106,7 +109,64 @@ void Skybox::generate_irradiance_map()
     }
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-    GLuint err = glGetError(); if (err) fprintf(stderr, "Generating irradiance map: %s\n",
+    GLuint err = glGetError(); if (err) fprintf(stderr, "ERROR: Generating irradiance map: %s\n",
+        gluErrorString(err));
+}
+
+void Skybox::generate_prefilter_map()
+{
+    create_prefilter_map();
+
+    mat4 p = glm::perspective(glm::radians(90.f), 1.f, 0.1f, 10.f);
+    mat4 views[] =
+    {
+        glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f,  0.0f,  0.0f), glm::vec3(0.0f, -1.0f,  0.0f)),
+        glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(-1.0f,  0.0f,  0.0f), glm::vec3(0.0f, -1.0f,  0.0f)),
+        glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f,  1.0f,  0.0f), glm::vec3(0.0f,  0.0f,  1.0f)),
+        glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f,  0.0f), glm::vec3(0.0f,  0.0f, -1.0f)),
+        glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f,  0.0f,  1.0f), glm::vec3(0.0f, -1.0f,  0.0f)),
+        glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f,  0.0f, -1.0f), glm::vec3(0.0f, -1.0f,  0.0f))
+    };
+
+    glUseProgram(prefilter_program);
+
+    // Set the uniforms
+    glUniformMatrix4fv(glGetUniformLocation(prefilter_program, "projection"), 1, GL_FALSE, &p[0][0]);
+    glActiveTexture(GL_TEXTURE0);
+    glUniform1i(glGetUniformLocation(prefilter_program, "skybox_map"), 0);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, skybox_map);
+
+    // Bind framebuffer and render buffer with prefilter map sizes
+    glBindFramebuffer(GL_FRAMEBUFFER, captureFBO);
+
+    for (unsigned int mip = 0; mip < max_mip_level; mip++)
+    {
+        // Resize framebuffer according to mip-level size.
+        unsigned int mip_width = (unsigned int)(prefilter_width * std::pow(0.5f, mip));
+        unsigned int mip_height = (unsigned int)(prefilter_height * std::pow(0.5f, mip));
+        glBindRenderbuffer(GL_RENDERBUFFER, captureRBO);
+        glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, mip_width, mip_height);
+        glViewport(0, 0, mip_width, mip_height);
+        // Calculate roughness with using mipmap level
+        float roughness = (float)mip / (float)(max_mip_level - 1);
+        glUniform1f(glGetUniformLocation(prefilter_program, "roughness"), roughness);
+        // Resolution of a face of cube map (since it is cube width and height is same)
+        glUniform1f(glGetUniformLocation(prefilter_program, "resolution"), (float)width);
+
+        // Render the prefiltered map to cubemap
+        for (int i = 0; i < 6; i++)
+        {
+            glUniformMatrix4fv(glGetUniformLocation(prefilter_program, "view"), 1, GL_FALSE, &views[i][0][0]);
+            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, 
+                GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, prefilter_map, mip);
+
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+            render_cube();
+        }
+    }
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    GLuint err = glGetError(); if (err) fprintf(stderr, "ERROR: Generating prefilter map: %s\n",
         gluErrorString(err));
 }
 
@@ -124,6 +184,25 @@ void Skybox::create_irradiance_map()
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+}
+
+void Skybox::create_prefilter_map()
+{
+    // Initialize cubemap
+    glGenTextures(1, &prefilter_map);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, prefilter_map);
+    for (unsigned int i = 0; i < 6; ++i)
+    {
+        glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB16F,
+            prefilter_width, prefilter_height, 0, GL_RGB, GL_FLOAT, nullptr);
+    }
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    // Generate cubemap for different roughness values
+    glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
 }
 
 void Skybox::create_framebuffer()
@@ -152,6 +231,13 @@ void Skybox::create_skybox_map()
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 }
 
+void Skybox::generate_skybox_mipmaps()
+{
+    glBindTexture(GL_TEXTURE_CUBE_MAP, skybox_map);
+    glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+}
+
 void Skybox::init_shader()
 {
     GLuint vertex_shader = initshaders(GL_VERTEX_SHADER, "shaders/equirect_to_cube_vs.glsl");
@@ -165,6 +251,10 @@ void Skybox::init_shader()
     vertex_shader = initshaders(GL_VERTEX_SHADER, "shaders/irradiance_map_vs.glsl");
     fragment_shader = initshaders(GL_FRAGMENT_SHADER, "shaders/irradiance_map_fs.glsl");
     irradiance_program = initprogram(vertex_shader, fragment_shader);
+
+    vertex_shader = initshaders(GL_VERTEX_SHADER, "shaders/prefilter_skybox_vs.glsl");
+    fragment_shader = initshaders(GL_FRAGMENT_SHADER, "shaders/prefilter_skybox_fs.glsl");
+    prefilter_program = initprogram(vertex_shader, fragment_shader);
 }
 
 void Skybox::get_uniform_location()
