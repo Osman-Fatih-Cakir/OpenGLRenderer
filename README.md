@@ -30,6 +30,10 @@ Techniques that I used so far:
 ## Models:
 - https://www.cgtrader.com/free-3d-models/military/armor/mandalorian-helmet-e1903ae2-3218-43bc-a22c-a102284d230e
 - https://www.sharetextures.com/textures/floor/tiling_46/
+## HDR files
+- https://polyhaven.com/a/museum_of_ethnography
+- https://polyhaven.com/a/entrance_hall
+- https://polyhaven.com/a/veranda
 
 ## Note:
 There are memory leaks in project (which I assume caused by assimp library), I found no way to fix it. I will check that later for now since it cost me so much time
