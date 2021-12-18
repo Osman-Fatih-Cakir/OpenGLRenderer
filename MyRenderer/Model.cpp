@@ -221,6 +221,7 @@ std::vector<Texture> Model::load_material_textures(aiMaterial* mat, aiTextureTyp
 // Loads texture from image file
 unsigned int Model::texture_from_file(const char* path, const std::string& directory)
 {
+    stbi_set_flip_vertically_on_load(false);
     std::string filename = std::string(path);
     filename = directory + '/' + filename;
 

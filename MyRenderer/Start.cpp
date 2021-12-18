@@ -277,23 +277,22 @@ void resize_window(int w, int h)
 // Initailize spheres
 void init_models()
 {
-	/*
 	// Scene meshes
 	Model* model = new Model("mesh/Mandalorian_Helmet/Mandalorian_Helmet.obj");
 	model->translate(0.f, 1.4f, 0.f, 1.0f);
 	model->scale(0.075f, 0.075f, 0.075f, 1.0f);
 	scene->add_model(model);
-	
+	/*
 	model = new Model("mesh/floor/floor.obj");
 	model->translate(0.f, -2.f, 0.f, 1.0f);
 	model->scale(20.f, 1.f, 20.f, 1.0f);
 	scene->add_model(model);
 	*/
-	
+	/*
 	Model* model = new Model("mesh/ibl_test/sphere.obj");
 	model->scale(2.f, 2.f, 2.f, 1.0f);
 	scene->add_model(model);
-	
+	*/
 }
 
 // Initialize skyboxes
