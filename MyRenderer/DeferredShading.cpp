@@ -88,6 +88,28 @@ void DeferredShading::set_irradiance_map(GLuint id)
 	glBindTexture(GL_TEXTURE_CUBE_MAP, id);
 }
 
+// Set prefiltered map to the uniform
+void DeferredShading::set_prefiltered_map(GLuint id)
+{
+	glUniform1i(loc_prefiltered_map, 5);
+	glActiveTexture(GL_TEXTURE0 + 5);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, id);
+}
+
+// Set brdf lut to the uniform
+void DeferredShading::set_brdf_lut(GLuint id)
+{
+	glUniform1i(loc_brdf_lut, 6);
+	glActiveTexture(GL_TEXTURE0 + 6);
+	glBindTexture(GL_TEXTURE_2D, id);
+}
+
+// Set maximum lod of reflections
+void DeferredShading::set_max_reflection_lod(float val)
+{
+	glUniform1f(loc_max_reflection_lod, val);
+}
+
 void DeferredShading::set_point_light
 	(
 		vec3 position,
@@ -172,7 +194,7 @@ void DeferredShading::set_direct_light
 }
 
 // Renders the scene
-void DeferredShading::render(Camera* camera, GLuint irradiance_map)
+void DeferredShading::render(Camera* camera, Skybox* skybox)
 {
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
@@ -182,8 +204,12 @@ void DeferredShading::render(Camera* camera, GLuint irradiance_map)
 	set_gNormal(GBuffer->get_gNormal());
 	set_gAlbedoSpec(GBuffer->get_gAlbedoSpec());
 	set_gPbr_materials(GBuffer->get_gPbr_materials());
-	set_irradiance_map(irradiance_map);
-	
+	// Set IBL textures
+	set_irradiance_map(skybox->get_irradiance_map());
+	set_prefiltered_map(skybox->get_prefiltered_map());
+	set_brdf_lut(skybox->get_brdf_lut());
+	set_max_reflection_lod((float)skybox->get_max_mip_level());
+
 	// Draw call
 	draw_quad(program);
 }
@@ -199,12 +225,19 @@ void DeferredShading::init_shaders()
 // Get uniforms locations
 void DeferredShading::get_uniform_locations()
 {
+	// Uniform variables (non textures)
 	loc_viewer_pos = glGetUniformLocation(program, "viewer_pos");
+	loc_max_reflection_lod = glGetUniformLocation(program, "MAX_REFLECTION_LOD");
+	// Uniform textures
 	loc_gPosition = glGetUniformLocation(program, "gPosition");
 	loc_gNormal = glGetUniformLocation(program, "gNormal");
 	loc_gAlbedoSpec = glGetUniformLocation(program, "gAlbedoSpec");
 	loc_gPbr_materials = glGetUniformLocation(program, "gPbr_materials");
 	loc_irradiance_map = glGetUniformLocation(program, "irradiance_map");
+	loc_prefiltered_map = glGetUniformLocation(program, "prefiltered_map");
+	loc_brdf_lut = glGetUniformLocation(program, "brdf_lut");
+
+	static_texture_uniform_count = 7;
 }
 
 // Initialize a quad

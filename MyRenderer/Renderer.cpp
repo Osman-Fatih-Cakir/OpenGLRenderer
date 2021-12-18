@@ -116,7 +116,7 @@ void Renderer::render(float delta)
 	// Render with deferred shading
 	// TODO deferredShading->render(scene->camera, scene->get_render_skybox());
 	// and take the maps in render() of deferred_shading
-	deferredShading->render(scene->camera, scene->get_render_skybox()->get_irradiance_map());
+	deferredShading->render(scene->camera, scene->get_render_skybox());
 
 	//
 	//// 3. Pass: Draw light meshes (The meshes that are not lit but in the same scene with other meshes)
@@ -140,7 +140,7 @@ void Renderer::render(float delta)
 	scene->get_render_skybox()->render(scene->camera);
 	
 	// Error check
-	GLuint err = glGetError(); if (err) fprintf(stderr, "%s\n", gluErrorString(err));
+	GLuint err = glGetError(); if (err) fprintf(stderr, "ERROR: %s\n", gluErrorString(err));
 
 	glutSwapBuffers();
 

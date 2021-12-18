@@ -143,5 +143,7 @@
     <None Include="shaders\irradiance_map_fs.glsl" />
     <None Include="shaders\prefilter_skybox_vs.glsl" />
     <None Include="shaders\prefilter_skybox_fs.glsl" />
+    <None Include="shaders\brdf_vs.glsl" />
+    <None Include="shaders\brdf_fs.glsl" />
   </ItemGroup>
 </Project>

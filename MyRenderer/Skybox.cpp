@@ -17,6 +17,7 @@ Skybox::Skybox(const char* path, int _id)
 	generate_skybox_map();
 	generate_irradiance_map();
     generate_prefilter_map();
+    generate_brdf_lut();
 
     id = _id;
 }
@@ -170,6 +171,24 @@ void Skybox::generate_prefilter_map()
         gluErrorString(err));
 }
 
+void Skybox::generate_brdf_lut()
+{
+    create_brdf_lut();
+
+    glBindFramebuffer(GL_FRAMEBUFFER, captureFBO);
+    glBindRenderbuffer(GL_RENDERBUFFER, captureRBO);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, width, height);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, brdf_lut, 0);
+
+    glUseProgram(brdf_program);
+    glViewport(0, 0, width, height);
+    
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    render_quad();
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
 void Skybox::create_irradiance_map()
 {
     glGenTextures(1, &irradiance_map);
@@ -203,6 +222,18 @@ void Skybox::create_prefilter_map()
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     // Generate cubemap for different roughness values
     glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
+}
+
+void Skybox::create_brdf_lut()
+{
+    glGenTextures(1, &brdf_lut);
+
+    glBindTexture(GL_TEXTURE_2D, brdf_lut);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RG16F, width, height, 0, GL_RG, GL_FLOAT, 0);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 }
 
 void Skybox::create_framebuffer()
@@ -255,6 +286,10 @@ void Skybox::init_shader()
     vertex_shader = initshaders(GL_VERTEX_SHADER, "shaders/prefilter_skybox_vs.glsl");
     fragment_shader = initshaders(GL_FRAGMENT_SHADER, "shaders/prefilter_skybox_fs.glsl");
     prefilter_program = initprogram(vertex_shader, fragment_shader);
+
+    vertex_shader = initshaders(GL_VERTEX_SHADER, "shaders/brdf_vs.glsl");
+    fragment_shader = initshaders(GL_FRAGMENT_SHADER, "shaders/brdf_fs.glsl");
+    brdf_program = initprogram(vertex_shader, fragment_shader);
 }
 
 void Skybox::get_uniform_location()
@@ -273,6 +308,7 @@ void Skybox::set_projection_matrix(mat4 mat)
 {
     glUniformMatrix4fv(loc_projection_matrix, 1, GL_FALSE, &mat[0][0]);
 }
+
 void Skybox::set_skybox_map()
 {
     glUniform1i(loc_skybox_map, 0);
@@ -372,6 +408,35 @@ void Skybox::render_cube()
     glBindVertexArray(0);
 }
 
+void Skybox::render_quad()
+{
+    unsigned int quadVAO = 0;
+    unsigned int quadVBO;
+    if (quadVAO == 0)
+    {
+        float quadVertices[] = {
+            // positions        // texture Coords
+            -1.0f,  1.0f, 0.0f, 0.0f, 1.0f,
+            -1.0f, -1.0f, 0.0f, 0.0f, 0.0f,
+             1.0f,  1.0f, 0.0f, 1.0f, 1.0f,
+             1.0f, -1.0f, 0.0f, 1.0f, 0.0f,
+        };
+        // setup plane VAO
+        glGenVertexArrays(1, &quadVAO);
+        glGenBuffers(1, &quadVBO);
+        glBindVertexArray(quadVAO);
+        glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), &quadVertices, GL_STATIC_DRAW);
+        glEnableVertexAttribArray(0);
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+        glEnableVertexAttribArray(1);
+        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+    }
+    glBindVertexArray(quadVAO);
+    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+    glBindVertexArray(0);
+}
+
 void Skybox::render(Camera* camera)
 {
     glUseProgram(render_program);
@@ -396,6 +461,14 @@ GLuint Skybox::get_irradiance_map()
 {
 	return irradiance_map;
 }
+GLuint Skybox::get_prefiltered_map()
+{
+    return prefilter_map;
+}
+GLuint Skybox::get_brdf_lut()
+{
+    return brdf_lut;
+}
 GLuint Skybox::get_width()
 {
     return width;
@@ -403,6 +476,10 @@ GLuint Skybox::get_width()
 GLuint Skybox::get_height()
 {
     return height;
+}
+unsigned int Skybox::get_max_mip_level()
+{
+    return max_mip_level;
 }
 int Skybox::get_id()
 {

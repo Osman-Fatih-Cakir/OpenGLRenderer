@@ -13,6 +13,9 @@ uniform sampler2D gAlbedoSpec;
 //	B component : AO (Ambient Occlusion)
 uniform sampler2D gPbr_materials;
 uniform samplerCube irradiance_map;
+uniform samplerCube prefiltered_map;
+uniform sampler2D brdf_lut;
+uniform float MAX_REFLECTION_LOD;
 
 struct Point_Light
 {
@@ -307,20 +310,34 @@ void main()
 	Lo += calculate_direct_light(frag_pos, normal, albedo, roughness, metallic);
 
 	////////////////////////////////////
-	metallic = 1.0;
+	metallic = 0.8;
 	roughness = 0.1;
 	albedo = vec3(0.8, 0.6, 0.1);
 	ao = 1.0;
 	////////////////////////////////////
 
+	// TODO make this code good!
+	// IBL diffuse
 	vec3 F0 = vec3(0.04);
 	F0 = mix(F0, albedo, metallic);
 	vec3 view_dir = normalize(viewer_pos - frag_pos);
-	vec3 kS = fresnel_schlick_roughness(max(dot(normal, view_dir), 0.0), F0, roughness);
+	vec3 F = fresnel_schlick_roughness(max(dot(normal, view_dir), 0.0), F0, roughness);
+	vec3 kS = F;
 	vec3 kD = 1.0 - kS;
+	kD *= 1.0 - metallic;
 	vec3 irradiance = texture(irradiance_map, normal).rgb;
 	vec3 diffuse = irradiance * albedo;
-	vec3 ambient = (kD * diffuse) * ao;
+
+	// IBL specular
+	vec3 R = reflect(-view_dir, normal);
+	// Sample both the pre-filter map and the BRDF lut and combine them 
+	// together as per the Split-Sum approximation to get the IBL specular part
+	vec3 prefiltered_color = textureLod(prefiltered_map, R, roughness * MAX_REFLECTION_LOD).rgb;
+	vec2 brdf = texture(brdf_lut, vec2(max(dot(normal, view_dir), 0.0), roughness)).rg;
+	vec3 specular = prefiltered_color * (F * brdf.x + brdf.y);
+
+	// Ambient with IBL
+	vec3 ambient = (kD * diffuse + specular) * ao;
 	Lo += ambient;
 
 	// Gamma correction

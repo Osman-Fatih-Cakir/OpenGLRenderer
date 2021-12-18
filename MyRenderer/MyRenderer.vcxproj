@@ -191,6 +191,8 @@
     <ClInclude Include="Window.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="shaders\brdf_fs.glsl" />
+    <None Include="shaders\brdf_vs.glsl" />
     <None Include="shaders\deferred_shading_fs.glsl" />
     <None Include="shaders\deferred_shading_vs.glsl" />
     <None Include="shaders\deferred_unlit_meshes_fs.glsl" />
