@@ -1,0 +1,13 @@
+newmtl granite
+Ka 1.0 1.0 1.0
+Kd 1.0 1.0 1.0
+Ks 1.0 1.0 1.0
+d 1
+illum 4
+Ni 1.00
+Ns 10.000
+map_Ka gray_granite_flecks\metallic.png
+map_Kd gray_granite_flecks\albedo.png
+map_bump gray_granite_flecks\normal.png
+map_Ns gray_granite_flecks\roughness.png
+map_d gray_granite_flecks\ao.png

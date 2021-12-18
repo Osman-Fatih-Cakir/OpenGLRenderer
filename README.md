@@ -1,11 +1,15 @@
 # OpenGLRenderer
 An OpenGL renderer.
 
-Note:
+## Prerequisites
+- OpenGL 4.5
+- Visual Studio 19 (I haven't tried old versions of Visual Studio)
+
+### Note:
 In this project, my goal is to build a renderer using OpenGL. I will try to learn and implement common realtime computer graphics techniques.
 Since I am new to computer graphics, I would be happy to receive suggestions about the project and how I can improve myself :).
 
-Techniques that I used so far:
+## Features:
 - PBR (Cook-Torrance specular BRDF)
 - IBL
 	- Diffuse irradiance

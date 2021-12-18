@@ -16,14 +16,14 @@ public:
 	PointLight(vec3 pos, vec3 col);
 	// Destructor
 	~PointLight();
-
+	// TODO make model private (getter and setter)
 	GLfloat* get_space_matrices_pointer();
 	GLfloat* get_position_pointer();
 	GLfloat* get_color_pointer();
 	mat4 get_model_matrix();
 	void create_shadow();
 	void translate(float x, float y, float z, float delta);
-	void rotate();
+	void scale(float x, float y, float z, float delta);
 
 	Model* model = nullptr;
 

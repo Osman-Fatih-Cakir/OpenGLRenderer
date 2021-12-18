@@ -30,7 +30,7 @@ struct Point_Light
 	float quadratic;
 	float intensity;
 };
-const int NUMBER_OF_POINT_LIGHTS = 2; // TODO number of lights is hardcoded
+const int NUMBER_OF_POINT_LIGHTS = 3; // TODO number of lights is hardcoded
 uniform Point_Light point_lights[NUMBER_OF_POINT_LIGHTS];
 
 struct Direct_Light

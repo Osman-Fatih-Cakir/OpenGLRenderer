@@ -21,16 +21,16 @@ PointLight::PointLight(vec3 pos, vec3 col)
 	linear = 0.009f;
 	quadratic = 0.054f;
 	float lightMax = std::fmaxf(std::fmaxf(color.r, color.g), color.b);
-	float _radius = (float)(-linear + std::sqrtf(linear * linear - 4 * quadratic * (constant - (256.0f / 5.0f) * lightMax)))
-			/ (2 * quadratic);
+	float _radius = (float)(-linear + std::sqrtf(linear * linear - 4 * quadratic
+		* (constant - (256.0f / 5.0f) * lightMax))) / (2 * quadratic);
 	radius = _radius * intensity * 1.5f;
-
 }
 
 // Destructor
 PointLight::~PointLight()
 {
-	delete model;
+	if (model)
+		delete model;
 }
 
 // Returns a pointer to the space matrices array
@@ -71,6 +71,12 @@ void PointLight::translate(float x, float y, float z, float delta)
 	{
 		init_space_matrices();
 	}
+}
+
+// Scale
+void PointLight::scale(float x, float y, float z, float delta)
+{
+	model_matrix = glm::scale(model_matrix, vec3(x*delta, y*delta, z*delta));
 }
 
 // Create point light shadow maps
