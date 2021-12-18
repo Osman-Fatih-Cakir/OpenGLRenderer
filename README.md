@@ -9,6 +9,7 @@ Techniques that I used so far:
 - PBR (Cook-Torrance specular BRDF)
 - IBL
 	- Diffuse irradiance
+	- Specular
 - Deferred shading
 - Point light
 - Directional light
