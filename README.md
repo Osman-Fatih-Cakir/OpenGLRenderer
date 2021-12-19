@@ -10,9 +10,9 @@ In this project, my goal is to build a renderer using OpenGL. I will try to lear
 Since I am new to computer graphics, I would be happy to receive suggestions about the project and how I can improve myself :).
 
 ## Screenshots
-Pbr:
-![alt text][https://github.com/Osman-Fatih-Cakir/OpenGLRenderer/tree/master/Outputs/pbr1.gif]
-![alt text][https://github.com/Osman-Fatih-Cakir/OpenGLRenderer/tree/master/Outputs/pbr2.gif]
+Pbr:  
+![alt text](https://github.com/Osman-Fatih-Cakir/OpenGLRenderer/tree/master/Outputs/pbr1.gif)  
+![alt text](https://github.com/Osman-Fatih-Cakir/OpenGLRenderer/tree/master/Outputs/pbr2.gif)  
 
 ## Features:
 - PBR (Cook-Torrance specular BRDF)
