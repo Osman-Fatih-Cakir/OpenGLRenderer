@@ -11,7 +11,7 @@ class DirectionalLight
 {
 public:
 	// Constructor
-	DirectionalLight(vec3 dir, vec3 col);
+	DirectionalLight(vec3 dir, vec3 col, bool shadow);
 	~DirectionalLight();
 	void create_shadow(float left, float right, float bottom, float top,
 		float near, float far, vec3 eye, vec3 center, vec3 up);
@@ -19,6 +19,7 @@ public:
 	GLfloat* get_space_matrix_pointer();
 	GLfloat* get_direction_pointer();
 	GLfloat* get_color_pointer();
+	bool does_cast_shadow();
 	vec3 get_color();
 	vec3 get_direction();
 	void set_direction(vec3 mat);
@@ -47,6 +48,7 @@ private:
 	vec3 direction = vec3(1.0f);
 	vec3 color = vec3(1.0f);
 
+	bool cast_shadow = false;
 	mat4 projection_matrix = mat4(1.0f);
 	mat4 view_matrix = mat4(1.0f);
 	mat4 space_matrix = mat4(1.0f);

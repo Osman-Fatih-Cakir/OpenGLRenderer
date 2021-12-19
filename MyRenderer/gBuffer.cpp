@@ -90,7 +90,7 @@ void gBuffer::start_program()
 {
 	glBindFramebuffer(GL_FRAMEBUFFER, gBuffer_fbo);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-	glClearColor(0.f, 0.f, 0.f, 1.f);
+	glClearColor(0.4f, 0.4f, 0.4f, 1.0f);
 	glUseProgram(program);
 }
 

@@ -2,6 +2,7 @@
 #include <Renderer.h>
 #include <gtc/matrix_transform.hpp>
 #include <window.h>
+#include <iostream>
 
 // Constructor
 Renderer::Renderer(Scene* _scene)
@@ -27,15 +28,20 @@ Renderer::~Renderer()
 // Renders the scene
 void Renderer::render(float delta)
 {
-	//
-	//// 1. GBuffer Pass: Generate geometry/color data into gBuffers
-	//
-
+	// Total duration of the rendering
+	time += (int)delta;
+	
+	//////////////////////////////////////////////////////
 	for (int i = 0; i < 1; i++)
 	{
 		//scene->all_models[i]->rotate(vec3(0.f, 1.f, 0.f), (float)(4 * (i + 1)), delta / 100.f);
 		//scene->all_models[i]->translate(vec3(0.f, 0.f, 10.f), delta / 1000.f);
 	}
+	//////////////////////////////////////////////////////
+
+	//
+	//// 1. GBuffer Pass: Generate geometry/color data into gBuffers
+	//
 
 	GBuffer->start_program();
 
@@ -59,6 +65,10 @@ void Renderer::render(float delta)
 	// Directional shadows
 	for (unsigned int i = 0; i < scene->direct_lights.size(); i++)
 	{
+		// Check if the light casts shadow
+		if (!scene->direct_lights[i]->does_cast_shadow())
+			continue;
+
 		dirDepth->start_program(scene->direct_lights[i]);
 
 		// Draw scene
@@ -72,6 +82,10 @@ void Renderer::render(float delta)
 	// Point light shadows
 	for (unsigned int i = 0; i < scene->point_lights.size(); i++)
 	{
+		// Check if the light casts shadow
+		if (!scene->point_lights[i]->does_cast_shadow())
+			continue;
+
 		pointDepth->start_program(scene->point_lights[i]);
 
 		// Draw scene
@@ -91,26 +105,30 @@ void Renderer::render(float delta)
 	// Point lights
 	for (unsigned int i = 0; i < scene->point_lights.size(); i++)
 	{
+		PointLight* light = scene->point_lights[i];
 		deferredShading->set_point_light(
-			scene->point_lights[i]->position,
-			scene->point_lights[i]->color,
-			scene->point_lights[i]->radius,
-			scene->point_lights[i]->linear,
-			scene->point_lights[i]->quadratic,
-			scene->point_lights[i]->shadow_projection_far,
-			scene->point_lights[i]->depth_cubemap,
-			scene->point_lights[i]->intensity
+			light->position,
+			light->color,
+			light->radius,
+			light->linear,
+			light->quadratic,
+			light->shadow_projection_far,
+			light->depth_cubemap,
+			light->intensity,
+			light->does_cast_shadow()
 		);
 	}
 	// Directional lights
 	for (unsigned int i = 0; i < scene->direct_lights.size(); i++)
 	{
+		DirectionalLight* light = scene->direct_lights[i];
 		deferredShading->set_direct_light(
-			scene->direct_lights[i]->get_color(),
-			scene->direct_lights[i]->get_direction(),
-			scene->direct_lights[i]->intensity,
-			scene->direct_lights[i]->get_depth_map(),
-			scene->direct_lights[i]->get_space_matrix()
+			light->get_color(),
+			light->get_direction(),
+			light->intensity,
+			light->get_depth_map(),
+			light->get_space_matrix(),
+			light->does_cast_shadow()
 		);
 	}
 	
@@ -134,9 +152,22 @@ void Renderer::render(float delta)
 			forwardRender->set_color(scene->point_lights[i]->color);
 			forwardRender->render(scene->camera, scene->point_lights[i]->model);
 		}
+
+		if (scene->point_lights[i]->is_debug_active())
+		{
+			forwardRender->set_model_matrix(scene->point_lights[i]->get_debug_model_matrix());
+			forwardRender->set_color(scene->point_lights[i]->color);
+			// Light radius renders wih wireframe
+			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+			forwardRender->render(scene->camera, scene->point_lights[i]->debug_model);
+			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+		}
 	}
 
-	scene->get_render_skybox()->render(scene->camera);
+	// Skybox rendering
+	Skybox* skybox = scene->get_render_skybox();
+	if (skybox != nullptr)
+		scene->get_render_skybox()->render(scene->camera);
 	
 	// Error check
 	GLuint err = glGetError(); if (err) fprintf(stderr, "ERROR: %s\n", gluErrorString(err));

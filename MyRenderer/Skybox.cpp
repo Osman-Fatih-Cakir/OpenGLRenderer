@@ -308,6 +308,7 @@ void Skybox::set_view_matrix(mat4 mat)
 {
     glUniformMatrix4fv(loc_view_matrix, 1, GL_FALSE, &mat[0][0]);
 }
+
 void Skybox::set_projection_matrix(mat4 mat)
 {
     glUniformMatrix4fv(loc_projection_matrix, 1, GL_FALSE, &mat[0][0]);

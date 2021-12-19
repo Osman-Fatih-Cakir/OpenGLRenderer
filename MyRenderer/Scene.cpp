@@ -75,7 +75,7 @@ Skybox* Scene::get_render_skybox()
 {
 	if (skybox_id == -1)
 	{
-		std::cout << "Error: No skybox in the scene!" << "\n";
+		//std::cout << "Warning: No skybox in the scene!" << "\n";
 	}
 	else
 	{

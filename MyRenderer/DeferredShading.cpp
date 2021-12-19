@@ -27,6 +27,7 @@ void DeferredShading::start_program(gBuffer* _GBuffer)
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	glViewport(0, 0, width, height);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glClearColor(0.4f, 0.4f, 0.4f, 1.0f);
 
 	GBuffer = _GBuffer;
 
@@ -85,7 +86,7 @@ void DeferredShading::set_irradiance_map(GLuint id)
 {
 	glUniform1i(loc_irradiance_map, 4);
 	glActiveTexture(GL_TEXTURE0 + 4);
-	if (!glIsTexture(id))
+	if (!glIsTexture(id) || id == -1)
 		return;
 	glBindTexture(GL_TEXTURE_CUBE_MAP, id);
 }
@@ -95,7 +96,7 @@ void DeferredShading::set_prefiltered_map(GLuint id)
 {
 	glUniform1i(loc_prefiltered_map, 5);
 	glActiveTexture(GL_TEXTURE0 + 5);
-	if (!glIsTexture(id))
+	if (!glIsTexture(id) || id == -1)
 		return;
 	glBindTexture(GL_TEXTURE_CUBE_MAP, id);
 }
@@ -105,7 +106,7 @@ void DeferredShading::set_brdf_lut(GLuint id)
 {
 	glUniform1i(loc_brdf_lut, 6);
 	glActiveTexture(GL_TEXTURE0 + 6);
-	if (!glIsTexture(id))
+	if (!glIsTexture(id) || id == -1)
 		return;
 	glBindTexture(GL_TEXTURE_2D, id);
 }
@@ -119,7 +120,7 @@ void DeferredShading::set_max_reflection_lod(float val)
 // Set true if the IBL is active
 void DeferredShading::set_is_ibl_active(bool val)
 {
-	glUniform1i(loc_is_ibl_active, val);
+	glUniform1i(loc_is_ibl_active, (int)val);
 }
 
 void DeferredShading::set_point_light
@@ -131,7 +132,8 @@ void DeferredShading::set_point_light
 		float quadratic, 
 		float _far,
 		GLuint shadow_map,
-		float intensity
+		float intensity,
+		bool cast_shadow
 	)
 {
 	std::string light_array_str = "point_lights[" + std::to_string(point_light_count) + "].position";
@@ -158,11 +160,16 @@ void DeferredShading::set_point_light
 	GLuint loc_light_far = glGetUniformLocation(program, (GLchar*)light_array_str.c_str());
 	glUniform1f(loc_light_far, (GLfloat) _far);
 
+	light_array_str = "point_lights[" + std::to_string(point_light_count) + "].cast_shadow";
+	GLuint loc_cast_shadow = glGetUniformLocation(program, (GLchar*)light_array_str.c_str());
+	glUniform1i(loc_cast_shadow, (GLint)cast_shadow);
+	
 	light_array_str = "point_lights[" + std::to_string(point_light_count) + "].point_shadow_map";
 	GLuint loc_light_cubemap = glGetUniformLocation(program, (GLchar*)light_array_str.c_str());
 	glUniform1i(loc_light_cubemap, static_texture_uniform_count + point_light_count + direct_light_count);
 	glActiveTexture(GL_TEXTURE0 + static_texture_uniform_count + point_light_count + direct_light_count);
-	glBindTexture(GL_TEXTURE_CUBE_MAP, shadow_map);
+	if (cast_shadow) // If there is a proper shadow map, assign the uniform
+		glBindTexture(GL_TEXTURE_CUBE_MAP, shadow_map);
 
 	light_array_str = "point_lights[" + std::to_string(point_light_count) + "].intensity";
 	GLuint loc_light_int = glGetUniformLocation(program, (GLchar*)light_array_str.c_str());
@@ -177,7 +184,8 @@ void DeferredShading::set_direct_light
 	vec3 direction,
 	float intensity,
 	GLuint shadow_map,
-	mat4 light_space_matrix
+	mat4 light_space_matrix,
+	bool cast_shadow
 )
 {
 	std::string light_array_str = "direct_lights[" + std::to_string(direct_light_count) + "].color";
@@ -192,11 +200,16 @@ void DeferredShading::set_direct_light
 	GLuint loc_lights_in = glGetUniformLocation(program, (GLchar*)light_array_str.c_str());
 	glUniform1f(loc_lights_in, (GLfloat) intensity);
 
+	light_array_str = "direct_lights[" + std::to_string(direct_light_count) + "].cast_shadow";
+	GLuint loc_cast_shadow = glGetUniformLocation(program, (GLchar*)light_array_str.c_str());
+	glUniform1i(loc_cast_shadow, (GLint)cast_shadow);
+
 	light_array_str = "direct_lights[" + std::to_string(direct_light_count) + "].directional_shadow_map";
 	GLuint loc_lights_sm = glGetUniformLocation(program, (GLchar*)light_array_str.c_str());
 	glUniform1i(loc_lights_sm, static_texture_uniform_count + point_light_count + direct_light_count);
 	glActiveTexture(GL_TEXTURE0 + static_texture_uniform_count + point_light_count + direct_light_count);
-	glBindTexture(GL_TEXTURE_2D, shadow_map);
+	if (cast_shadow) // If there is a proper shadow map, assign the uniform
+		glBindTexture(GL_TEXTURE_2D, shadow_map);
 
 	light_array_str = "direct_lights[" + std::to_string(direct_light_count) + "].light_space_matrix";
 	GLuint loc_lights_lsm = glGetUniformLocation(program, (GLchar*)light_array_str.c_str());
@@ -217,14 +230,26 @@ void DeferredShading::render(Camera* camera, Skybox* skybox)
 	set_gAlbedoSpec(GBuffer->get_gAlbedoSpec());
 	set_gPbr_materials(GBuffer->get_gPbr_materials());
 	// Set IBL textures
-	set_irradiance_map(skybox->get_irradiance_map());
-	set_prefiltered_map(skybox->get_prefiltered_map());
-	set_brdf_lut(skybox->get_brdf_lut());
-	set_max_reflection_lod((float)skybox->get_max_mip_level());
-	set_is_ibl_active(skybox->is_ibl_active());
+	if (skybox != nullptr)
+	{
+		set_irradiance_map(skybox->get_irradiance_map());
+		set_prefiltered_map(skybox->get_prefiltered_map());
+		set_brdf_lut(skybox->get_brdf_lut());
+		set_max_reflection_lod((float)skybox->get_max_mip_level());
+		set_is_ibl_active(skybox->is_ibl_active());
+	}
+	else
+	{
+		set_irradiance_map(-1);
+		set_prefiltered_map(-1);
+		set_brdf_lut(-1);
+		set_max_reflection_lod(-1);
+		set_is_ibl_active(false);
+	}
 
 	// Draw call
 	draw_quad(program);
+	GLuint err = glGetError(); if (err) fprintf(stderr, "ERROR: %s\n", gluErrorString(err));
 }
 
 // Compiles the shaders and generates the shader program

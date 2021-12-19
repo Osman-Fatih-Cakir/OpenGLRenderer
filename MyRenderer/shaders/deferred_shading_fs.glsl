@@ -23,6 +23,7 @@ struct Point_Light
 	vec3 position;
 	vec3 color;
 
+	int cast_shadow;
 	samplerCube point_shadow_map;
 	float far;
 
@@ -31,7 +32,7 @@ struct Point_Light
 	float quadratic;
 	float intensity;
 };
-const int NUMBER_OF_POINT_LIGHTS = 3; // TODO number of lights is hardcoded
+const int NUMBER_OF_POINT_LIGHTS = 2; // TODO number of lights is hardcoded
 uniform Point_Light point_lights[NUMBER_OF_POINT_LIGHTS];
 
 struct Direct_Light
@@ -39,6 +40,7 @@ struct Direct_Light
 	vec3 direction;
 	vec3 color;
 
+	int cast_shadow;
 	mat4 light_space_matrix;
 	sampler2D directional_shadow_map;
 
@@ -217,11 +219,15 @@ vec3 calculate_point_light(vec3 frag_pos, vec3 normal, vec3 albedo, float roughn
 		// Halfway vector
 		vec3 halfway = normalize(view_dir + light_dir);
 
+		float shadow = 0.0;
 		// Calculate shadow
-		float max_bias = 0.5;
-		float min_bias = 0.1;
-		float bias = max(max_bias * (1.0 - dot(normal, light_dir)), min_bias);
-		float shadow = point_shadow_calculation(i, frag_pos, bias);
+		if (point_lights[i].cast_shadow != 0)
+		{
+			float max_bias = 0.5;
+			float min_bias = 0.1;
+			float bias = max(max_bias * (1.0 - dot(normal, light_dir)), min_bias);
+			shadow = point_shadow_calculation(i, frag_pos, bias);
+		}
 
 		// If the fragment is in the shadow, there is no need for lighting calculations
 		//if (shadow >= 1.0)
@@ -278,11 +284,15 @@ vec3 calculate_direct_light(vec3 frag_pos, vec3 normal, vec3 albedo, float rough
 		// Halfway vector
 		vec3 halfway = normalize(view_dir + light_dir);
 
-		// Calculate shadow
-		float max_bias = 0.001;
-		float min_bias = 0.0001;
-		float bias = max(max_bias * (1.0 - dot(normal, light_dir)), min_bias);
-		float shadow = directional_shadow_calculation(i, frag_pos, bias);
+		float shadow = 0.0;
+		if (direct_lights[i].cast_shadow != 0.0)
+		{
+			// Calculate shadow
+			float max_bias = 0.001;
+			float min_bias = 0.0001;
+			float bias = max(max_bias * (1.0 - dot(normal, light_dir)), min_bias);
+			shadow = directional_shadow_calculation(i, frag_pos, bias);
+		}
 
 		// If the fragment is in the shadow, there is no need for lighting calculations
 		//if (shadow == 1.0)
@@ -328,6 +338,13 @@ void main()
 	float metallic = texture(gPbr_materials, fTexCoord).g;
 	float ao = texture(gPbr_materials, fTexCoord).b;
 
+	////////////////////////////////
+	albedo = vec3(0.7, 0.7, 0.7);
+	metallic = 0.1;
+	roughness = 0.3;
+	ao = 1.0;
+	////////////////////////////////
+
 	// Outgoing light
 	vec3 Lo = vec3(0.0);
 
@@ -344,7 +361,7 @@ void main()
 	}
 	else
 	{
-		Lo += vec3(0.03) * albedo * ao;
+		Lo += vec3(0.01) * albedo * ao;
 	}
 	
 	// Gamma correction

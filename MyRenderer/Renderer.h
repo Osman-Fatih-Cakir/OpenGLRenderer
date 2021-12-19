@@ -28,6 +28,7 @@ private:
 	PointDepth* pointDepth = nullptr;
 	ForwardRender* forwardRender = nullptr;
 	DeferredShading* deferredShading = nullptr;
+	unsigned long time = 0;
 
 	void init_shader_programs();
 };

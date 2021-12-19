@@ -3,7 +3,7 @@
 #include <DirectionalLight.h>
 
 // Constructor
-DirectionalLight::DirectionalLight(vec3 dir, vec3 col)
+DirectionalLight::DirectionalLight(vec3 dir, vec3 col, bool shadow)
 {
 	direction = dir;
 	color = col;
@@ -13,12 +13,18 @@ DirectionalLight::DirectionalLight(vec3 dir, vec3 col)
 	space_matrix = mat4(0.0f);
 
 	intensity = 0.2f;
+
+	if (shadow)
+	{
+		create_shadow(-20.f, 20.f, -20.f, 20.f, 0.01f, 1000.f,
+			vec3(10.f, 10.f, 10.f), vec3(0.f, 0.f, 0.f), vec3(-1.f, 1.f, -1.f)
+		);
+	}
 }
 
 // Destructor
 DirectionalLight::~DirectionalLight()
 {
-
 }
 
 void DirectionalLight::set_view(vec3 eye, vec3 center, vec3 up)
@@ -42,6 +48,14 @@ void DirectionalLight::create_shadow(float left, float right, float bottom, floa
 	set_projection(left, right, bottom, top, _near, _far);
 	set_view(eye, center, up);
 	calculate_space_matrix();
+
+	cast_shadow = true;
+}
+
+// Returns true if light casts shadow
+bool DirectionalLight::does_cast_shadow()
+{
+	return  cast_shadow;
 }
 
 // Calculating space matrices from view and projection matrices

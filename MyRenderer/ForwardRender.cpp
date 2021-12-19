@@ -76,7 +76,7 @@ void ForwardRender::render(Camera* camera, Model* model)
 	// Set camera attributes
 	set_projection_matrix(camera->get_projection_matrix());
 	set_view_matrix(camera->get_view_matrix());
-
+	
 	// Draw call
 	model->draw(program);
 

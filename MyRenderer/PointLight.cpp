@@ -4,7 +4,7 @@
 #include <iostream>
 
 // Constructor
-PointLight::PointLight(vec3 pos, vec3 col)
+PointLight::PointLight(vec3 pos, vec3 col, bool shadow)
 {
 	translate(pos.x, pos.y, pos.z, 1.0f);
 	color = col;
@@ -16,14 +16,11 @@ PointLight::PointLight(vec3 pos, vec3 col)
 	for (int i = 0; i < 6; i++)
 		space_matrices[i] = mat4(0.0f);
 
-	// Calculate light radius
-	float constant = 1.0f;
-	linear = 0.009f;
-	quadratic = 0.054f;
-	float lightMax = std::fmaxf(std::fmaxf(color.r, color.g), color.b);
-	float _radius = (float)(-linear + std::sqrtf(linear * linear - 4 * quadratic
-		* (constant - (256.0f / 5.0f) * lightMax))) / (2 * quadratic);
-	radius = _radius * intensity * 1.5f;
+	linear = 0.7f;
+	quadratic = 1.8f;
+
+	if (shadow)
+		create_shadow();
 }
 
 // Destructor
@@ -31,6 +28,8 @@ PointLight::~PointLight()
 {
 	if (model)
 		delete model;
+	if (debug_model)
+		delete debug_model;
 }
 
 // Returns a pointer to the space matrices array
@@ -51,10 +50,42 @@ GLfloat* PointLight::get_color_pointer()
 	return &color[0];
 }
 
+// Set intensity
+void PointLight::set_intensity(float val)
+{
+	intensity = val;
+	calculate_radius();
+}
+
 // Return model matrix
 mat4 PointLight::get_model_matrix()
 {
 	return model_matrix;
+}
+
+// Return the debug model matrix for light radius
+mat4 PointLight::get_debug_model_matrix()
+{
+	return glm::scale(model_matrix, vec3(radius, radius, radius));
+}
+
+// Returns true if the debug mode is active
+bool PointLight::is_debug_active()
+{
+	return debug_mode;
+}
+
+// Debug light
+void PointLight::debug(Model* model)
+{
+	debug_model = model;
+	debug_mode = true;
+}
+
+// Returns true if the lights casts shadow
+bool PointLight::does_cast_shadow()
+{
+	return shadow_calculated;
 }
 
 // Translate
@@ -130,4 +161,16 @@ void PointLight::init_space_matrices()
 	space_matrices[3] = pointlight_projection * glm::lookAt(position, position + vec3(0.f, -1.f, 0.f), vec3(0.f, 0.f, -1.f));
 	space_matrices[4] = pointlight_projection * glm::lookAt(position, position + vec3(0.f, 0.f, 1.f), vec3(0.f, -1.f, 0.f));
 	space_matrices[5] = pointlight_projection * glm::lookAt(position, position + vec3(0.f, 0.f, -1.f), vec3(0.f, -1.f, 0.f));
+}
+
+// Calculates radius
+void PointLight::calculate_radius()
+{	
+	// Calculate light radius
+	float constant = 1.0f;
+
+	float lightMax = std::fmaxf(std::fmaxf(color.r, color.g), color.b);
+	float _radius = (float)(-linear + std::sqrtf(linear * linear - 4 * quadratic
+		* (constant - (256.0f / 5.0f) * lightMax))) / (2 * quadratic);
+	radius = _radius * intensity * 1.5f;
 }

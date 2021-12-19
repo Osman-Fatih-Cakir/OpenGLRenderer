@@ -27,14 +27,16 @@ public:
 		float quadratic,
 		float _far,
 		GLuint shadow_map,
-		float intensity
+		float intensity,
+		bool cast_shadow
 	);
 	void set_direct_light(
 		vec3 color,
 		vec3 direction,
 		float intensity,
 		GLuint shadow_map,
-		mat4 light_space_matrix
+		mat4 light_space_matrix,
+		bool cast_shadow
 	);
 	void render(Camera* camera, Skybox* skybox);
 

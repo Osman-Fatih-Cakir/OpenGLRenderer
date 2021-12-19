@@ -82,7 +82,6 @@ void render();
 // Initial function
 int main(int argc, char* argv[])
 {
-	_CrtDumpMemoryLeaks();
 	Init_Glut_and_Glew(argc, argv);
 
 	// Main function that prepares the scene and program
@@ -295,13 +294,8 @@ void init_models()
 	model->translate(0.f, 1.4f, 0.f, 1.0f);
 	model->scale(0.1f, 0.1f, 0.1f, 1.0f);
 	scene->add_model(model);
-	/*
-	model = new Model("mesh/floor/floor.obj");
-	model->translate(0.f, -2.f, 0.f, 1.0f);
-	model->scale(20.f, 1.f, 20.f, 1.0f);
-	scene->add_model(model);
 	*/
-	
+	/*
 	Model* model = new Model("mesh/pbr_test/sphere_granite.obj");
 	model->translate(-12.f, 0.f, 0.f, 1.f);
 	model->scale(1.5f, 1.5f, 1.5f, 1.0f);
@@ -326,7 +320,20 @@ void init_models()
 	model->translate(12.f, 0.f, 0.f, 1.f);
 	model->scale(1.5f, 1.5f, 1.5f, 1.0f);
 	scene->add_model(model);
+	*/
 	
+	for (int i = -1; i <= 1; i++)
+	{
+		Model* model = new Model("mesh/simple/sphere.obj");
+		model->translate((float)i*5.f, 0.2f, 0.f, 1.f);
+		model->scale(2.f, 2.f, 2.f, 1.f);
+		scene->add_model(model);
+	}
+
+	Model* model = new Model("mesh/floor/floor.obj");
+	model->translate(0.f, -2.f, 0.f, 1.0f);
+	model->scale(20.f, 1.f, 20.f, 1.0f);
+	scene->add_model(model);
 }
 
 // Initialize skyboxes
@@ -359,7 +366,7 @@ void init_lights()
 	};
 
 	vec3 _colors[] = {
-		vec3(1.f, 1.f, 1.f),
+		vec3(0.2f, 0.6f, 0.9f),
 		vec3(1.f, 1.f, 1.f),
 		vec3(1.f, 1.f, 1.f)
 	};
@@ -368,14 +375,14 @@ void init_lights()
 	for (int i = 0; i < point_light_count; i++)
 	{
 		// Initialize light
-		PointLight* light = new PointLight(_positions[i], _colors[i]);
-		light->intensity = 2.f;
+		PointLight* light = new PointLight(_positions[i], _colors[i], true);
+		light->set_intensity(5.f);
 		// Draw a mesh for represent a light
-		//Model* light_model = new Model("mesh/simple/sphere.obj"); 
-		//light->model = light_model;
-		//light->scale(0.3f, 0.3f, 0.3f, 1.0f);
-		// Create depth map framebuffer for each light
-		light->create_shadow();
+		Model* light_model = new Model("mesh/simple/icosphere.obj"); 
+		light->model = light_model;
+		Model* light_debug_model = new Model("mesh/simple/icosphere.obj");
+		light->debug(light_debug_model);
+		light->scale(0.3f, 0.3f, 0.3f, 1.0f);
 		// Add light to scene
 		scene->add_point_light(light);
 	}
@@ -386,12 +393,9 @@ void init_lights()
 
 	for (int i = 0; i < direct_light_count; i++)
 	{
-		DirectionalLight* light = new DirectionalLight(vec3(-1.0f, -1.0f, -1.0f), vec3(1.f, 1.f, 1.f));
-		light->intensity = 0.f;//0.9f;
-		light->create_shadow(
-			-20.f, 20.f, -20.f, 20.f, 0.01f, 1000.f,
-			vec3(10.f, 10.f, 10.f), vec3(0.f, 0.f, 0.f), vec3(-1.f, 1.f, -1.f)
-		);
+		DirectionalLight* light = new DirectionalLight(
+			vec3(-1.0f, -1.0f, -1.0f), vec3(1.f, 1.f, 1.f), true);
+		light->intensity = 0.5f;
 		scene->add_direct_light(light);
 	}
 }
@@ -409,7 +413,7 @@ void init_scene()
 
 	// Set camera parameters
 	init_camera(
-		vec3(0.f, 3.f, 16.f), // Eye
+		vec3(0.f, 10.f, 30.f), // Eye
 		vec3(0.f, 1.f, 0.f), // Up
 		vec3(0.f, 0.f, 0.f) // Center
 	);
@@ -430,37 +434,39 @@ void render()
 	renderer->render(delta);
 	
 	float camera_speed = 7.5f;
+	float delta_over_t = delta / 1000;
+	float delta_over_h = delta / 100;
 	if (input->hold_key(Key::KEY_W))
 	{
-		scene->camera->translate(0.f, 0.f, camera_speed, delta / 1000);
+		scene->camera->translate(0.f, 0.f, camera_speed, delta_over_t);
 	}
 	if (input->hold_key(Key::KEY_S))
 	{
-		scene->camera->translate(0.f, 0.f, -camera_speed, delta / 1000);
+		scene->camera->translate(0.f, 0.f, -camera_speed, delta_over_t);
 	}
 	if (input->hold_key(Key::KEY_A))
 	{
-		scene->camera->translate(camera_speed, 0.f, 0.f, delta / 1000);
+		scene->camera->translate(camera_speed, 0.f, 0.f, delta_over_t);
 	}
 	if (input->hold_key(Key::KEY_D))
 	{
-		scene->camera->translate(-camera_speed, 0.f, 0.f, delta / 1000);
+		scene->camera->translate(-camera_speed, 0.f, 0.f, delta_over_t);
 	}
 	if (input->hold_key(Key::KEY_Q))
 	{
-		scene->camera->translate(0.f, camera_speed, 0.f, delta / 1000);
+		scene->camera->translate(0.f, camera_speed, 0.f, delta_over_t);
 	}
 	if (input->hold_key(Key::KEY_E))
 	{
-		scene->camera->translate(0.f, -camera_speed, 0.f, delta / 1000);
+		scene->camera->translate(0.f, -camera_speed, 0.f, delta_over_t);
 	}
 	if (input->hold_key(Key::KEY_Z))
 	{
-		scene->camera->rotate(vec3(0.f, 1.f, 0.f), 2.f, delta / 100);
+		scene->camera->rotate(vec3(1.f, 0.f, 0.f), 2.f, delta_over_h);
 	}
 	if (input->hold_key(Key::KEY_C))
 	{
-		scene->camera->rotate(vec3(0.f, -1.f, 0.f), 2.f, delta / 100);
+		scene->camera->rotate(vec3(0.f, -1.f, 0.f), 2.f, delta_over_h);
 	}
 	if (input->press_key(Key::KEY_F))
 	{
