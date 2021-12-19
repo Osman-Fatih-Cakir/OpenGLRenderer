@@ -85,6 +85,8 @@ void DeferredShading::set_irradiance_map(GLuint id)
 {
 	glUniform1i(loc_irradiance_map, 4);
 	glActiveTexture(GL_TEXTURE0 + 4);
+	if (!glIsTexture(id))
+		return;
 	glBindTexture(GL_TEXTURE_CUBE_MAP, id);
 }
 
@@ -93,6 +95,8 @@ void DeferredShading::set_prefiltered_map(GLuint id)
 {
 	glUniform1i(loc_prefiltered_map, 5);
 	glActiveTexture(GL_TEXTURE0 + 5);
+	if (!glIsTexture(id))
+		return;
 	glBindTexture(GL_TEXTURE_CUBE_MAP, id);
 }
 
@@ -101,6 +105,8 @@ void DeferredShading::set_brdf_lut(GLuint id)
 {
 	glUniform1i(loc_brdf_lut, 6);
 	glActiveTexture(GL_TEXTURE0 + 6);
+	if (!glIsTexture(id))
+		return;
 	glBindTexture(GL_TEXTURE_2D, id);
 }
 

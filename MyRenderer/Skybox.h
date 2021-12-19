@@ -11,7 +11,7 @@ public:
 	Skybox(const char* path, int id, bool _ibl);
 
 	void render(Camera* camera);
-	void activate_IBL(); // TODO
+	void toggle_IBL();
 
 	// Getters
 	GLuint get_equirectangular_map();

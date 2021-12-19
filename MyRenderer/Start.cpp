@@ -193,6 +193,9 @@ void keyboard(unsigned char key, int x, int y)
 	case 'x':
 		input->add_key(Key::KEY_X);
 		break;
+	case 'f':
+		input->add_key(Key::KEY_F);
+		break;
 	case 'r':
 		input->add_key(Key::KEY_R);
 		break;
@@ -230,6 +233,9 @@ void keyboard_up(unsigned char key, int x, int y)
 		break;
 	case 'x':
 		input->remove_key(Key::KEY_X);
+		break;
+	case 'f':
+		input->remove_key(Key::KEY_F);
 		break;
 	case 'r':
 		input->remove_key(Key::KEY_R);
@@ -326,9 +332,9 @@ void init_models()
 // Initialize skyboxes
 void init_skyboxes()
 {
-	scene->add_skybox("mesh/ibl_test/hall_2k.hdr", 1, true);
-	scene->add_skybox("mesh/ibl_test/museum_2k.hdr", 3, true);
-	scene->add_skybox("mesh/ibl_test/dikhololo_night_2k.hdr", 2, true);
+	scene->add_skybox("mesh/ibl_test/hall_2k.hdr", 1, false);
+	scene->add_skybox("mesh/ibl_test/museum_2k.hdr", 3, false);
+	scene->add_skybox("mesh/ibl_test/dikhololo_night_2k.hdr", 2, false);
 	scene->render_skybox_id(3);
 }
 
@@ -455,6 +461,10 @@ void render()
 	if (input->hold_key(Key::KEY_C))
 	{
 		scene->camera->rotate(vec3(0.f, -1.f, 0.f), 2.f, delta / 100);
+	}
+	if (input->press_key(Key::KEY_F))
+	{
+		scene->get_render_skybox()->toggle_IBL();
 	}
 	if (input->press_key(Key::KEY_X))
 	{

@@ -441,6 +441,23 @@ void Skybox::render_quad()
     glBindVertexArray(0);
 }
 
+void Skybox::toggle_IBL()
+{
+    if (!IBL)
+    {
+        generate_irradiance_map();
+        generate_prefilter_map();
+        generate_brdf_lut();
+        IBL = true;
+        std::cout << "IBL on\n";
+    }
+    else
+    {
+        IBL = false;
+        std::cout << "IBL off\n";
+    }
+}
+
 void Skybox::render(Camera* camera)
 {
     glUseProgram(render_program);
