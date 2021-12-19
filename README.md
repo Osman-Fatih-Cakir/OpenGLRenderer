@@ -58,5 +58,5 @@ Since I am new to computer graphics, I would be happy to receive suggestions abo
 ## Note:
 There are memory leaks in project (which I assume caused by assimp library), I found no way to fix it. I will check that later since it has cost me so much time.
 
-[pbr1]: https://github.com/Osman-Fatih-Cakir/OpenGLRenderer/Outputs/pbr1.gif
-[pbr2]: https://github.com/Osman-Fatih-Cakir/OpenGLRenderer/Outputs/pbr2.gif
+[pbr1]: https://github.com/Osman-Fatih-Cakir/OpenGLRenderer/tree/master/Outputs/pbr1.gif
+[pbr2]: https://github.com/Osman-Fatih-Cakir/OpenGLRenderer/tree/master/Outputs/pbr2.gif
