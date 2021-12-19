@@ -4,6 +4,7 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h> // Image loading library for load texture images
 #include <gtc/matrix_transform.hpp>
+#include <assimp/pbrmaterial.h>
 
 typedef glm::vec2 vec2;
 

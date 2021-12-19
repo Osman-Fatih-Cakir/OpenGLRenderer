@@ -9,6 +9,14 @@ An OpenGL renderer.
 In this project, my goal is to build a renderer using OpenGL. I will try to learn and implement common realtime computer graphics techniques.
 Since I am new to computer graphics, I would be happy to receive suggestions about the project and how I can improve myself :).
 
+## Screenshots
+- Pbr:
+![alt text][pbr1]
+![alt text][pbr2]
+
+- Deferred Shading:
+
+
 ## Features:
 - PBR (Cook-Torrance specular BRDF)
 - IBL
@@ -49,3 +57,6 @@ Since I am new to computer graphics, I would be happy to receive suggestions abo
 
 ## Note:
 There are memory leaks in project (which I assume caused by assimp library), I found no way to fix it. I will check that later since it has cost me so much time.
+
+[pbr1]: https://github.com/Osman-Fatih-Cakir/OpenGLRenderer/Outputs/pbr1.gif
+[pbr2]: https://github.com/Osman-Fatih-Cakir/OpenGLRenderer/Outputs/pbr2.gif

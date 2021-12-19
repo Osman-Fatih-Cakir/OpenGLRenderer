@@ -33,7 +33,7 @@ void Renderer::render(float delta)
 
 	for (int i = 0; i < 1; i++)
 	{
-		//scene->all_models[i]->rotate(vec3(0.f, 1.f, 0.f), (float)(2 * (i + 1)), delta / 100.f);
+		scene->all_models[i]->rotate(vec3(0.f, 1.f, 0.f), (float)(4 * (i + 1)), delta / 100.f);
 		//scene->all_models[i]->translate(vec3(0.f, 0.f, 10.f), delta / 1000.f);
 	}
 
@@ -115,8 +115,6 @@ void Renderer::render(float delta)
 	}
 	
 	// Render with deferred shading
-	// TODO deferredShading->render(scene->camera, scene->get_render_skybox());
-	// and take the maps in render() of deferred_shading
 	deferredShading->render(scene->camera, scene->get_render_skybox());
 
 	//
