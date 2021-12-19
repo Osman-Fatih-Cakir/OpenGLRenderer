@@ -11,7 +11,7 @@ Since I am new to computer graphics, I would be happy to receive suggestions abo
 
 ## Screenshots
 Pbr:  
-<img src="https://media.giphy.com/media/vFKqnCdLPNOKc/giphy.gif" width="640" height="360" />  
+<img src="./Outputs/pbr1.gif" width="640" height="360" />  
 ![alt text](https://github.com/Osman-Fatih-Cakir/OpenGLRenderer/tree/master/Outputs/pbr2.gif)  
 
 ## Features:
