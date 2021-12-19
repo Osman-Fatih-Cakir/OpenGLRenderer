@@ -11,8 +11,8 @@ Since I am new to computer graphics, I would be happy to receive suggestions abo
 
 ## Screenshots
 Pbr:
-![alt text][pbr1]
-![alt text][pbr2]
+![alt text][https://github.com/Osman-Fatih-Cakir/OpenGLRenderer/tree/master/Outputs/pbr1.gif]
+![alt text][https://github.com/Osman-Fatih-Cakir/OpenGLRenderer/tree/master/Outputs/pbr2.gif]
 
 ## Features:
 - PBR (Cook-Torrance specular BRDF)
@@ -54,6 +54,3 @@ Pbr:
 
 ## Note:
 There are memory leaks in project (which I assume caused by assimp library), I found no way to fix it. I will check that later since it has cost me so much time.
-
-[pbr1]: https://github.com/Osman-Fatih-Cakir/OpenGLRenderer/tree/master/Outputs/pbr1.gif "Pbr 1"
-[pbr2]: https://github.com/Osman-Fatih-Cakir/OpenGLRenderer/tree/master/Outputs/pbr2.gif "Pbr 2"
