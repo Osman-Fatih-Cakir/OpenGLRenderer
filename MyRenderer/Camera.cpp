@@ -21,7 +21,7 @@ void Camera::set_camera_projection(Projection_Type proj_type)
 {
 	if (proj_type == PERSPECTIVE) // Set perspective projection
 	{
-		set_perspective(75.f, (GLfloat)WINDOW_WIDTH / WINDOW_HEIGHT, 0.01f, 100.f);
+		set_perspective(75.f, (GLfloat)WINDOW_WIDTH / WINDOW_HEIGHT, 0.01f, 10000.f);
 	}
 	else if (proj_type == ORTOGRAPHIC) // Set ortographic projection
 	{

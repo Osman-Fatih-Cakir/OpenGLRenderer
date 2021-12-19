@@ -128,6 +128,8 @@ void DeferredShading::set_point_light
 		vec3 position,
 		vec3 color,
 		float radius,
+		float cutoff,
+		float half_radius,
 		float linear,
 		float quadratic, 
 		float _far,
@@ -147,6 +149,14 @@ void DeferredShading::set_point_light
 	light_array_str = "point_lights[" + std::to_string(point_light_count) + "].radius";
 	GLuint loc_light_r = glGetUniformLocation(program, (GLchar*)light_array_str.c_str());
 	glUniform1f(loc_light_r, (GLfloat) radius);
+
+	light_array_str = "point_lights[" + std::to_string(point_light_count) + "].cutoff";
+	GLuint loc_cutoff = glGetUniformLocation(program, (GLchar*)light_array_str.c_str());
+	glUniform1f(loc_cutoff, (GLfloat)cutoff);
+
+	light_array_str = "point_lights[" + std::to_string(point_light_count) + "].half_radius";
+	GLuint loc_light_hr = glGetUniformLocation(program, (GLchar*)light_array_str.c_str());
+	glUniform1f(loc_light_hr, (GLfloat)half_radius);
 
 	light_array_str = "point_lights[" + std::to_string(point_light_count) + "].linear";
 	GLuint loc_light_l = glGetUniformLocation(program, (GLchar*)light_array_str.c_str());

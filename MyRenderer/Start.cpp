@@ -42,7 +42,7 @@ typedef glm::vec4 vec4;
 typedef glm::vec2 vec2;
 
 // Point lights
-const int point_light_count = 3;
+const int point_light_count = 36;
 const int direct_light_count = 1;
 
 // Window
@@ -321,28 +321,31 @@ void init_models()
 	model->scale(1.5f, 1.5f, 1.5f, 1.0f);
 	scene->add_model(model);
 	*/
-	
-	for (int i = -1; i <= 1; i++)
+
+	for (float x = -36.f; x <= 36.f; x+=12.f)
 	{
-		Model* model = new Model("mesh/simple/sphere.obj");
-		model->translate((float)i*5.f, 0.2f, 0.f, 1.f);
-		model->scale(2.f, 2.f, 2.f, 1.f);
-		scene->add_model(model);
+		for (float z = -36.f; z <= 36.f; z += 12.f)
+		{
+			Model* model = new Model("mesh/simple/sphere.obj");;
+			model->translate(x, 5.f, z, 1.f);
+			model->scale(50.f, 50.f, 50.f, 1.0f);
+			scene->add_model(model);
+		}
 	}
 
-	Model* model = new Model("mesh/floor/floor.obj");
-	model->translate(0.f, -2.f, 0.f, 1.0f);
-	model->scale(20.f, 1.f, 20.f, 1.0f);
-	scene->add_model(model);
+	Model* floor = new Model("mesh/floor/floor.obj");
+	floor->translate(0.f, -1.f, 0.f, 1.0f);
+	floor->scale(60.f, 1.f, 60.f, 1.0f);
+	scene->add_model(floor);
 }
 
 // Initialize skyboxes
 void init_skyboxes()
 {
-	scene->add_skybox("mesh/ibl_test/hall_2k.hdr", 1, false);
-	scene->add_skybox("mesh/ibl_test/museum_2k.hdr", 3, false);
-	scene->add_skybox("mesh/ibl_test/dikhololo_night_2k.hdr", 2, false);
-	scene->render_skybox_id(3);
+	//scene->add_skybox("mesh/ibl_test/hall_2k.hdr", 1, false);
+	//scene->add_skybox("mesh/ibl_test/museum_2k.hdr", 3, false);
+	//scene->add_skybox("mesh/ibl_test/dikhololo_night_2k.hdr", 2, false);
+	//scene->render_skybox_id(3);
 }
 
 // Initialize camera
@@ -359,32 +362,40 @@ void init_lights()
 	//// Point lights 
 	//
 
-	vec3 _positions[] = {
-		vec3(-8.f, 2.f, 4.5f),
-		vec3(0.f, 2.f, 4.5f),
-		vec3(8.f, 2.f, 4.5f),
-	};
+	std::vector<vec3> _positions;
 
-	vec3 _colors[] = {
-		vec3(0.2f, 0.6f, 0.9f),
-		vec3(1.f, 1.f, 1.f),
-		vec3(1.f, 1.f, 1.f)
+	for (float x = -30.f; x <= 30.f; x+=12.f)
+	{
+		for (float z = -30.f; z <= 30.f; z += 12.f)
+		{
+			_positions.push_back(vec3(x, 10.f, z));
+		}
 	};
+	// Color sequential
+	std::vector<vec3> _colors;
+	_colors.push_back(vec3(0.3, 0.6, 0.9));
+	_colors.push_back(vec3(0.9, 0.5, 0.7));
+	_colors.push_back(vec3(0.4, 0.9, 0.7));
 
+	srand((unsigned int)time(NULL));
 	// Light positions
+	int color_index = 0;
 	for (int i = 0; i < point_light_count; i++)
 	{
 		// Initialize light
-		PointLight* light = new PointLight(_positions[i], _colors[i], true);
-		light->set_intensity(5.f);
+		PointLight* light = new PointLight(_positions[i], _colors[color_index], false);
+		light->set_intensity(20.f);
+		std::cout << "Radius: " << light->radius << "\n";
 		// Draw a mesh for represent a light
-		Model* light_model = new Model("mesh/simple/icosphere.obj"); 
+		Model* light_model = new Model("mesh/simple/sphere.obj");
 		light->model = light_model;
-		Model* light_debug_model = new Model("mesh/simple/icosphere.obj");
-		light->debug(light_debug_model);
-		light->scale(0.3f, 0.3f, 0.3f, 1.0f);
+		//light->scale(5.f, 5.f, 5.f, 1.f);
+		//Model* light_debug_model = new Model("mesh/simple/icosphere.obj");
+		//light->debug(light_debug_model);
 		// Add light to scene
 		scene->add_point_light(light);
+		// Random colors
+		color_index = ((size_t)color_index + (0 + rand() % 3)) % _colors.size();
 	}
 
 	//
@@ -394,8 +405,8 @@ void init_lights()
 	for (int i = 0; i < direct_light_count; i++)
 	{
 		DirectionalLight* light = new DirectionalLight(
-			vec3(-1.0f, -1.0f, -1.0f), vec3(1.f, 1.f, 1.f), true);
-		light->intensity = 0.5f;
+			vec3(-1.0f, -1.0f, -1.0f), vec3(1.f, 1.f, 1.f), false);
+		light->intensity = 0.0f;
 		scene->add_direct_light(light);
 	}
 }
@@ -413,8 +424,8 @@ void init_scene()
 
 	// Set camera parameters
 	init_camera(
-		vec3(0.f, 10.f, 30.f), // Eye
-		vec3(0.f, 1.f, 0.f), // Up
+		vec3(0.f, 30.f, 30.f), // Eye
+		vec3(0.f, 1.f, -1.f), // Up
 		vec3(0.f, 0.f, 0.f) // Center
 	);
 	
@@ -433,7 +444,7 @@ void render()
 
 	renderer->render(delta);
 	
-	float camera_speed = 7.5f;
+	float camera_speed = 15.f;
 	float delta_over_t = delta / 1000;
 	float delta_over_h = delta / 100;
 	if (input->hold_key(Key::KEY_W))
@@ -470,13 +481,17 @@ void render()
 	}
 	if (input->press_key(Key::KEY_F))
 	{
-		scene->get_render_skybox()->toggle_IBL();
+		if (scene->get_render_skybox() != nullptr)
+			scene->get_render_skybox()->toggle_IBL();
 	}
 	if (input->press_key(Key::KEY_X))
 	{
-		scene->render_skybox_id(skybox_id + 1);
-		skybox_id++;
-		skybox_id = skybox_id % 3;
+		if (scene->get_render_skybox() != nullptr)
+		{
+			scene->render_skybox_id(skybox_id + 1);
+			skybox_id++;
+			skybox_id = skybox_id % 3;
+		}
 	}
 	if (input->press_key(Key::KEY_R))
 	{

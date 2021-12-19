@@ -110,6 +110,8 @@ void Renderer::render(float delta)
 			light->position,
 			light->color,
 			light->radius,
+			light->cutoff,
+			light->half_radius,
 			light->linear,
 			light->quadratic,
 			light->shadow_projection_far,

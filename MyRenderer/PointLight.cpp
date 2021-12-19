@@ -9,15 +9,19 @@ PointLight::PointLight(vec3 pos, vec3 col, bool shadow)
 	translate(pos.x, pos.y, pos.z, 1.0f);
 	color = col;
 
-	intensity = 1.0f;
+	set_intensity(1.0f);
 	shadow_projection_far = 100.0f;
 	depth_cubemap = -1;
 	depth_cubemap_fbo = -1;
 	for (int i = 0; i < 6; i++)
 		space_matrices[i] = mat4(0.0f);
 
-	linear = 0.7f;
-	quadratic = 1.8f;
+	linear = 1.5f;
+	quadratic = 3.8f;
+
+	calculate_radius();
+	//linear = 0.7f;
+	//quadratic = 1.8f;
 
 	if (shadow)
 		create_shadow();
@@ -54,7 +58,6 @@ GLfloat* PointLight::get_color_pointer()
 void PointLight::set_intensity(float val)
 {
 	intensity = val;
-	calculate_radius();
 }
 
 // Return model matrix
@@ -169,8 +172,26 @@ void PointLight::calculate_radius()
 	// Calculate light radius
 	float constant = 1.0f;
 
+	// Get light's luminance using Rec 709 luminance formula
+	float light_luminance = glm::dot(color, vec3(0.2126, 0.7152, 0.0722));
+
+	// Minimum luminance threshold - tweak to taste
+	float min_luminance = 0.01;
+
+	// Solve attenuation equation to get radius where it falls to min_luminance
+	radius = solve_quadratic(constant - light_luminance/ min_luminance, linear, quadratic);
+
+	float inner_radius = radius * 0.2f;
+	half_radius = radius / 2.f;
+	cutoff = 1.f / 2.f;
+}
+
+float PointLight::solve_quadratic(float kc, float kl, float kq)
+{
 	float lightMax = std::fmaxf(std::fmaxf(color.r, color.g), color.b);
-	float _radius = (float)(-linear + std::sqrtf(linear * linear - 4 * quadratic
-		* (constant - (256.0f / 5.0f) * lightMax))) / (2 * quadratic);
-	radius = _radius * intensity * 1.5f;
+
+	float _radius = (float)(-kc + std::sqrtf(kl * kl - 4 * kq
+		* (kc - (256.0f / 5.0f) * lightMax))) / (2 * quadratic);
+
+	return _radius;
 }

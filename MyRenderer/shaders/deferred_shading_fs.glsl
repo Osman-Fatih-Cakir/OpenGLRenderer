@@ -27,12 +27,14 @@ struct Point_Light
 	samplerCube point_shadow_map;
 	float far;
 
-	float radius;
+	float cutoff;
+	float half_radius;
 	float linear;
 	float quadratic;
 	float intensity;
 };
-const int NUMBER_OF_POINT_LIGHTS = 2; // TODO number of lights is hardcoded
+
+const int NUMBER_OF_POINT_LIGHTS = 36; // TODO number of lights is hardcoded
 uniform Point_Light point_lights[NUMBER_OF_POINT_LIGHTS];
 
 struct Direct_Light
@@ -209,7 +211,7 @@ vec3 calculate_point_light(vec3 frag_pos, vec3 normal, vec3 albedo, float roughn
 		vec3 Lo = vec3(0.0);
 
 		// If the fragment is not inside the light radious, no need to make calculation for that light
-		if (length(point_lights[i].position - frag_pos) > point_lights[i].radius)
+		if (length(point_lights[i].position - frag_pos) > point_lights[i].half_radius * 2.0)
 			continue;
 
 		// View direction
@@ -254,7 +256,12 @@ vec3 calculate_point_light(vec3 frag_pos, vec3 normal, vec3 albedo, float roughn
 
 		// Attenuation
 		float distance = length(point_lights[i].position - frag_pos);
-		float attenuation = 1.0 / (1.0 + point_lights[i].linear * distance + point_lights[i].quadratic * distance * distance);
+		float attenuation = 1.0 / (1.0 + point_lights[i].linear * distance
+			+ point_lights[i].quadratic * distance * distance);
+
+		// 
+		attenuation *= clamp((point_lights[i].cutoff * distance) + point_lights[i].half_radius - distance,
+			0.0, 1.0);
 
 		// Calculate Lo
 		float angle = max(dot(normal, light_dir), 0.0);

@@ -43,6 +43,8 @@ public:
 	// TODO make these private
 	float shadow_projection_far;
 	float radius;
+	float cutoff;
+	float half_radius;
 	float linear;
 	float quadratic;
 	float intensity;
@@ -54,8 +56,10 @@ private:
 	void create_depth_map_framebuffer();
 	void init_space_matrices();
 	void calculate_radius();
+	float solve_quadratic(float kc, float kl, float kq);
 
 	bool debug_mode = false;
 	bool shadow_calculated = false;
 	mat4 model_matrix = mat4(1.f);
+	mat4 debug_model_matrix = mat4(1.f);
 };

@@ -23,6 +23,8 @@ public:
 		vec3 position,
 		vec3 color,
 		float radius,
+		float cutoff,
+		float half_radius,
 		float linear,
 		float quadratic,
 		float _far,

@@ -44,7 +44,7 @@ void shadererrors(const GLint shader) {
     glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &length);
     log = new GLchar[length + 1];
     glGetShaderInfoLog(shader, length, &length, log);
-    cout << "Compile Error, Log Below\n" << log << "\n";
+    cout << "Compile Error, Log Below:\n" << log << "\n";
     delete[] log;
 }
 
