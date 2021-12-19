@@ -11,8 +11,7 @@ Since I am new to computer graphics, I would be happy to receive suggestions abo
 
 ## Screenshots
 Pbr:  
-![alt text](https://github.com/Osman-Fatih-Cakir/OpenGLRenderer/tree/master/Outputs/pbr1.gif)  
-src="https://github.com/Osman-Fatih-Cakir/OpenGLRenderer/tree/master/Outputs/pbr1.gif" width="200" height="200" />
+<img src="https://github.com/Osman-Fatih-Cakir/OpenGLRenderer/tree/master/Outputs/pbr1.gif" width="200" height="200" />
 ![alt text](https://github.com/Osman-Fatih-Cakir/OpenGLRenderer/tree/master/Outputs/pbr2.gif)  
 
 ## Features:
