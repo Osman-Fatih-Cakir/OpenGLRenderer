@@ -259,7 +259,7 @@ vec3 calculate_point_light(vec3 frag_pos, vec3 normal, vec3 albedo, float roughn
 		float attenuation = 1.0 / (1.0 + point_lights[i].linear * distance
 			+ point_lights[i].quadratic * distance * distance);
 
-		// 
+		// Decrase attenuation heavily near radius
 		attenuation *= clamp((point_lights[i].cutoff * distance) + point_lights[i].half_radius - distance,
 			0.0, 1.0);
 

@@ -328,7 +328,7 @@ void init_models()
 		{
 			Model* model = new Model("mesh/simple/sphere.obj");;
 			model->translate(x, 5.f, z, 1.f);
-			model->scale(50.f, 50.f, 50.f, 1.0f);
+			model->scale(10.f, 10.f, 10.f, 1.0f);
 			scene->add_model(model);
 		}
 	}
