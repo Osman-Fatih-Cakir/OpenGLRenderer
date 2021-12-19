@@ -11,8 +11,8 @@ Since I am new to computer graphics, I would be happy to receive suggestions abo
 
 ## Screenshots
 Pbr:  
-![alt text](https://github.com/Osman-Fatih-Cakir/OpenGLRenderer/tree/master/Outputs/pbr1.gif)  
-![alt text](https://github.com/Osman-Fatih-Cakir/OpenGLRenderer/tree/master/Outputs/pbr2.gif)  
+![alt text](https://github.com/Osman-Fatih-Cakir/OpenGLRenderer/tree/master/Outputs/pbr1.gif = 250x250)  
+![alt text](https://github.com/Osman-Fatih-Cakir/OpenGLRenderer/tree/master/Outputs/pbr2.gif = 250x250)  
 
 ## Features:
 - PBR (Cook-Torrance specular BRDF)
