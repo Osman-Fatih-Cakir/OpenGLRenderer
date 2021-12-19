@@ -8,10 +8,10 @@ class Skybox
 {
 public:
 	// Constrctor takes path to .hdr file
-	Skybox(const char* path, int id);
+	Skybox(const char* path, int id, bool _ibl);
 
-	void get_uniform_location();
 	void render(Camera* camera);
+	void activate_IBL(); // TODO
 
 	// Getters
 	GLuint get_equirectangular_map();
@@ -21,6 +21,7 @@ public:
 	GLuint get_brdf_lut();
 	GLuint get_width();
 	GLuint get_height();
+	bool is_ibl_active();
 	unsigned int get_max_mip_level();
 	int get_id();
 	
@@ -33,6 +34,7 @@ private:
 	void generate_skybox_mipmaps();
 	void generate_brdf_lut();
 
+	void get_uniform_location();
 	void load_hdr_file(const char* path);
 	void render_cube();
 	void render_quad();
@@ -67,7 +69,8 @@ private:
 	GLuint loc_projection_matrix;
 	GLuint loc_view_matrix;
 	GLuint loc_skybox_map;
-
+	
+	bool IBL = true;
 	unsigned int max_mip_level = 5;
 
 	GLuint width = 512;

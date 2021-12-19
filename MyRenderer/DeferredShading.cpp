@@ -110,6 +110,12 @@ void DeferredShading::set_max_reflection_lod(float val)
 	glUniform1f(loc_max_reflection_lod, val);
 }
 
+// Set true if the IBL is active
+void DeferredShading::set_is_ibl_active(bool val)
+{
+	glUniform1i(loc_is_ibl_active, val);
+}
+
 void DeferredShading::set_point_light
 	(
 		vec3 position,
@@ -209,6 +215,7 @@ void DeferredShading::render(Camera* camera, Skybox* skybox)
 	set_prefiltered_map(skybox->get_prefiltered_map());
 	set_brdf_lut(skybox->get_brdf_lut());
 	set_max_reflection_lod((float)skybox->get_max_mip_level());
+	set_is_ibl_active(skybox->is_ibl_active());
 
 	// Draw call
 	draw_quad(program);
@@ -236,6 +243,7 @@ void DeferredShading::get_uniform_locations()
 	loc_irradiance_map = glGetUniformLocation(program, "irradiance_map");
 	loc_prefiltered_map = glGetUniformLocation(program, "prefiltered_map");
 	loc_brdf_lut = glGetUniformLocation(program, "brdf_lut");
+	loc_is_ibl_active = glGetUniformLocation(program, "is_ibl_active");
 
 	static_texture_uniform_count = 7;
 }

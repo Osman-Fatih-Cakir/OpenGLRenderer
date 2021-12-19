@@ -64,9 +64,9 @@ void Scene::add_direct_light(DirectionalLight* d)
 }
 
 // Add skybox to the scene
-void Scene::add_skybox(const char* path, int id)
+void Scene::add_skybox(const char* path, int id, bool ibl)
 {
-	Skybox* skybox = new Skybox(path, id);
+	Skybox* skybox = new Skybox(path, id, ibl);
 	skyboxes.push_back(skybox);
 }
 

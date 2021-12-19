@@ -16,6 +16,7 @@ uniform samplerCube irradiance_map;
 uniform samplerCube prefiltered_map;
 uniform sampler2D brdf_lut;
 uniform float MAX_REFLECTION_LOD;
+uniform int is_ibl_active;
 
 struct Point_Light
 {
@@ -335,10 +336,17 @@ void main()
 
 	// Direct light calculation
 	Lo += calculate_direct_light(frag_pos, normal, albedo, roughness, metallic);
-	 
-	// IBL
-	Lo += IBL(normal, view_dir, metallic, roughness, albedo, ao);
-
+	
+	if (is_ibl_active != 0)
+	{
+		// IBL
+		Lo += IBL(normal, view_dir, metallic, roughness, albedo, ao);
+	}
+	else
+	{
+		Lo += vec3(0.03) * albedo * ao;
+	}
+	
 	// Gamma correction
 	Lo = pow(Lo, vec3(1.0 / 2.2));
 	

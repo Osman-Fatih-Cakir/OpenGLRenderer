@@ -8,18 +8,22 @@
 typedef glm::vec3 vec3;
 typedef glm::mat4 mat4;
 
-Skybox::Skybox(const char* path, int _id)
+Skybox::Skybox(const char* path, int _id, bool _ibl)
 {
 	load_hdr_file(path);
     init_shader();
     get_uniform_location();
     create_framebuffer();
 	generate_skybox_map();
-	generate_irradiance_map();
-    generate_prefilter_map();
-    generate_brdf_lut();
+    if (_ibl)
+    {
+        generate_irradiance_map();
+        generate_prefilter_map();
+        generate_brdf_lut();
+    }
 
     id = _id;
+    IBL = _ibl;
 }
 
 void Skybox::generate_skybox_map()
@@ -484,4 +488,8 @@ unsigned int Skybox::get_max_mip_level()
 int Skybox::get_id()
 {
     return id;
+}
+bool Skybox::is_ibl_active()
+{
+    return IBL;
 }

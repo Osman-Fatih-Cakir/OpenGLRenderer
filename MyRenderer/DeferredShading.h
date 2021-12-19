@@ -54,6 +54,7 @@ private:
 	void set_prefiltered_map(GLuint id);
 	void set_brdf_lut(GLuint id);
 	void set_max_reflection_lod(float val);
+	void set_is_ibl_active(bool val);
 
 	GLuint program;
 	unsigned int width = 1024;
@@ -67,6 +68,7 @@ private:
 	GLuint loc_prefiltered_map;
 	GLuint loc_brdf_lut;
 	GLuint loc_max_reflection_lod;
+	GLuint loc_is_ibl_active;
 	GLuint quad_VAO;
 	int point_light_count = 0;
 	int direct_light_count = 0;
