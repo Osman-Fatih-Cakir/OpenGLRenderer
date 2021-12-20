@@ -1,10 +1,6 @@
 # OpenGLRenderer
 An OpenGL renderer.
 
-## Prerequisites
-- OpenGL 4.5
-- Visual Studio 19 (I haven't tried old versions of Visual Studio)
-
 ### Note:
 In this project, my goal is to build a renderer using OpenGL. I will try to learn and implement common realtime computer graphics techniques.
 Since I am new to computer graphics, I would be happy to receive suggestions about the project and how I can improve myself :).
@@ -35,6 +31,10 @@ Since I am new to computer graphics, I would be happy to receive suggestions abo
 - map_bump: Normal map
 - map_Ns 	: Roughness map
 - map_d 	: AO map
+
+## Prerequisites
+- OpenGL 4.5
+- Visual Studio 19 (I haven't tried old versions of Visual Studio)
 
 ## Resources
 - https://learnopengl.com/
