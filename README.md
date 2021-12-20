@@ -12,7 +12,7 @@ Since I am new to computer graphics, I would be happy to receive suggestions abo
 ## Screenshots
 <img src="./Outputs/pbr1.gif" width="800" height="450" />  
 <img src="./Outputs/pbr2.gif" width="800" height="450" />  
-<img src="./Outputs/ds3.png" width="800" height="450" />  
+<img src="./Outputs/ds3.PNG" width="800" height="450" />  
 
 ## Features:
 - PBR (Cook-Torrance specular BRDF)
