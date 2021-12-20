@@ -346,9 +346,9 @@ void main()
 	float ao = texture(gPbr_materials, fTexCoord).b;
 
 	////////////////////////////////
-	albedo = vec3(0.7, 0.7, 0.7);
-	metallic = 0.1;
-	roughness = 0.3;
+	albedo = vec3(0.3, 0.3, 0.3);
+	metallic = 0.2;
+	roughness = 0.5;
 	ao = 1.0;
 	////////////////////////////////
 
@@ -370,9 +370,6 @@ void main()
 	{
 		Lo += vec3(0.01) * albedo * ao;
 	}
-	
-	// Gamma correction
-	//Lo = pow(Lo, vec3(1.0 / 2.2));
 	
 	OutColor = vec4(Lo, 1.0);
 }

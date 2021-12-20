@@ -10,9 +10,9 @@ In this project, my goal is to build a renderer using OpenGL. I will try to lear
 Since I am new to computer graphics, I would be happy to receive suggestions about the project and how I can improve myself :).
 
 ## Screenshots
-Pbr:  
 <img src="./Outputs/pbr1.gif" width="800" height="450" />  
 <img src="./Outputs/pbr2.gif" width="800" height="450" />  
+<img src="./Outputs/ds3.png" width="800" height="450" />  
 
 ## Features:
 - PBR (Cook-Torrance specular BRDF)

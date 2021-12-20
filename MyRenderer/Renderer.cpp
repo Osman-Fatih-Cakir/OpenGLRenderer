@@ -186,13 +186,6 @@ void Renderer::render(float delta)
 	//
 
 	render_all(main_fb->get_color_texture());
-
-	// Error check
-	GLuint err = glGetError(); if (err) fprintf(stderr, "ERROR: %s\n", gluErrorString(err));
-
-	glutSwapBuffers();
-
-	glutPostRedisplay(); // Render loop
 }
 
 // Initialize programs that are going to be used when rendering

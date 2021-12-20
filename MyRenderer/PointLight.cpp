@@ -16,12 +16,13 @@ PointLight::PointLight(vec3 pos, vec3 col, bool shadow)
 	for (int i = 0; i < 6; i++)
 		space_matrices[i] = mat4(0.0f);
 
-	linear = 1.5f;
-	quadratic = 3.8f;
+	// Attenuation constants
+	//linear = 1.5f;
+	//quadratic = 3.8f;
+	linear = 0.7f;
+	quadratic = 1.8f;
 
 	calculate_radius();
-	//linear = 0.7f;
-	//quadratic = 1.8f;
 
 	if (shadow)
 		create_shadow();
@@ -180,6 +181,7 @@ void PointLight::calculate_radius()
 
 	// Solve attenuation equation to get radius where it falls to min_luminance
 	radius = solve_quadratic(constant - light_luminance/ min_luminance, linear, quadratic);
+	radius *= intensity;
 
 	float inner_radius = radius * 0.2f;
 	half_radius = radius / 2.f;

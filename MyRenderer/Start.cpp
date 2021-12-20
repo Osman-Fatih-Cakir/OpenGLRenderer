@@ -342,10 +342,10 @@ void init_models()
 // Initialize skyboxes
 void init_skyboxes()
 {
-	//scene->add_skybox("mesh/ibl_test/hall_2k.hdr", 1, false);
-	//scene->add_skybox("mesh/ibl_test/museum_2k.hdr", 3, false);
-	//scene->add_skybox("mesh/ibl_test/dikhololo_night_2k.hdr", 2, false);
-	//scene->render_skybox_id(3);
+	scene->add_skybox("mesh/ibl_test/hall_2k.hdr", 1, false);
+	scene->add_skybox("mesh/ibl_test/museum_2k.hdr", 3, false);
+	scene->add_skybox("mesh/ibl_test/dikhololo_night_2k.hdr", 2, false);
+	scene->render_skybox_id(3);
 }
 
 // Initialize camera
@@ -361,14 +361,15 @@ void init_lights()
 	//
 	//// Point lights 
 	//
+	
+	srand((unsigned int)time(NULL));
 
 	std::vector<vec3> _positions;
-
 	for (float x = -30.f; x <= 30.f; x+=12.f)
 	{
 		for (float z = -30.f; z <= 30.f; z += 12.f)
 		{
-			_positions.push_back(vec3(x, 10.f, z));
+			_positions.push_back(vec3(x, 3.f + rand() % 10, z));
 		}
 	};
 	// Color sequential
@@ -377,14 +378,13 @@ void init_lights()
 	_colors.push_back(vec3(0.f, 1.f, 1.f));
 	_colors.push_back(vec3(1.f, 0.f, 1.f));
 
-	srand((unsigned int)time(NULL));
 	// Light positions
 	int color_index = 0;
 	for (int i = 0; i < point_light_count; i++)
 	{
 		// Initialize light
 		PointLight* light = new PointLight(_positions[i], _colors[color_index], false);
-		light->set_intensity(10.f);
+		light->set_intensity(10.f * _positions[i].y);
 		std::cout << "Radius: " << light->radius << "\n";
 		// Draw a mesh for represent a light
 		Model* light_model = new Model("mesh/simple/sphere.obj");
@@ -443,7 +443,8 @@ void render()
 	float delta = timer->get_delta_time();
 
 	renderer->render(delta);
-	
+
+	// Camera actions
 	float camera_speed = 15.f;
 	float delta_over_t = delta / 1000;
 	float delta_over_h = delta / 100;
@@ -473,7 +474,7 @@ void render()
 	}
 	if (input->hold_key(Key::KEY_Z))
 	{
-		scene->camera->rotate(vec3(1.f, 0.f, 0.f), 2.f, delta_over_h);
+		scene->camera->rotate(vec3(-1.f, 0.f, 0.f), 2.f, delta_over_h);
 	}
 	if (input->hold_key(Key::KEY_C))
 	{
@@ -497,4 +498,11 @@ void render()
 	{
 		exit_app();
 	}
+
+	// Error check
+	GLuint err = glGetError(); if (err) fprintf(stderr, "ERROR: %s\n", gluErrorString(err));
+
+	glutSwapBuffers();
+
+	glutPostRedisplay(); // Render loop
 }

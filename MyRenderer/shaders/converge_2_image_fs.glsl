@@ -14,10 +14,5 @@ void main()
 {
     vec3 result = texture(image1, fTexCoord).rgb + texture(image2, fTexCoord).rgb;
 
-    // Tone mapping
-    result = vec3(1.0) - exp(-result * 1.0);
-    // Gamma correct while we're at it       
-    result = pow(result, vec3(1.0 / 2.2));
-
     OutColor = vec4(result, 1.0);
 }
