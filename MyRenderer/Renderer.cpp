@@ -166,11 +166,20 @@ void Renderer::render(float delta)
 		}
 	}
 
-	// Skybox rendering
+	//
+	//// 4. Pass: Skybox rendering
+	//
+
 	Skybox* skybox = scene->get_render_skybox();
 	if (skybox != nullptr)
 		scene->get_render_skybox()->render(scene->camera);
 	
+	//
+	//// 5. Pass: Post Processing
+	//
+
+
+
 	// Error check
 	GLuint err = glGetError(); if (err) fprintf(stderr, "ERROR: %s\n", gluErrorString(err));
 

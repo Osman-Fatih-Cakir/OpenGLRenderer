@@ -6,6 +6,9 @@ uniform vec3 color;
 
 void main()
 {
+    // HDR tonemap and gamma correct
+    vec3 col = color / (color + vec3(1.0));
+    col = pow(col, vec3(1.0 / 2.2));
 
-    OutColor = vec4(color, 1.0);
+    OutColor = vec4(col, 1.0);
 }
