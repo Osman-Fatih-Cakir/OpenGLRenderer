@@ -26,6 +26,8 @@ Pbr:
 - Load objects with assimp
 - Forward rendering
 - Skybox (.hdr files)
+- Post Process
+	- Bloom
 
 ## Material file read (Probably bad)
 - map_Ka	: Metallic map
