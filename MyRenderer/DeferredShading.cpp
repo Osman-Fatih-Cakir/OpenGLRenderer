@@ -22,19 +22,22 @@ DeferredShading::~DeferredShading()
 	
 }
 
-void DeferredShading::start_program(gBuffer* _GBuffer)
+void DeferredShading::start_program(gBuffer* _GBuffer, MainFramebuffer* fb)
 {
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glBindFramebuffer(GL_FRAMEBUFFER, fb->get_FBO());
 	glViewport(0, 0, width, height);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glClearColor(0.4f, 0.4f, 0.4f, 1.0f);
 
 	GBuffer = _GBuffer;
+	framebuffer = fb;
 
 	point_light_count = 0;
 	direct_light_count = 0;
 
 	glUseProgram(program);
+
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
 void DeferredShading::change_viewport_resolution(unsigned int w, unsigned int h)
@@ -231,7 +234,7 @@ void DeferredShading::set_direct_light
 // Renders the scene
 void DeferredShading::render(Camera* camera, Skybox* skybox)
 {
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glBindFramebuffer(GL_FRAMEBUFFER, framebuffer->get_FBO());
 
 	set_viewer_pos(camera->get_position());
 	// Set g-buffer color attachments

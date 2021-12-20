@@ -9,6 +9,8 @@
 #include <ForwardRender.h>
 #include <DeferredShading.h>
 #include <Timer.h>
+#include <MainFramebuffer.h>
+#include <Bloom.h>
 
 class Renderer
 {
@@ -22,13 +24,22 @@ public:
 
 private:
 
+	void init();
+	void init_uniforms();
+	void render_all(GLuint texture);
+	void set_texture(GLuint id);
+	void render_quad();
+
 	Scene* scene;
 	gBuffer* GBuffer = nullptr;
 	DirectionalDepth* dirDepth = nullptr;
 	PointDepth* pointDepth = nullptr;
 	ForwardRender* forwardRender = nullptr;
 	DeferredShading* deferredShading = nullptr;
+	MainFramebuffer* main_fb = nullptr;
+	Bloom* bloom = nullptr;
 	unsigned long time = 0;
 
-	void init_shader_programs();
+	GLuint render_program;
+	GLuint loc_texture;
 };

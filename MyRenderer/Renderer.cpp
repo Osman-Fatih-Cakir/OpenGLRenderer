@@ -3,14 +3,15 @@
 #include <gtc/matrix_transform.hpp>
 #include <window.h>
 #include <iostream>
+#include <init_shaders.h>
 
 // Constructor
 Renderer::Renderer(Scene* _scene)
 {
 	scene = _scene;
 	
-
-	init_shader_programs();
+	init();
+	init_uniforms();
 }
 
 // Destructor
@@ -23,6 +24,8 @@ Renderer::~Renderer()
 	delete pointDepth;
 	delete forwardRender;
 	delete deferredShading;
+	delete main_fb;
+	delete bloom;
 }
 
 // Renders the scene
@@ -52,10 +55,8 @@ void Renderer::render(float delta)
 		GBuffer->render(scene->camera, scene->all_models[i]);
 	}
 
-	// Attach depth buffer to default framebuffer
-	GBuffer->attach_depthbuffer_to_framebuffer(0);
-
-	// Attach default framebuffer for no prevent further modifications
+	// Attach depth buffer to main framebuffer
+	GBuffer->attach_depthbuffer_to_framebuffer(main_fb->get_FBO());
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 	//
@@ -97,10 +98,10 @@ void Renderer::render(float delta)
 	}
 
 	//
-	//// 2. Lighting Pass: Calculate lighting pixel by pixel using gBuffer
+	//// 2: Calculate lighting pixel by pixel using gBuffer
 	//
 
-	deferredShading->start_program(GBuffer);
+	deferredShading->start_program(GBuffer, main_fb);
 
 	// Point lights
 	for (unsigned int i = 0; i < scene->point_lights.size(); i++)
@@ -138,11 +139,11 @@ void Renderer::render(float delta)
 	deferredShading->render(scene->camera, scene->get_render_skybox());
 
 	//
-	//// 3. Pass: Draw light meshes (The meshes that are not lit but in the same scene with other meshes)
+	//// 3: Draw light meshes (The meshes that are not lit but in the same scene with other meshes)
 	//
 
 	// Start forward rendering program
-	forwardRender->start_program(GBuffer);
+	forwardRender->start_program(GBuffer, main_fb);
 	forwardRender->change_viewport_resolution(WINDOW_WIDTH, WINDOW_HEIGHT);
 
 	// Draw scene
@@ -167,7 +168,7 @@ void Renderer::render(float delta)
 	}
 
 	//
-	//// 4. Pass: Skybox rendering
+	//// 4: Skybox rendering
 	//
 
 	Skybox* skybox = scene->get_render_skybox();
@@ -175,10 +176,16 @@ void Renderer::render(float delta)
 		scene->get_render_skybox()->render(scene->camera);
 	
 	//
-	//// 5. Pass: Post Processing
+	//// 5: Post Processing
 	//
 
+	bloom->start(main_fb->get_FBO(),  main_fb->get_color_texture());
 
+	//
+	//// 6. Render the scene after post process
+	//
+
+	render_all(main_fb->get_color_texture());
 
 	// Error check
 	GLuint err = glGetError(); if (err) fprintf(stderr, "ERROR: %s\n", gluErrorString(err));
@@ -189,7 +196,7 @@ void Renderer::render(float delta)
 }
 
 // Initialize programs that are going to be used when rendering
-void Renderer::init_shader_programs()
+void Renderer::init()
 {
 	// Initialize g-buffer program
 	GBuffer = new gBuffer();
@@ -209,4 +216,69 @@ void Renderer::init_shader_programs()
 	// Forward render program
 	forwardRender = new ForwardRender();
 	forwardRender->change_viewport_resolution(WINDOW_WIDTH, WINDOW_HEIGHT);
+
+	// Main framebuffer
+	main_fb = new MainFramebuffer();
+
+	// Bloom
+	bloom = new Bloom();
+}
+
+void Renderer::init_uniforms()
+{
+	GLuint vertex_shader = initshaders(GL_VERTEX_SHADER, "shaders/render_texture2D_vs.glsl");
+	GLuint fragment_shader = initshaders(GL_FRAGMENT_SHADER, "shaders/render_texture2D_fs.glsl");
+	render_program = initprogram(vertex_shader, fragment_shader);
+
+	loc_texture = glGetUniformLocation(render_program, "image");
+}
+
+// Render the texture
+void Renderer::render_all(GLuint texture)
+{
+	glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
+	glUseProgram(render_program);
+	// Write to default framebuffer to visualize the sceen
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	set_texture(texture);
+
+	render_quad();
+}
+
+void Renderer::set_texture(GLuint id)
+{
+	glUniform1i(loc_texture, 0);
+	glActiveTexture(GL_TEXTURE0 + 0);
+	glBindTexture(GL_TEXTURE_2D, id);
+}
+
+void Renderer::render_quad()
+{
+	unsigned int quadVAO = 0;
+	unsigned int quadVBO;
+	if (quadVAO == 0)
+	{
+		float quadVertices[] = {
+			// positions        // texture Coords
+			-1.0f,  1.0f, 0.0f, 0.0f, 1.0f,
+			-1.0f, -1.0f, 0.0f, 0.0f, 0.0f,
+			 1.0f,  1.0f, 0.0f, 1.0f, 1.0f,
+			 1.0f, -1.0f, 0.0f, 1.0f, 0.0f,
+		};
+		// setup plane VAO
+		glGenVertexArrays(1, &quadVAO);
+		glGenBuffers(1, &quadVBO);
+		glBindVertexArray(quadVAO);
+		glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), &quadVertices, GL_STATIC_DRAW);
+		glEnableVertexAttribArray(0);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+		glEnableVertexAttribArray(1);
+		glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+	}
+	glBindVertexArray(quadVAO);
+	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+	glBindVertexArray(0);
 }

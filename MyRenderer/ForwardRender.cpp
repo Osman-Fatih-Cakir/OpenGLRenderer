@@ -18,16 +18,16 @@ ForwardRender::~ForwardRender()
 	
 }
 
-void ForwardRender::start_program(gBuffer* _GBuffer)
+void ForwardRender::start_program(gBuffer* _GBuffer, MainFramebuffer* fb)
 {
 	GBuffer = _GBuffer;
+	main_framebuffer = fb;
 
 	// Attach depth buffer to default framebuffer
 	glBindFramebuffer(GL_FRAMEBUFFER, GBuffer->get_fbo());
-	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0); // Write to default framebuffer
+	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, main_framebuffer->get_FBO()); // Write to default framebuffer
 	glBlitFramebuffer(0, 0, GBuffer->get_width(), GBuffer->get_height(), 0, 0,
 		GBuffer->get_width(), GBuffer->get_height(), GL_DEPTH_BUFFER_BIT, GL_NEAREST);
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 	glUseProgram(program);
 }

@@ -6,6 +6,8 @@
 #include <vector>
 #include <gBuffer.h>
 #include <Skybox.h>
+#include <Window.h>
+#include <MainFramebuffer.h>
 
 typedef glm::mat4 mat4;
 typedef glm::vec3 vec3;
@@ -17,7 +19,7 @@ public:
 	DeferredShading();
 	~DeferredShading();
 
-	void start_program(gBuffer* _GBuffer);
+	void start_program(gBuffer* _GBuffer, MainFramebuffer* fb);
 	void change_viewport_resolution(unsigned int w, unsigned int h);
 	void set_point_light(
 		vec3 position,
@@ -61,8 +63,10 @@ private:
 	void set_is_ibl_active(bool val);
 
 	GLuint program;
-	unsigned int width = 1024;
-	unsigned int height = 1024;
+
+	unsigned int width = WINDOW_WIDTH;
+	unsigned int height = WINDOW_HEIGHT;
+
 	GLuint loc_viewer_pos;
 	GLuint loc_gPosition;
 	GLuint loc_gNormal;
@@ -74,8 +78,12 @@ private:
 	GLuint loc_max_reflection_lod;
 	GLuint loc_is_ibl_active;
 	GLuint quad_VAO;
+
 	int point_light_count = 0;
 	int direct_light_count = 0;
+
 	gBuffer* GBuffer = nullptr;
+	MainFramebuffer* framebuffer = nullptr;
+
 	unsigned int static_texture_uniform_count = -1;
 };

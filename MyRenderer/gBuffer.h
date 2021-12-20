@@ -5,6 +5,7 @@
 #include <glm.hpp>
 #include <Model.h>
 #include <Camera.h>
+#include <Window.h>
 
 typedef glm::mat4 mat4;
 typedef glm::vec3 vec3;
@@ -37,8 +38,8 @@ public:
 
 private:
 
-	int gBuffer_width = 1024;
-	int gBuffer_height = 1024;
+	int gBuffer_width = WINDOW_WIDTH;
+	int gBuffer_height = WINDOW_HEIGHT;
 	GLuint program;
 	GLuint gBuffer_fbo;
 	GLuint loc_projection_matrix;

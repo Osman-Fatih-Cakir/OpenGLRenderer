@@ -152,10 +152,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Bloom.cpp" />
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="DeferredShading.cpp" />
     <ClCompile Include="DirectionalDepth.cpp" />
     <ClCompile Include="ForwardRender.cpp" />
+    <ClCompile Include="MainFramebuffer.cpp" />
     <ClCompile Include="gBuffer.cpp" />
     <ClCompile Include="DirectionalLight.cpp" />
     <ClCompile Include="Skybox.cpp" />
@@ -171,10 +173,12 @@
     <ClCompile Include="Window.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Bloom.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="DeferredShading.h" />
     <ClInclude Include="DirectionalDepth.h" />
     <ClInclude Include="ForwardRender.h" />
+    <ClInclude Include="MainFramebuffer.h" />
     <ClInclude Include="gBuffer.h" />
     <ClInclude Include="DirectionalLight.h" />
     <ClInclude Include="Input.h" />
@@ -191,8 +195,14 @@
     <ClInclude Include="Window.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="shaders\bloom_hdr_fs.glsl" />
+    <None Include="shaders\bloom_hdr_vs.glsl" />
+    <None Include="shaders\blur_fs.glsl" />
+    <None Include="shaders\blur_vs.glsl" />
     <None Include="shaders\brdf_fs.glsl" />
     <None Include="shaders\brdf_vs.glsl" />
+    <None Include="shaders\converge_2_image_fs.glsl" />
+    <None Include="shaders\converge_2_image_vs.glsl" />
     <None Include="shaders\deferred_shading_fs.glsl" />
     <None Include="shaders\deferred_shading_vs.glsl" />
     <None Include="shaders\deferred_unlit_meshes_fs.glsl" />
@@ -210,6 +220,8 @@
     <None Include="shaders\equirect_to_cube_vs.glsl" />
     <None Include="shaders\prefilter_skybox_fs.glsl" />
     <None Include="shaders\prefilter_skybox_vs.glsl" />
+    <None Include="shaders\render_texture2D_fs.glsl" />
+    <None Include="shaders\render_texture2D_vs.glsl" />
     <None Include="shaders\skybox_fs.glsl" />
     <None Include="shaders\skybox_vs.glsl" />
   </ItemGroup>

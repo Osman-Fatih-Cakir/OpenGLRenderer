@@ -372,7 +372,7 @@ void main()
 	}
 	
 	// Gamma correction
-	Lo = pow(Lo, vec3(1.0 / 2.2));
+	//Lo = pow(Lo, vec3(1.0 / 2.2));
 	
 	OutColor = vec4(Lo, 1.0);
 }

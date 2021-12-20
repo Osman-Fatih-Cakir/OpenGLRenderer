@@ -373,9 +373,9 @@ void init_lights()
 	};
 	// Color sequential
 	std::vector<vec3> _colors;
-	_colors.push_back(vec3(0.3, 0.6, 0.9));
-	_colors.push_back(vec3(0.9, 0.5, 0.7));
-	_colors.push_back(vec3(0.4, 0.9, 0.7));
+	_colors.push_back(vec3(1.f, 1.f, 0.f));
+	_colors.push_back(vec3(0.f, 1.f, 1.f));
+	_colors.push_back(vec3(1.f, 0.f, 1.f));
 
 	srand((unsigned int)time(NULL));
 	// Light positions
@@ -384,7 +384,7 @@ void init_lights()
 	{
 		// Initialize light
 		PointLight* light = new PointLight(_positions[i], _colors[color_index], false);
-		light->set_intensity(20.f);
+		light->set_intensity(10.f);
 		std::cout << "Radius: " << light->radius << "\n";
 		// Draw a mesh for represent a light
 		Model* light_model = new Model("mesh/simple/sphere.obj");

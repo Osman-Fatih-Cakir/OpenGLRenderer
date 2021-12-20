@@ -66,6 +66,12 @@
     <ClCompile Include="Skybox.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="MainFramebuffer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Bloom.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Mesh.h">
@@ -122,6 +128,12 @@
     <ClInclude Include="Skybox.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="MainFramebuffer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Bloom.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\gbuffer_vs.glsl" />
@@ -145,5 +157,13 @@
     <None Include="shaders\prefilter_skybox_fs.glsl" />
     <None Include="shaders\brdf_vs.glsl" />
     <None Include="shaders\brdf_fs.glsl" />
+    <None Include="shaders\bloom_hdr_vs.glsl" />
+    <None Include="shaders\bloom_hdr_fs.glsl" />
+    <None Include="shaders\blur_vs.glsl" />
+    <None Include="shaders\blur_fs.glsl" />
+    <None Include="shaders\converge_2_image_vs.glsl" />
+    <None Include="shaders\converge_2_image_fs.glsl" />
+    <None Include="shaders\render_texture2D_vs.glsl" />
+    <None Include="shaders\render_texture2D_fs.glsl" />
   </ItemGroup>
 </Project>
