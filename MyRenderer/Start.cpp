@@ -42,7 +42,7 @@ typedef glm::vec4 vec4;
 typedef glm::vec2 vec2;
 
 // Point lights
-const int point_light_count = 36;
+const int point_light_count = 2;
 const int direct_light_count = 1;
 
 // Window
@@ -295,46 +295,34 @@ void init_models()
 	model->scale(0.1f, 0.1f, 0.1f, 1.0f);
 	scene->add_model(model);
 	*/
-	/*
+	
 	Model* model = new Model("mesh/pbr_test/sphere_granite.obj");
-	model->translate(-12.f, 0.f, 0.f, 1.f);
-	model->scale(1.5f, 1.5f, 1.5f, 1.0f);
+	model->translate(-5.f, 3.f, 4.f, 1.f);
+	model->scale(2.3f, 2.3f, 2.3f, 1.0f);
 	scene->add_model(model);
 
 	model = new Model("mesh/pbr_test/sphere_metal_plates.obj");
-	model->translate(-6.f, 0.f, 0.f, 1.f);
-	model->scale(1.5f, 1.5f, 1.5f, 1.0f);
+	model->translate(0.f, 3.f, 4.f, 1.f);
+	model->scale(2.3f, 2.3f, 2.3f, 1.0f);
 	scene->add_model(model);
 
 	model = new Model("mesh/pbr_test/sphere_rusted_iron.obj");
-	model->translate(0.f, 0.f, 0.f, 1.f);
-	model->scale(1.5f, 1.5f, 1.5f, 1.0f);
+	model->translate(5.f, 3.f, 4.f, 1.f);
+	model->scale(2.3f, 2.3f, 2.3f, 1.0f);
 	scene->add_model(model);
 
 	model = new Model("mesh/pbr_test/sphere_gold.obj");
-	model->translate(6.f, 0.f, 0.f, 1.f);
-	model->scale(1.5f, 1.5f, 1.5f, 1.0f);
+	model->translate(-2.5f, 3.f, -4.f, 1.f);
+	model->scale(2.3f, 2.3f, 2.3f, 1.0f);
 	scene->add_model(model);
 
 	model = new Model("mesh/pbr_test/sphere_rocky.obj");
-	model->translate(12.f, 0.f, 0.f, 1.f);
-	model->scale(1.5f, 1.5f, 1.5f, 1.0f);
+	model->translate(2.5f, 3.f, -4.f, 1.f);
+	model->scale(2.3f, 2.3f, 2.3f, 1.0f);
 	scene->add_model(model);
-	*/
-
-	for (float x = -36.f; x <= 36.f; x+=12.f)
-	{
-		for (float z = -36.f; z <= 36.f; z += 12.f)
-		{
-			Model* model = new Model("mesh/simple/sphere.obj");;
-			model->translate(x, 5.f, z, 1.f);
-			model->scale(10.f, 10.f, 10.f, 1.0f);
-			scene->add_model(model);
-		}
-	}
-
+	
 	Model* floor = new Model("mesh/floor/floor.obj");
-	floor->translate(0.f, -1.f, 0.f, 1.0f);
+	floor->translate(0.f, 0.f, 0.f, 1.0f);
 	floor->scale(60.f, 1.f, 60.f, 1.0f);
 	scene->add_model(floor);
 }
@@ -342,9 +330,9 @@ void init_models()
 // Initialize skyboxes
 void init_skyboxes()
 {
-	scene->add_skybox("mesh/ibl_test/hall_2k.hdr", 1, false);
-	scene->add_skybox("mesh/ibl_test/museum_2k.hdr", 3, false);
-	scene->add_skybox("mesh/ibl_test/dikhololo_night_2k.hdr", 2, false);
+	scene->add_skybox("mesh/ibl_test/hall_2k.hdr", 1, true);
+	scene->add_skybox("mesh/ibl_test/museum_2k.hdr", 3, true);
+	scene->add_skybox("mesh/ibl_test/dikhololo_night_2k.hdr", 2, true);
 	scene->render_skybox_id(3);
 }
 
@@ -362,29 +350,28 @@ void init_lights()
 	//// Point lights 
 	//
 	
-	srand((unsigned int)time(NULL));
+	//srand((unsigned int)time(NULL));
 
-	std::vector<vec3> _positions;
-	for (float x = -30.f; x <= 30.f; x+=12.f)
-	{
-		for (float z = -30.f; z <= 30.f; z += 12.f)
-		{
-			_positions.push_back(vec3(x, 3.f + rand() % 10, z));
-		}
+	vec3 _positions[] = {
+		vec3(2.f, 6.f, 0.f),
+		vec3(-2.f, 6.f, 0.f),
+		vec3(0.f, 9.f, 8.f)
 	};
+
 	// Color sequential
-	std::vector<vec3> _colors;
-	_colors.push_back(vec3(1.f, 1.f, 0.f));
-	_colors.push_back(vec3(0.f, 1.f, 1.f));
-	_colors.push_back(vec3(1.f, 0.f, 1.f));
+	vec3 _colors[] = {
+		vec3(1.f, 1.f, 1.f),
+		vec3(1.f, 1.f, 1.f),
+		vec3(1.f, 1.f, 1.f)
+	};
 
 	// Light positions
 	int color_index = 0;
 	for (int i = 0; i < point_light_count; i++)
 	{
 		// Initialize light
-		PointLight* light = new PointLight(_positions[i], _colors[color_index], false);
-		light->set_intensity(10.f * _positions[i].y);
+		PointLight* light = new PointLight(_positions[i], _colors[i], true);
+		light->set_intensity(100.f);
 		std::cout << "Radius: " << light->radius << "\n";
 		// Draw a mesh for represent a light
 		Model* light_model = new Model("mesh/simple/sphere.obj");
@@ -394,8 +381,6 @@ void init_lights()
 		//light->debug(light_debug_model);
 		// Add light to scene
 		scene->add_point_light(light);
-		// Random colors
-		color_index = ((size_t)color_index + (0 + rand() % 3)) % _colors.size();
 	}
 
 	//
@@ -405,7 +390,7 @@ void init_lights()
 	for (int i = 0; i < direct_light_count; i++)
 	{
 		DirectionalLight* light = new DirectionalLight(
-			vec3(-1.0f, -1.0f, -1.0f), vec3(1.f, 1.f, 1.f), false);
+			vec3(-1.0f, -1.0f, -1.0f), vec3(1.f, 1.f, 1.f), true);
 		light->intensity = 0.0f;
 		scene->add_direct_light(light);
 	}
@@ -424,7 +409,7 @@ void init_scene()
 
 	// Set camera parameters
 	init_camera(
-		vec3(0.f, 30.f, 30.f), // Eye
+		vec3(0.f, 20.f, 20.f), // Eye
 		vec3(0.f, 1.f, -1.f), // Up
 		vec3(0.f, 0.f, 0.f) // Center
 	);

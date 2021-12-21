@@ -34,7 +34,7 @@ struct Point_Light
 	float intensity;
 };
 
-const int NUMBER_OF_POINT_LIGHTS = 36; // TODO number of lights is hardcoded
+const int NUMBER_OF_POINT_LIGHTS = 2; // TODO number of lights is hardcoded
 uniform Point_Light point_lights[NUMBER_OF_POINT_LIGHTS];
 
 struct Direct_Light
@@ -196,7 +196,7 @@ vec3 IBL(vec3 normal, vec3 view_dir, float metallic, float roughness, vec3 albed
 	vec3 specular = prefiltered_color * (F * brdf.x + brdf.y);
 
 	// Ambient
-	vec3 ambient = (kD * diffuse + specular) * ao;
+	vec3 ambient = ((kD * diffuse + specular) * ao) * vec3(0.2); // TODO check if this is okay
 	return ambient;
 }
 
@@ -346,10 +346,10 @@ void main()
 	float ao = texture(gPbr_materials, fTexCoord).b;
 
 	////////////////////////////////
-	albedo = vec3(0.3, 0.3, 0.3);
-	metallic = 0.2;
-	roughness = 0.5;
-	ao = 1.0;
+	//albedo = vec3(0.3, 0.3, 0.3);
+	//metallic = 0.2;
+	//roughness = 0.5;
+	//ao = 1.0;
 	////////////////////////////////
 
 	// Outgoing light
