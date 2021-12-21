@@ -56,8 +56,9 @@ void Renderer::render(float delta)
 	}
 
 	// Attach depth buffer to main framebuffer
-	GBuffer->attach_depthbuffer_to_framebuffer(main_fb->get_FBO());
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	// TODO might delete here
+	//GBuffer->attach_depthbuffer_to_framebuffer(main_fb->get_FBO());
+	//glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 	//
 	//// Shadow pass: Get the depth map of the scene
@@ -179,7 +180,7 @@ void Renderer::render(float delta)
 	//// 5: Post Processing
 	//
 
-	bloom->start(main_fb->get_FBO(),  main_fb->get_color_texture());
+	//bloom->start(main_fb->get_FBO(),  main_fb->get_color_texture());
 
 	//
 	//// 6. Render the scene after post process

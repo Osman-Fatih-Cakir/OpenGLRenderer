@@ -184,7 +184,7 @@ vec3 IBL(vec3 normal, vec3 view_dir, float metallic, float roughness, vec3 albed
 	vec3 kS = F;
 	vec3 kD = 1.0 - kS;
 	kD *= 1.0 - metallic;
-	vec3 irradiance = texture(irradiance_map, normal).rgb;
+	vec3 irradiance = texture(irradiance_map, normal).rgb * vec3(0.1);
 	vec3 diffuse = irradiance * albedo;
 
 	// IBL specular
@@ -196,7 +196,7 @@ vec3 IBL(vec3 normal, vec3 view_dir, float metallic, float roughness, vec3 albed
 	vec3 specular = prefiltered_color * (F * brdf.x + brdf.y);
 
 	// Ambient
-	vec3 ambient = ((kD * diffuse + specular) * ao) * vec3(0.2); // TODO check if this is okay
+	vec3 ambient = ((kD * diffuse + specular) * ao) * vec3(0.5); // TODO check if this is okay
 	return ambient;
 }
 
@@ -295,8 +295,8 @@ vec3 calculate_direct_light(vec3 frag_pos, vec3 normal, vec3 albedo, float rough
 		if (direct_lights[i].cast_shadow != 0.0)
 		{
 			// Calculate shadow
-			float max_bias = 0.001;
-			float min_bias = 0.0001;
+			float max_bias = 0.5;
+			float min_bias = 0.1;
 			float bias = max(max_bias * (1.0 - dot(normal, light_dir)), min_bias);
 			shadow = directional_shadow_calculation(i, frag_pos, bias);
 		}
@@ -356,10 +356,10 @@ void main()
 	vec3 Lo = vec3(0.0);
 
 	// Point light calculation
-	Lo += calculate_point_light(frag_pos, normal, albedo, roughness, metallic);
+	//Lo += calculate_point_light(frag_pos, normal, albedo, roughness, metallic);
 
 	// Direct light calculation
-	Lo += calculate_direct_light(frag_pos, normal, albedo, roughness, metallic);
+	//Lo += calculate_direct_light(frag_pos, normal, albedo, roughness, metallic);
 	
 	if (is_ibl_active != 0)
 	{
@@ -370,6 +370,11 @@ void main()
 	{
 		Lo += vec3(0.01) * albedo * ao;
 	}
+
+	// Tone mapping
+	Lo = vec3(1.0) - exp(-Lo * 1.0);
+	// Gamma correct while we're at it       
+	Lo = pow(Lo, vec3(1.0 / 2.2));
 	
 	OutColor = vec4(Lo, 1.0);
 }

@@ -25,7 +25,7 @@ public:
 	void add_model(Model* m);
 	void add_point_light(PointLight* p);
 	void add_direct_light(DirectionalLight* d);
-	void add_skybox(const char* path, int id, bool ibl);
+	void add_skybox(const char* path, int id, bool ibl, float exposure);
 	Skybox* get_render_skybox();
 	void delete_skybox(int id);
 	void render_skybox_id(int id);

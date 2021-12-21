@@ -8,7 +8,7 @@ class Skybox
 {
 public:
 	// Constrctor takes path to .hdr file
-	Skybox(const char* path, int id, bool _ibl);
+	Skybox(const char* path, int id, bool _ibl, float _exposure);
 
 	void render(Camera* camera);
 	void toggle_IBL();
@@ -71,6 +71,7 @@ private:
 	GLuint loc_skybox_map;
 	
 	bool IBL = true;
+	float exposure = 1.f;
 	unsigned int max_mip_level = 5;
 
 	GLuint width = 512;

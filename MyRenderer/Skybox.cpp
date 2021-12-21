@@ -8,7 +8,7 @@
 typedef glm::vec3 vec3;
 typedef glm::mat4 mat4;
 
-Skybox::Skybox(const char* path, int _id, bool _ibl)
+Skybox::Skybox(const char* path, int _id, bool _ibl, float _exposure)
 {
 	load_hdr_file(path);
     init_shader();
@@ -24,6 +24,7 @@ Skybox::Skybox(const char* path, int _id, bool _ibl)
 
     id = _id;
     IBL = _ibl;
+    exposure = _exposure;
 }
 
 void Skybox::generate_skybox_map()
@@ -55,6 +56,7 @@ void Skybox::generate_skybox_map()
     glUniformMatrix4fv(glGetUniformLocation(program, "projection"), 1, GL_FALSE, &p[0][0]);
     glActiveTexture(GL_TEXTURE0);
     glUniform1i(glGetUniformLocation(program, "equirectangular_map"), 0);
+    glUniform1f(glGetUniformLocation(program, "exposure"), exposure);
     glBindTexture(GL_TEXTURE_2D, equirectangular_map);
 
     // Render 6 times for each face of the cube
@@ -249,6 +251,11 @@ void Skybox::create_framebuffer()
     glBindRenderbuffer(GL_RENDERBUFFER, captureRBO);
     glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, width, height);
     glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, captureRBO);
+
+    // Check if framebuffer is complete
+    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+        std::cout << "ERROR: Framebuffer not complete!" << std::endl;
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
 void Skybox::create_skybox_map()
