@@ -47,6 +47,7 @@ Since I am new to computer graphics, I would be happy to receive suggestions abo
 - https://polyhaven.com/a/entrance_hall
 - https://polyhaven.com/a/veranda
 - https://polyhaven.com/a/dikhololo_night
+- https://polyhaven.com/a/dreifaltigkeitsberg
 ## PBR Textures
 - https://freepbr.com/materials/scuffed-gold-pbr-metal-material/
 - https://freepbr.com/materials/gray-granite-flecks1/
