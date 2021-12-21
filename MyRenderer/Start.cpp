@@ -321,10 +321,10 @@ void init_models()
 	model->scale(2.3f, 2.3f, 2.3f, 1.0f);
 	scene->add_model(model);
 	
-	// Model* floor = new Model("mesh/floor/floor.obj");
-	// floor->translate(0.f, 0.f, 0.f, 1.0f);
-	// floor->scale(60.f, 1.f, 60.f, 1.0f);
-	// scene->add_model(floor);
+	Model* floor = new Model("mesh/floor/floor.obj");
+	floor->translate(0.f, 0.f, 0.f, 1.0f);
+	floor->scale(60.f, 1.f, 60.f, 1.0f);
+	scene->add_model(floor);
 }
 
 // Initialize skyboxes
@@ -332,7 +332,7 @@ void init_skyboxes()
 {
 	scene->add_skybox("mesh/ibl_test/hall_2k.hdr", 1, true, 1.0f);
 	scene->add_skybox("mesh/ibl_test/dreifaltigkeitsberg_2k.hdr", 3, true, 1.5f);
-	scene->add_skybox("mesh/ibl_test/dikhololo_night_2k.hdr", 2, true, 1.0f);
+	scene->add_skybox("mesh/ibl_test/dikhololo_night_2k.hdr", 2, true, 0.1f);
 	scene->render_skybox_id(3);
 }
 
@@ -370,13 +370,12 @@ void init_lights()
 	for (int i = 0; i < point_light_count; i++)
 	{
 		// Initialize light
-		PointLight* light = new PointLight(_positions[i], _colors[i], false);
-		light->set_intensity(0.f);
+		PointLight* light = new PointLight(_positions[i], _colors[i], true);
+		light->set_intensity(10.f);
 		std::cout << "Radius: " << light->radius << "\n";
 		// Draw a mesh for represent a light
-		//Model* light_model = new Model("mesh/simple/sphere.obj");
-		//light->model = light_model;
-		//light->scale(5.f, 5.f, 5.f, 1.f);
+		Model* light_model = new Model("mesh/simple/sphere.obj");
+		light->model = light_model;
 		//Model* light_debug_model = new Model("mesh/simple/icosphere.obj");
 		//light->debug(light_debug_model);
 		// Add light to scene
@@ -391,7 +390,7 @@ void init_lights()
 	{
 		DirectionalLight* light = new DirectionalLight(
 			vec3(-1.0f, -1.0f, -1.0f), vec3(1.f, 1.f, 1.f), false);
-		light->intensity = 1.f;
+		light->intensity = 0.f;
 		scene->add_direct_light(light);
 	}
 }

@@ -180,7 +180,7 @@ void Renderer::render(float delta)
 	//// 5: Post Processing
 	//
 
-	//bloom->start(main_fb->get_FBO(),  main_fb->get_color_texture());
+	bloom->start(main_fb->get_FBO(),  main_fb->get_color_texture());
 
 	//
 	//// 6. Render the scene after post process

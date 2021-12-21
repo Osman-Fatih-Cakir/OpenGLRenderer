@@ -184,7 +184,7 @@ vec3 IBL(vec3 normal, vec3 view_dir, float metallic, float roughness, vec3 albed
 	vec3 kS = F;
 	vec3 kD = 1.0 - kS;
 	kD *= 1.0 - metallic;
-	vec3 irradiance = texture(irradiance_map, normal).rgb * vec3(0.1);
+	vec3 irradiance = texture(irradiance_map, normal).rgb;
 	vec3 diffuse = irradiance * albedo;
 
 	// IBL specular
@@ -196,7 +196,7 @@ vec3 IBL(vec3 normal, vec3 view_dir, float metallic, float roughness, vec3 albed
 	vec3 specular = prefiltered_color * (F * brdf.x + brdf.y);
 
 	// Ambient
-	vec3 ambient = ((kD * diffuse + specular) * ao) * vec3(0.5); // TODO check if this is okay
+	vec3 ambient = ((kD * diffuse + specular) * ao) * vec3(0.2); // TODO check if this is okay
 	return ambient;
 }
 
@@ -356,10 +356,10 @@ void main()
 	vec3 Lo = vec3(0.0);
 
 	// Point light calculation
-	//Lo += calculate_point_light(frag_pos, normal, albedo, roughness, metallic);
+	Lo += calculate_point_light(frag_pos, normal, albedo, roughness, metallic);
 
 	// Direct light calculation
-	//Lo += calculate_direct_light(frag_pos, normal, albedo, roughness, metallic);
+	Lo += calculate_direct_light(frag_pos, normal, albedo, roughness, metallic);
 	
 	if (is_ibl_active != 0)
 	{
