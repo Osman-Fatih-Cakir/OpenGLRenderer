@@ -19,18 +19,17 @@ Since I am new to computer graphics, I would be happy to receive suggestions abo
 - Point light
 - Directional light
 - Shadows for all light types (shadow map)
-- Load objects with assimp
+- Load objects with assimp (GLTF)
 - Forward rendering
 - Skybox (.hdr files)
 - Post Process
 	- Bloom
 
-## Material file read (Probably bad)
-- map_Ka	: Metallic map
-- map_Kd	: Albedo map
-- map_bump: Normal map
-- map_Ns 	: Roughness map
-- map_d 	: AO map
+## Material files pipeline
+- Albedo map
+- Normal map (optional)
+- Roughness Metallic map (Red: Roughness, Green: Metallic, Blue: None)
+- AO map (optional)
 
 ## Prerequisites
 - OpenGL 4.5
