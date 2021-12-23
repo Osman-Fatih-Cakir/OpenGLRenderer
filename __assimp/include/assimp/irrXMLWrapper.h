@@ -133,8 +133,8 @@ public:
 
     // ----------------------------------------------------------------------------------
     //! Returns size of file in bytes
-    virtual int getSize()   {
-        return (int)data.size();
+    virtual long getSize() const override {
+        return (long)data.size();
     }
 
 private:

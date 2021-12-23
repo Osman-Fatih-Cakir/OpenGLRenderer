@@ -295,7 +295,7 @@ void init_models()
 	model->scale(0.1f, 0.1f, 0.1f, 1.0f);
 	scene->add_model(model);
 	*/
-	
+	/*
 	Model* model = new Model("mesh/pbr_test/sphere_granite.obj");
 	model->translate(-5.f, 3.f, 4.f, 1.f);
 	model->scale(2.3f, 2.3f, 2.3f, 1.0f);
@@ -322,17 +322,18 @@ void init_models()
 	scene->add_model(model);
 	
 	Model* floor = new Model("mesh/floor/floor.obj");
-	floor->translate(0.f, 0.f, 0.f, 1.0f);
+	floor->translate(0.f, -1.f, 0.f, 1.0f);
 	floor->scale(60.f, 1.f, 60.f, 1.0f);
 	scene->add_model(floor);
+	*/
 }
 
 // Initialize skyboxes
 void init_skyboxes()
 {
-	scene->add_skybox("mesh/ibl_test/hall_2k.hdr", 1, true, 1.0f);
-	scene->add_skybox("mesh/ibl_test/dreifaltigkeitsberg_2k.hdr", 3, true, 1.5f);
-	scene->add_skybox("mesh/ibl_test/dikhololo_night_2k.hdr", 2, true, 0.1f);
+	scene->add_skybox("mesh/ibl_test/hall_2k.hdr", 1, false, 1.0f);
+	scene->add_skybox("mesh/ibl_test/dreifaltigkeitsberg_2k.hdr", 3, false, 1.5f);
+	scene->add_skybox("mesh/ibl_test/dikhololo_night_2k.hdr", 2, false, 0.1f);
 	scene->render_skybox_id(3);
 }
 
@@ -353,8 +354,8 @@ void init_lights()
 	//srand((unsigned int)time(NULL));
 
 	vec3 _positions[] = {
-		vec3(2.f, 6.f, 0.f),
-		vec3(-2.f, 6.f, 0.f),
+		vec3(2.f, 3.f, 0.f),
+		vec3(-2.f, 3.f, 0.f),
 		vec3(0.f, 9.f, 8.f)
 	};
 
@@ -370,8 +371,8 @@ void init_lights()
 	for (int i = 0; i < point_light_count; i++)
 	{
 		// Initialize light
-		PointLight* light = new PointLight(_positions[i], _colors[i], true);
-		light->set_intensity(10.f);
+		PointLight* light = new PointLight(_positions[i], _colors[i], false);
+		light->set_intensity(0.f);
 		std::cout << "Radius: " << light->radius << "\n";
 		// Draw a mesh for represent a light
 		Model* light_model = new Model("mesh/simple/sphere.obj");
@@ -390,7 +391,7 @@ void init_lights()
 	{
 		DirectionalLight* light = new DirectionalLight(
 			vec3(-1.0f, -1.0f, -1.0f), vec3(1.f, 1.f, 1.f), false);
-		light->intensity = 0.f;
+		light->intensity = 10.f;
 		scene->add_direct_light(light);
 	}
 }
@@ -408,6 +409,9 @@ void init_scene()
 
 	// Set camera parameters
 	init_camera(
+		//vec3(0.f, 20.f, 20.f), // Eye
+		//vec3(0.f, 1.f, -1.f), // Up
+		//vec3(0.f, 0.f, 0.f) // Center
 		vec3(0.f, 20.f, 20.f), // Eye
 		vec3(0.f, 1.f, -1.f), // Up
 		vec3(0.f, 0.f, 0.f) // Center
@@ -427,9 +431,7 @@ void render()
 	float delta = timer->get_delta_time();
 
 	renderer->render(delta);
-
-	//Skybox* sky = new Skybox("mesh/ibl_test/dreifaltigkeitsberg_2k.hdr", 3, true);
-
+	
 	// Camera actions
 	float camera_speed = 15.f;
 	float delta_over_t = delta / 1000;
