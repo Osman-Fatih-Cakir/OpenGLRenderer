@@ -39,20 +39,13 @@ Since I am new to computer graphics, I would be happy to receive suggestions abo
 - https://learnopengl.com/
 - https://www.youtube.com/c/TheChernoProject
 ## Models:
-- https://www.cgtrader.com/free-3d-models/military/armor/mandalorian-helmet-e1903ae2-3218-43bc-a22c-a102284d230e
-- https://www.sharetextures.com/textures/floor/tiling_46/
+
 ## HDR Files
 - https://polyhaven.com/a/museum_of_ethnography
 - https://polyhaven.com/a/entrance_hall
 - https://polyhaven.com/a/veranda
 - https://polyhaven.com/a/dikhololo_night
 - https://polyhaven.com/a/dreifaltigkeitsberg
-## PBR Textures
-- https://freepbr.com/materials/scuffed-gold-pbr-metal-material/
-- https://freepbr.com/materials/gray-granite-flecks1/
-- https://freepbr.com/materials/jagged-rocky-ground-pbr/
-- https://ambientcg.com/view?id=MetalPlates006
-- https://freepbr.com/materials/rusted-iron-pbr-metal-material-alt/
 
 ## Note:
 There are memory leaks in project (which I assume caused by assimp library), I found no way to fix it. I will check that later since it has cost me so much time.
