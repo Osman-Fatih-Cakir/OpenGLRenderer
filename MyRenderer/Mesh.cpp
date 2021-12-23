@@ -2,11 +2,13 @@
 #include "Mesh.h"
 
 // Constructor
-Mesh::Mesh(std::vector<Vertex> _vertices, std::vector<GLuint> _indices, std::vector<Texture> _textures)
+Mesh::Mesh(std::vector<Vertex> _vertices, std::vector<GLuint> _indices,
+	std::vector<Texture> _textures, mat4 _transformation)
 {
 	vertices = _vertices;
 	indices = _indices;
 	textures = _textures;
+	transformation = _transformation;
 
 	// Set the buffers
 	setup_mesh();
@@ -16,7 +18,7 @@ Mesh::Mesh(std::vector<Vertex> _vertices, std::vector<GLuint> _indices, std::vec
 Mesh::~Mesh() {};
 
 // Draw the mesh
-void Mesh::draw(GLuint shader_program, bool has_normal_map)
+void Mesh::draw(GLuint shader_program, bool has_normal_map, bool has_ao_map)
 {
 	// Set the textures
 	for (unsigned int i = 0; i < textures.size(); i++)
@@ -28,6 +30,10 @@ void Mesh::draw(GLuint shader_program, bool has_normal_map)
 	}
 
 	glUniform1i(glGetUniformLocation(shader_program, "has_normal_map"), has_normal_map);
+	glUniform1i(glGetUniformLocation(shader_program, "has_ao_map"), has_ao_map);
+	// TODO optimize the matrix multiplication in shader
+	glUniformMatrix4fv(glGetUniformLocation(shader_program, "transformation"), 1, GL_FALSE, 
+		&transformation[0][0]);
 
 	// Draw mesh
 	glBindVertexArray(VAO);

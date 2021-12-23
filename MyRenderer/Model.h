@@ -19,8 +19,6 @@ public:
     Model(const char* path);
     ~Model();
 
-    bool has_normal_map = false;
-
     void translate(vec3 vec, float delta);
     void translate(float x, float y, float z, float delta);
     void rotate(vec3 vec, float angle, float delta);
@@ -38,9 +36,12 @@ private:
     mat4 model_matrix = mat4(1.0f);
     mat4 normal_matrix = mat4(1.0f);
 
+    bool has_normal_map = false;
+    bool has_ao_map = false;
+
     void load_model(std::string path);
-    void process_node(aiNode* node, const aiScene* scene);
-    Mesh process_mesh(aiMesh* mesh, const aiScene* scene);
+    void process_node(aiNode* node, const aiScene* scene, aiMatrix4x4 tr);
+    Mesh process_mesh(aiMesh* mesh, const aiScene* scene, aiMatrix4x4 transformation);
     std::vector<Texture> load_material_textures(aiMaterial* mat, aiTextureType type, std::string typeName);
     unsigned int texture_from_file(const char* path, const std::string& directory);
     void update_normal_matrix();

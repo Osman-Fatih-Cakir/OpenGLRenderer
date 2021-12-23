@@ -12,11 +12,11 @@ in mat3 TBN;
 
 uniform sampler2D albedo_map;
 uniform sampler2D normal_map;
-uniform sampler2D metallic_map;
-uniform sampler2D roughness_map;
+uniform sampler2D metallic_roughness_map;
 uniform sampler2D ao_map;
 
 uniform bool has_normal_map;
+uniform bool has_ao_map;
 
 void main()
 {
@@ -41,11 +41,18 @@ void main()
 	
 	// Albdedo
 	gAlbedoSpec.rgb = texture(albedo_map, fTexCoord).rgb;
-
 	// Roughness
-	gPbr_materials.r = texture(roughness_map, fTexCoord).r;
+	gPbr_materials.r = texture(metallic_roughness_map, fTexCoord).g;
 	// Metallic
-	gPbr_materials.g = texture(metallic_map, fTexCoord).r;
+	gPbr_materials.g = texture(metallic_roughness_map, fTexCoord).r;
 	// Ambient Occlusion
-	gPbr_materials.b = texture(ao_map, fTexCoord).r;
+	if (has_ao_map)
+	{
+		gPbr_materials.b = texture(ao_map, fTexCoord).r;
+	}
+	else
+	{
+		gPbr_materials.b = 1.0;
+	}
+
 }

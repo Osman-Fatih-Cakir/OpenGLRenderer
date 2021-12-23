@@ -65,7 +65,7 @@ void Model::draw(GLuint shader_program)
 {
     for (unsigned int i = 0; i < meshes.size(); i++)
     {
-        meshes[i].draw(shader_program, has_normal_map);
+        meshes[i].draw(shader_program, has_normal_map, has_ao_map);
     }
 }
 
@@ -73,7 +73,7 @@ void Model::draw(GLuint shader_program)
 void Model::load_model(std::string path)
 {
     Assimp::Importer importer;
-    const aiScene* scene = importer.ReadFile(path, aiProcess_Triangulate 
+    const aiScene* scene = importer.ReadFile(path, aiProcess_Triangulate
         | aiProcess_FlipUVs | aiProcess_GenSmoothNormals | aiProcess_CalcTangentSpace);
 
     if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
@@ -82,28 +82,30 @@ void Model::load_model(std::string path)
         return;
     }
     directory = path.substr(0, path.find_last_of('/'));
-
-    process_node(scene->mRootNode, scene);
+    
+    aiMatrix4x4* tr = new aiMatrix4x4();
+    process_node(scene->mRootNode, scene, *tr);
 }
 
 // Process each node in model
-void Model::process_node(aiNode* node, const aiScene* scene)
+void Model::process_node(aiNode* node, const aiScene* scene, aiMatrix4x4 tr)
 {
     // process all the node's meshes (if any)
     for (unsigned int i = 0; i < node->mNumMeshes; i++)
     {
         aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
-        meshes.push_back(process_mesh(mesh, scene));
+        meshes.push_back(process_mesh(mesh, scene, tr));
     }
     // then do the same for each of its children
     for (unsigned int i = 0; i < node->mNumChildren; i++)
     {
-        process_node(node->mChildren[i], scene);
+        tr = tr * node->mTransformation;
+        process_node(node->mChildren[i], scene, tr);
     }
 }
 
 // Process mesh and store datas
-Mesh Model::process_mesh(aiMesh* mesh, const aiScene* scene)
+Mesh Model::process_mesh(aiMesh* mesh, const aiScene* scene, aiMatrix4x4 transformation)
 {
     // Data to fill
     std::vector<Vertex> vertices;
@@ -167,24 +169,47 @@ Mesh Model::process_mesh(aiMesh* mesh, const aiScene* scene)
     aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
 
     // Albedo map
+    //std::vector<Texture> albedo_maps = load_material_textures(material, aiTextureType_DIFFUSE, "albedo_map");
+    //textures.insert(textures.end(), albedo_maps.begin(), albedo_maps.end());
+    //// Normal map
+    //std::vector<Texture> normal_maps = load_material_textures(material, aiTextureType_HEIGHT, "normal_map");
+    //if (normal_maps.size() > 0) has_normal_map = true;
+    //textures.insert(textures.end(), normal_maps.begin(), normal_maps.end());
+    //// Metallic map
+    //std::vector<Texture> metallic_maps = load_material_textures(material, aiTextureType_AMBIENT, "metallic_map");
+    //textures.insert(textures.end(), metallic_maps.begin(), metallic_maps.end());
+    //// Roughness map
+    //std::vector<Texture> roughness_maps = load_material_textures(material, aiTextureType_SHININESS, "roughness_map");
+    //textures.insert(textures.end(), roughness_maps.begin(), roughness_maps.end());
+    //// AO map
+    //std::vector<Texture> ao_maps = load_material_textures(material, aiTextureType_OPACITY, "ao_map");
+    //textures.insert(textures.end(), ao_maps.begin(), ao_maps.end());
+
+    // Albedo map
     std::vector<Texture> albedo_maps = load_material_textures(material, aiTextureType_DIFFUSE, "albedo_map");
     textures.insert(textures.end(), albedo_maps.begin(), albedo_maps.end());
     // Normal map
-    std::vector<Texture> normal_maps = load_material_textures(material, aiTextureType_HEIGHT, "normal_map");
+    std::vector<Texture> normal_maps = load_material_textures(material, aiTextureType_NORMALS, "normal_map");
     if (normal_maps.size() > 0) has_normal_map = true;
     textures.insert(textures.end(), normal_maps.begin(), normal_maps.end());
-    // Metallic map
-    std::vector<Texture> metallic_maps = load_material_textures(material, aiTextureType_AMBIENT, "metallic_map");
+    // Roughness metallic map
+    std::vector<Texture> metallic_maps = load_material_textures(material, aiTextureType_UNKNOWN, "metallic_roughness_map");
     textures.insert(textures.end(), metallic_maps.begin(), metallic_maps.end());
-    // Roughness map
-    std::vector<Texture> roughness_maps = load_material_textures(material, aiTextureType_SHININESS, "roughness_map");
-    textures.insert(textures.end(), roughness_maps.begin(), roughness_maps.end());
     // AO map
     std::vector<Texture> ao_maps = load_material_textures(material, aiTextureType_OPACITY, "ao_map");
+    if (ao_maps.size() > 0) has_ao_map = true;
     textures.insert(textures.end(), ao_maps.begin(), ao_maps.end());
 
-    // return a mesh object created from the extracted mesh data
-    return Mesh(vertices, indices, textures);
+    
+    mat4 _transformation = {
+        transformation.a1, transformation.b1, transformation.c1, transformation.d1,
+        transformation.a2, transformation.b2, transformation.c2, transformation.d2,
+        transformation.a3, transformation.b3, transformation.c3, transformation.d3,
+        transformation.a4, transformation.b4, transformation.c4, transformation.d4,
+    };
+
+    // Return a mesh object created from the extracted mesh data
+    return Mesh(vertices, indices, textures, _transformation);
 }
 
 // Load textures
