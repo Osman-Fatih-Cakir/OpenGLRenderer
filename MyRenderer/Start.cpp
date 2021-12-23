@@ -290,33 +290,6 @@ void init_models()
 {
 	// Scene meshes
 
-	/*
-	Model* model = new Model("mesh/pbr_test/sphere_granite.obj");
-	model->translate(-5.f, 3.f, 4.f, 1.f);
-	model->scale(2.3f, 2.3f, 2.3f, 1.0f);
-	scene->add_model(model);
-
-	model = new Model("mesh/pbr_test/sphere_metal_plates.obj");
-	model->translate(0.f, 3.f, 4.f, 1.f);
-	model->scale(2.3f, 2.3f, 2.3f, 1.0f);
-	scene->add_model(model);
-
-	model = new Model("mesh/pbr_test/sphere_rusted_iron.obj");
-	model->translate(5.f, 3.f, 4.f, 1.f);
-	model->scale(2.3f, 2.3f, 2.3f, 1.0f);
-	scene->add_model(model);
-
-	model = new Model("mesh/pbr_test/sphere_gold.obj");
-	model->translate(-2.5f, 3.f, -4.f, 1.f);
-	model->scale(2.3f, 2.3f, 2.3f, 1.0f);
-	scene->add_model(model);
-
-	model = new Model("mesh/pbr_test/sphere_rocky.obj");
-	model->translate(2.5f, 3.f, -4.f, 1.f);
-	model->scale(2.3f, 2.3f, 2.3f, 1.0f);
-	scene->add_model(model);
-	*/
-
 	//Model* model = new Model("mesh/test_scene/sponza/sponza.glb");
 	////model->rotate(vec3(0.f, 1.f, 0.f), 90.f, 1.f);
 	//model->scale(0.1f, 0.1f, 0.1f, 1.0f);

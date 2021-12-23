@@ -169,23 +169,6 @@ Mesh Model::process_mesh(aiMesh* mesh, const aiScene* scene, aiMatrix4x4 transfo
     aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
 
     // Albedo map
-    //std::vector<Texture> albedo_maps = load_material_textures(material, aiTextureType_DIFFUSE, "albedo_map");
-    //textures.insert(textures.end(), albedo_maps.begin(), albedo_maps.end());
-    //// Normal map
-    //std::vector<Texture> normal_maps = load_material_textures(material, aiTextureType_HEIGHT, "normal_map");
-    //if (normal_maps.size() > 0) has_normal_map = true;
-    //textures.insert(textures.end(), normal_maps.begin(), normal_maps.end());
-    //// Metallic map
-    //std::vector<Texture> metallic_maps = load_material_textures(material, aiTextureType_AMBIENT, "metallic_map");
-    //textures.insert(textures.end(), metallic_maps.begin(), metallic_maps.end());
-    //// Roughness map
-    //std::vector<Texture> roughness_maps = load_material_textures(material, aiTextureType_SHININESS, "roughness_map");
-    //textures.insert(textures.end(), roughness_maps.begin(), roughness_maps.end());
-    //// AO map
-    //std::vector<Texture> ao_maps = load_material_textures(material, aiTextureType_OPACITY, "ao_map");
-    //textures.insert(textures.end(), ao_maps.begin(), ao_maps.end());
-
-    // Albedo map
     std::vector<Texture> albedo_maps = load_material_textures(material, aiTextureType_DIFFUSE, "albedo_map");
     textures.insert(textures.end(), albedo_maps.begin(), albedo_maps.end());
     // Normal map
