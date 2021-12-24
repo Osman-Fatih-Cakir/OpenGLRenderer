@@ -7,7 +7,7 @@ Since I am new to computer graphics, I would be happy to receive suggestions abo
 
 ## Screenshots
 <img src="./Outputs/pbr1.gif" width="800" height="450" />  
-<img src="./Outputs/pbr2.gif" width="800" height="450" />  
+<img src="./Outputs/ibl3.gif" width="800" height="450" />  
 <img src="./Outputs/ds3.PNG" width="800" height="450" />  
 
 ## Features:
@@ -22,6 +22,7 @@ Since I am new to computer graphics, I would be happy to receive suggestions abo
 - Load objects with assimp (GLTF)
 - Forward rendering
 - Skybox (.hdr files)
+- Emission
 - Post Process
 	- Bloom
 
@@ -38,6 +39,7 @@ Since I am new to computer graphics, I would be happy to receive suggestions abo
 ## Resources
 - https://learnopengl.com/
 - https://www.youtube.com/c/TheChernoProject
+- https://www.artstation.com/artwork/battle-damaged-sci-fi-helmet-pbr
 ## Models:
 
 ## HDR Files

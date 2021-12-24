@@ -289,7 +289,7 @@ void resize_window(int w, int h)
 void init_models()
 {
 	// Scene meshes
-	Model* model = new Model("mesh/test_scene/helmet/DamagedHelmet.gltf");
+	Model* model = new Model("mesh/helmet/DamagedHelmet.gltf");
 	model->rotate(vec3(1.f, 0.f, 0.f), 90.f, 1.f);
 	//model->scale(0.01f, 0.01f, 0.01f, 1.0f);
 	scene->add_model(model);
@@ -298,9 +298,9 @@ void init_models()
 // Initialize skyboxes
 void init_skyboxes()
 {
-	scene->add_skybox("mesh/ibl_test/hall_2k.hdr", 1, false, 1.0f);
+	scene->add_skybox("mesh/ibl_test/hall_2k.hdr", 3, false, 1.0f);
 	scene->add_skybox("mesh/ibl_test/dreifaltigkeitsberg_2k.hdr", 2, false, 1.5f);
-	scene->add_skybox("mesh/ibl_test/dikhololo_night_2k.hdr", 3, false, 0.1f);
+	scene->add_skybox("mesh/ibl_test/dikhololo_night_2k.hdr", 1, false, 0.1f);
 	scene->render_skybox_id(3);
 }
 
