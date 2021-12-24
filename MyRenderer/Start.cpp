@@ -289,20 +289,19 @@ void resize_window(int w, int h)
 void init_models()
 {
 	// Scene meshes
-
-	//Model* model = new Model("mesh/test_scene/sponza/sponza.glb");
-	////model->rotate(vec3(0.f, 1.f, 0.f), 90.f, 1.f);
-	//model->scale(0.1f, 0.1f, 0.1f, 1.0f);
-	//scene->add_model(model);
+	Model* model = new Model("mesh/test_scene/helmet/DamagedHelmet.gltf");
+	model->rotate(vec3(1.f, 0.f, 0.f), 90.f, 1.f);
+	//model->scale(0.01f, 0.01f, 0.01f, 1.0f);
+	scene->add_model(model);
 }
 
 // Initialize skyboxes
 void init_skyboxes()
 {
-	//scene->add_skybox("mesh/ibl_test/hall_2k.hdr", 1, false, 1.0f);
-	//scene->add_skybox("mesh/ibl_test/dreifaltigkeitsberg_2k.hdr", 3, false, 1.5f);
-	//scene->add_skybox("mesh/ibl_test/dikhololo_night_2k.hdr", 2, false, 0.1f);
-	//scene->render_skybox_id(3);
+	scene->add_skybox("mesh/ibl_test/hall_2k.hdr", 1, false, 1.0f);
+	scene->add_skybox("mesh/ibl_test/dreifaltigkeitsberg_2k.hdr", 2, false, 1.5f);
+	scene->add_skybox("mesh/ibl_test/dikhololo_night_2k.hdr", 3, false, 0.1f);
+	scene->render_skybox_id(3);
 }
 
 // Initialize camera
@@ -339,8 +338,8 @@ void init_lights()
 	for (int i = 0; i < point_light_count; i++)
 	{
 		// Initialize light
-		PointLight* light = new PointLight(_positions[i], _colors[i], true);
-		light->set_intensity(1000.f);
+		PointLight* light = new PointLight(_positions[i], _colors[i], false);
+		light->set_intensity(0.f);
 		std::cout << "Radius: " << light->radius << "\n";
 		// Draw a mesh for represent a light
 		Model* light_model = new Model("mesh/simple/sphere.obj");
@@ -360,7 +359,7 @@ void init_lights()
 	{
 		DirectionalLight* light = new DirectionalLight(
 			vec3(-1.0f, -1.0f, -1.0f), vec3(1.f, 1.f, 1.f), false);
-		light->intensity = 0.f;
+		light->intensity = 0.5f;
 		scene->add_direct_light(light);
 	}
 }
@@ -378,12 +377,12 @@ void init_scene()
 
 	// Set camera parameters
 	init_camera(
-		//vec3(0.f, 20.f, 20.f), // Eye
-		//vec3(0.f, 1.f, -1.f), // Up
-		//vec3(0.f, 0.f, 0.f) // Center
-		vec3(50.f, 10.f, 0.f), // Eye
+		vec3(0.f, 0.f, 5.f), // Eye
 		vec3(0.f, 1.f, 0.f), // Up
-		vec3(-50.f, 10.f, 0.f) // Center
+		vec3(0.f, 0.f, 0.f) // Center
+		//vec3(50.f, 10.f, 0.f), // Eye
+		//vec3(0.f, 1.f, 0.f), // Up
+		//vec3(-50.f, 10.f, 0.f) // Center
 	);
 	
 	// Initialize lights

@@ -7,10 +7,11 @@ out vec4 OutColor;
 uniform sampler2D gPosition;
 uniform sampler2D gNormal;
 uniform sampler2D gAlbedoSpec;
+uniform sampler2D gEmissive;
 // For gPbr_materials,
 //	R component : Roughness
 //	G component : Metallic
-//	B component : AO (Ambient Occlusion)
+//	B component : Ambient Occlusion
 uniform sampler2D gPbr_materials;
 uniform samplerCube irradiance_map;
 uniform samplerCube prefiltered_map;
@@ -196,7 +197,7 @@ vec3 IBL(vec3 normal, vec3 view_dir, float metallic, float roughness, vec3 albed
 	vec3 specular = prefiltered_color * (F * brdf.x + brdf.y);
 
 	// Ambient
-	vec3 ambient = ((kD * diffuse + specular) * ao) * vec3(0.2); // TODO check if this is okay
+	vec3 ambient = ((kD * diffuse + specular) * ao);// * vec3(0.4); // TODO check if this is okay
 	return ambient;
 }
 
@@ -344,6 +345,7 @@ void main()
 	float roughness = texture(gPbr_materials, fTexCoord).r;
 	float metallic = texture(gPbr_materials, fTexCoord).g;
 	float ao = texture(gPbr_materials, fTexCoord).b;
+	vec3 emissive = texture(gEmissive, fTexCoord).rgb;
 
 	////////////////////////////////
 	//albedo = vec3(0.3, 0.3, 0.3);
@@ -370,6 +372,9 @@ void main()
 	{
 		Lo += vec3(0.01) * albedo * ao;
 	}
+
+	// Emissive
+	Lo += emissive;
 
 	// Tone mapping
 	Lo = vec3(1.0) - exp(-Lo * 1.0);

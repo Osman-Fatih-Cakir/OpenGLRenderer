@@ -44,7 +44,7 @@ public:
 	mat4 transformation;
 	GLuint VAO;
 
-	void draw(GLuint shader_program, bool has_normal_map, bool has_ao_map);
+	void draw(GLuint shader_program, bool has_normal_map, bool has_ao_map, bool has_emissive_map);
 
 private:
 	Mesh();

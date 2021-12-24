@@ -4,6 +4,7 @@ layout(location = 0) out vec3 gPosition;
 layout(location = 1) out vec3 gNormal;
 layout(location = 2) out vec4 gAlbedoSpec;
 layout(location = 3) out vec3 gPbr_materials;
+layout(location = 4) out vec3 gEmissive;
 
 in vec2 fTexCoord;
 in vec3 fFragPos;
@@ -14,9 +15,11 @@ uniform sampler2D albedo_map;
 uniform sampler2D normal_map;
 uniform sampler2D metallic_roughness_map;
 uniform sampler2D ao_map;
+uniform sampler2D emissive_map;
 
 uniform bool has_normal_map;
 uniform bool has_ao_map;
+uniform bool has_emissive_map;
 
 void main()
 {
@@ -42,9 +45,11 @@ void main()
 	// Albdedo
 	gAlbedoSpec.rgb = texture(albedo_map, fTexCoord).rgb;
 	// Roughness
+	//gPbr_materials.r = texture(metallic_roughness_map, fTexCoord).g;
 	gPbr_materials.r = texture(metallic_roughness_map, fTexCoord).g;
 	// Metallic
-	gPbr_materials.g = texture(metallic_roughness_map, fTexCoord).r;
+	//gPbr_materials.g = texture(metallic_roughness_map, fTexCoord).r;
+	gPbr_materials.g = texture(metallic_roughness_map, fTexCoord).b;
 	// Ambient Occlusion
 	if (has_ao_map)
 	{
@@ -54,5 +59,13 @@ void main()
 	{
 		gPbr_materials.b = 1.0;
 	}
-
+	// Emissive
+	if (has_emissive_map)
+	{
+		gEmissive.rgb = texture(emissive_map, fTexCoord).rgb;
+	}
+	else
+	{
+		gEmissive.rgb = vec3(0.0);
+	}
 }

@@ -28,7 +28,7 @@ Since I am new to computer graphics, I would be happy to receive suggestions abo
 ## Material files pipeline
 - Albedo map
 - Normal map (optional)
-- Roughness Metallic map (Red: Roughness, Green: Metallic, Blue: None)
+- Metallic Roughness map (Red: Metallic, Green: Roughness, Blue: None)
 - AO map (optional)
 
 ## Prerequisites

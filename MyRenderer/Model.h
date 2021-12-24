@@ -38,6 +38,7 @@ private:
 
     bool has_normal_map = false;
     bool has_ao_map = false;
+    bool has_emissive_map = false;
 
     void load_model(std::string path);
     void process_node(aiNode* node, const aiScene* scene, aiMatrix4x4 tr);

@@ -24,6 +24,7 @@ public:
 	GLuint get_gNormal();
 	GLuint get_gAlbedoSpec();
 	GLuint get_gPbr_materials();
+	GLuint get_emissive();
 	GLuint get_fbo();
 	GLuint get_shader_program();
 
@@ -50,6 +51,7 @@ private:
 	GLuint gNormal;
 	GLuint gAlbedoSpec;
 	GLuint gPbr_materials;
+	GLuint gEmissive;
 
 	void init_shaders();
 	void create_framebuffer();

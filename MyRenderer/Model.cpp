@@ -65,13 +65,15 @@ void Model::draw(GLuint shader_program)
 {
     for (unsigned int i = 0; i < meshes.size(); i++)
     {
-        meshes[i].draw(shader_program, has_normal_map, has_ao_map);
+        meshes[i].draw(shader_program, has_normal_map, has_ao_map, has_emissive_map);
     }
 }
 
 // Load the model from the path
 void Model::load_model(std::string path)
 {
+    std::cout << "Loading model: " << path << std::endl;
+
     Assimp::Importer importer;
     const aiScene* scene = importer.ReadFile(path, aiProcess_Triangulate
         | aiProcess_FlipUVs | aiProcess_GenSmoothNormals | aiProcess_CalcTangentSpace);
@@ -179,10 +181,13 @@ Mesh Model::process_mesh(aiMesh* mesh, const aiScene* scene, aiMatrix4x4 transfo
     std::vector<Texture> metallic_maps = load_material_textures(material, aiTextureType_UNKNOWN, "metallic_roughness_map");
     textures.insert(textures.end(), metallic_maps.begin(), metallic_maps.end());
     // AO map
-    std::vector<Texture> ao_maps = load_material_textures(material, aiTextureType_OPACITY, "ao_map");
+    std::vector<Texture> ao_maps = load_material_textures(material, aiTextureType_LIGHTMAP, "ao_map");
     if (ao_maps.size() > 0) has_ao_map = true;
     textures.insert(textures.end(), ao_maps.begin(), ao_maps.end());
-
+    // Emmisive map
+    std::vector<Texture> ems_maps = load_material_textures(material, aiTextureType_EMISSIVE, "emissive_map");
+    if (ems_maps.size() > 0) has_emissive_map = true;
+    textures.insert(textures.end(), ems_maps.begin(), ems_maps.end());
     
     mat4 _transformation = {
         transformation.a1, transformation.b1, transformation.c1, transformation.d1,

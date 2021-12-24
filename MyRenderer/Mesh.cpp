@@ -18,7 +18,7 @@ Mesh::Mesh(std::vector<Vertex> _vertices, std::vector<GLuint> _indices,
 Mesh::~Mesh() {};
 
 // Draw the mesh
-void Mesh::draw(GLuint shader_program, bool has_normal_map, bool has_ao_map)
+void Mesh::draw(GLuint shader_program, bool has_normal_map, bool has_ao_map, bool has_emissive_map)
 {
 	// Set the textures
 	for (unsigned int i = 0; i < textures.size(); i++)
@@ -31,6 +31,7 @@ void Mesh::draw(GLuint shader_program, bool has_normal_map, bool has_ao_map)
 
 	glUniform1i(glGetUniformLocation(shader_program, "has_normal_map"), has_normal_map);
 	glUniform1i(glGetUniformLocation(shader_program, "has_ao_map"), has_ao_map);
+	glUniform1i(glGetUniformLocation(shader_program, "has_emissive_map"), has_emissive_map);
 	// TODO optimize the matrix multiplication in shader
 	glUniformMatrix4fv(glGetUniformLocation(shader_program, "transformation"), 1, GL_FALSE, 
 		&transformation[0][0]);

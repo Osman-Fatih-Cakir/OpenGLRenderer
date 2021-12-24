@@ -39,7 +39,6 @@ void gBuffer::attach_depthbuffer_to_framebuffer(GLuint framebuffer)
 	GLint current_fbo;
 	glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &current_fbo);
 
-	//glBindFrameb
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, framebuffer);
 	glBlitFramebuffer(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT, 0, 0,
 		WINDOW_WIDTH, WINDOW_HEIGHT, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
@@ -75,6 +74,11 @@ GLuint gBuffer::get_gPbr_materials()
 {
 	return gPbr_materials;
 }
+// Returns emissive color attachment
+GLuint gBuffer::get_emissive()
+{
+	return gEmissive;
+}
 
 // Returns framebuffer object of g-buffer
 GLuint gBuffer::get_fbo()
@@ -92,7 +96,7 @@ void gBuffer::start_program()
 {
 	glBindFramebuffer(GL_FRAMEBUFFER, gBuffer_fbo);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-	glClearColor(0.4f, 0.4f, 0.4f, 1.0f);
+	glClearColor(0.3f, 0.3f, 0.3f, 1.0f);
 	glUseProgram(program);
 }
 
@@ -201,10 +205,19 @@ void gBuffer::create_framebuffer()
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT3, GL_TEXTURE_2D, gPbr_materials, 0);
 	glBindTexture(GL_TEXTURE_2D, 0);
 
+	// Emissive color buffer
+	glGenTextures(1, &gEmissive);
+	glBindTexture(GL_TEXTURE_2D, gEmissive);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, gBuffer_width, gBuffer_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT4, GL_TEXTURE_2D, gEmissive, 0);
+	glBindTexture(GL_TEXTURE_2D, 0);
+
 	// Tell OpenGL which color attachments we'll use (of this framebuffer) for rendering 
-	GLuint attachments[4] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1,
-		GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3 };
-	glDrawBuffers(4, attachments);
+	GLuint attachments[5] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1,
+		GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3, GL_COLOR_ATTACHMENT4 };
+	glDrawBuffers(5, attachments);
 
 	// Create and attach depth buffer (renderbuffer)
 	GLuint rbo_depth;
