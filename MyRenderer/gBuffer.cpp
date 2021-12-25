@@ -29,7 +29,18 @@ gBuffer::gBuffer()
 // Destructor
 gBuffer::~gBuffer()
 {
+	// Deallocate texture buffers
+	glDeleteTextures(1, &gPosition);
+	glDeleteTextures(1, &gNormal);
+	glDeleteTextures(1, &gAlbedoSpec);
+	glDeleteTextures(1, &gPbr_materials);
+	glDeleteTextures(1, &gEmissive);
 
+	// Deallocate render buffer
+	glDeleteRenderbuffers(1, &rbo_depth);
+
+	// Deallocate framebuffer
+	glDeleteFramebuffers(1, &gBuffer_fbo);
 }
 
 // Attachs the g-buffer depth buffer to given framebuffer
@@ -220,7 +231,6 @@ void gBuffer::create_framebuffer()
 	glDrawBuffers(5, attachments);
 
 	// Create and attach depth buffer (renderbuffer)
-	GLuint rbo_depth;
 	glGenRenderbuffers(1, &rbo_depth);
 	glBindRenderbuffer(GL_RENDERBUFFER, rbo_depth);
 	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, gBuffer_width, gBuffer_height);

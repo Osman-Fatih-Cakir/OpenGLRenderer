@@ -19,7 +19,9 @@ DeferredShading::DeferredShading()
 // Destructor
 DeferredShading::~DeferredShading()
 {
-	
+	// Deallocate quad buffers
+	glDeleteVertexArrays(1, &quad_VAO);
+	glDeleteBuffers(1, &quadVBO);
 }
 
 void DeferredShading::start_program(gBuffer* _GBuffer, MainFramebuffer* fb)
@@ -321,7 +323,6 @@ void DeferredShading::init_quad()
 	glGenVertexArrays(1, &quad_VAO);
 
 	// Setup quad VAO
-	GLuint quadVBO;
 	glGenBuffers(1, &quadVBO);
 	glBindVertexArray(quad_VAO);
 	glBindBuffer(GL_ARRAY_BUFFER, quadVBO);

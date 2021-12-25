@@ -20,6 +20,7 @@ private:
 	
 	GLuint FBO;
 	GLuint color_texture;
+	GLuint rbo_depth;
 
 	unsigned int width = WINDOW_WIDTH;
 	unsigned int height = WINDOW_HEIGHT;

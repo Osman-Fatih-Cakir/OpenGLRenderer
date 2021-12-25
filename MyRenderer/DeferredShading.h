@@ -79,7 +79,9 @@ private:
 	GLuint loc_brdf_lut;
 	GLuint loc_max_reflection_lod;
 	GLuint loc_is_ibl_active;
+
 	GLuint quad_VAO;
+	GLuint quadVBO;
 
 	int point_light_count = 0;
 	int direct_light_count = 0;

@@ -30,7 +30,7 @@ public:
 
 private:
     // Model data
-    std::vector<Mesh> meshes;
+    std::vector<Mesh*> meshes;
     std::vector<Texture> textures_loaded;
     std::string directory;
     mat4 model_matrix = mat4(1.0f);
@@ -42,7 +42,7 @@ private:
 
     void load_model(std::string path);
     void process_node(aiNode* node, const aiScene* scene, aiMatrix4x4 tr);
-    Mesh process_mesh(aiMesh* mesh, const aiScene* scene, aiMatrix4x4 transformation);
+    Mesh* process_mesh(aiMesh* mesh, const aiScene* scene, aiMatrix4x4 transformation);
     std::vector<Texture> load_material_textures(aiMaterial* mat, aiTextureType type, std::string typeName);
     unsigned int texture_from_file(const char* path, const std::string& directory);
     void update_normal_matrix();

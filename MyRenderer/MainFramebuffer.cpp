@@ -9,7 +9,14 @@ MainFramebuffer::MainFramebuffer()
 
 MainFramebuffer::~MainFramebuffer()
 {
-	// TODO glDeleteTex?
+	// Deallocate framebuffer
+	glDeleteFramebuffers(1, &FBO);
+
+	// Deallocate textures
+	glDeleteTextures(1, &color_texture);
+
+	// Deallocte renderbuffer
+	glDeleteRenderbuffers(1, &rbo_depth);
 }
 
 void MainFramebuffer::create_framebuffer()
@@ -27,7 +34,6 @@ void MainFramebuffer::create_framebuffer()
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, color_texture, 0);
 
 	// create and attach depth buffer (renderbuffer)
-	GLuint rbo_depth;
 	glGenRenderbuffers(1, &rbo_depth);
 	glBindRenderbuffer(GL_RENDERBUFFER, rbo_depth);
 	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, width, height);

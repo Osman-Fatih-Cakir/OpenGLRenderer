@@ -27,6 +27,30 @@ Skybox::Skybox(const char* path, int _id, bool _ibl, float _exposure)
     exposure = _exposure;
 }
 
+Skybox::~Skybox()
+{
+    // Deallocate map textures
+    glDeleteTextures(1, &equirectangular_map);
+    glDeleteTextures(1, &skybox_map);
+    glDeleteTextures(1, &irradiance_map);
+    glDeleteTextures(1, &prefilter_map);
+    glDeleteTextures(1, &brdf_lut);
+
+    // Deallocate framebuffer
+    glDeleteFramebuffers(1, &captureFBO);
+
+    // Deallocate renderbuffer
+    glDeleteRenderbuffers(1, &captureRBO);
+
+    // Deallocate cube buffers
+    glDeleteVertexArrays(1, &cubeVAO);
+    glDeleteBuffers(1, &cubeVBO);
+
+    // Deallocate quad buffers
+    glDeleteVertexArrays(1, &quadVAO);
+    glDeleteBuffers(1, &quadVBO);
+}
+
 void Skybox::generate_skybox_map()
 {
     create_skybox_map();
@@ -355,8 +379,6 @@ void Skybox::load_hdr_file(const char* path)
 
 void Skybox::render_cube()
 {
-    GLuint cubeVAO = 0;
-    GLuint cubeVBO = 0;
     // initialize
     float vertices[] = {
         // back face
@@ -422,8 +444,6 @@ void Skybox::render_cube()
 
 void Skybox::render_quad()
 {
-    unsigned int quadVAO = 0;
-    unsigned int quadVBO;
     if (quadVAO == 0)
     {
         float quadVertices[] = {

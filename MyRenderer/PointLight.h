@@ -37,10 +37,10 @@ public:
 	vec3 color;
 
 	mat4 space_matrices[6];
-	GLuint depth_cubemap;
-	GLuint depth_cubemap_fbo;
 
 	// TODO make these private
+	GLuint depth_cubemap;
+	GLuint depth_cubemap_fbo;
 	float shadow_projection_far;
 	float radius;
 	float cutoff;

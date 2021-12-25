@@ -35,6 +35,12 @@ PointLight::~PointLight()
 		delete model;
 	if (debug_model)
 		delete debug_model;
+
+	// Deallocate cubemap texture
+	glDeleteTextures(1, &depth_cubemap);
+
+	// Deallocate framebuffer
+	glDeleteFramebuffers(1, &depth_cubemap_fbo);
 }
 
 // Returns a pointer to the space matrices array

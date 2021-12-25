@@ -52,6 +52,7 @@ private:
 	GLuint gAlbedoSpec;
 	GLuint gPbr_materials;
 	GLuint gEmissive;
+	GLuint rbo_depth;
 
 	void init_shaders();
 	void create_framebuffer();

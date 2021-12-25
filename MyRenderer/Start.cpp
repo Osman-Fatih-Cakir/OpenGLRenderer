@@ -292,9 +292,6 @@ void init_models()
 	Model* model = new Model("mesh/test_scene/sponza/sponza.glb");
 	model->scale(vec3(0.01f, 0.01f, 0.01f), 1.f);
 	scene->add_model(model);
-	model = new Model("mesh/simple/sphere.obj");
-	model->translate(2.f, 20.f, 2.f, 1.f);
-	scene->add_model(model);
 }
 
 // Initialize skyboxes

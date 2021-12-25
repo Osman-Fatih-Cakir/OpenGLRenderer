@@ -26,6 +26,7 @@ public:
 	GLuint get_depth_map();
 	mat4 get_space_matrix();
 
+	// TODO make these private
 	GLuint depth_map;
 	GLuint depth_map_fbo;
 

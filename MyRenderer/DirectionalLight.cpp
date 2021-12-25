@@ -30,6 +30,11 @@ DirectionalLight::DirectionalLight(vec3 dir, vec3 col, bool shadow)
 // Destructor
 DirectionalLight::~DirectionalLight()
 {
+	// Deallocate framebuffer
+	glDeleteFramebuffers(1, &depth_map_fbo);
+
+	// Deallocate depth map texture
+	glDeleteTextures(1, &depth_map);
 }
 
 void DirectionalLight::set_view(vec3 eye, vec3 center, vec3 up)

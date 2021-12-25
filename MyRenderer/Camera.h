@@ -73,6 +73,4 @@ private:
 
 	// Camera location in world
 	vec3 position = vec3(0.f);
-
-	// TODO camera forward vector
 };

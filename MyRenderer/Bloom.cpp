@@ -12,7 +12,20 @@ Bloom::Bloom()
 
 Bloom::~Bloom()
 {
+    // Deallocate framebuffers
+    glDeleteFramebuffers(1, &hdrFBO);
+    glDeleteFramebuffers(2, pingpongFBO);
 
+    // Deallocate texture buffers
+    glDeleteTextures(2, color_buffers);
+    glDeleteTextures(2, pingpong_textures);
+
+    // Deallocate render buffers
+    glDeleteRenderbuffers(1, &hdrRBO);
+
+    // Deallocate quad buffers
+    glDeleteVertexArrays(1, &quadVAO);
+    glDeleteBuffers(1, &quadVBO);
 }
 
 void Bloom::start(GLuint main_fb, GLuint texture)
@@ -106,7 +119,6 @@ void Bloom::create_framebuffers()
     }
 
     // Create and attach depth buffer (renderbuffer)
-    GLuint hdrRBO;
     glGenRenderbuffers(1, &hdrRBO);
     glBindRenderbuffer(GL_RENDERBUFFER, hdrRBO);
     glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, width, height);
@@ -203,8 +215,6 @@ void Bloom::get_uniform_locations()
 
 void Bloom::render_quad()
 {
-    unsigned int quadVAO = 0;
-    unsigned int quadVBO;
     if (quadVAO == 0)
     {
         float quadVertices[] = {

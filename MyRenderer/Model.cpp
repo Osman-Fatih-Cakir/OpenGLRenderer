@@ -17,7 +17,16 @@ Model::Model(const char* path)
 }
 
 // Destructor
-Model::~Model() {}
+Model::~Model()
+{
+    // Deallocate mesh
+    for (int i = 0; i < meshes.size(); i++)
+        delete meshes[i];
+
+    // Deallocate textures
+    for (int i = 0; i < textures_loaded.size(); i++)
+        glDeleteTextures(1, &textures_loaded[i].id);
+}
 
 // Translate mesh
 void Model::translate(vec3 vec, float delta)
@@ -65,7 +74,7 @@ void Model::draw(GLuint shader_program)
 {
     for (unsigned int i = 0; i < meshes.size(); i++)
     {
-        meshes[i].draw(shader_program, has_normal_map, has_ao_map, has_emissive_map);
+        meshes[i]->draw(shader_program, has_normal_map, has_ao_map, has_emissive_map);
     }
 }
 
@@ -107,7 +116,7 @@ void Model::process_node(aiNode* node, const aiScene* scene, aiMatrix4x4 tr)
 }
 
 // Process mesh and store datas
-Mesh Model::process_mesh(aiMesh* mesh, const aiScene* scene, aiMatrix4x4 transformation)
+Mesh* Model::process_mesh(aiMesh* mesh, const aiScene* scene, aiMatrix4x4 transformation)
 {
     // Data to fill
     std::vector<Vertex> vertices;
@@ -197,7 +206,7 @@ Mesh Model::process_mesh(aiMesh* mesh, const aiScene* scene, aiMatrix4x4 transfo
     };
 
     // Return a mesh object created from the extracted mesh data
-    return Mesh(vertices, indices, textures, _transformation);
+    return new Mesh(vertices, indices, textures, _transformation);
 }
 
 // Load textures

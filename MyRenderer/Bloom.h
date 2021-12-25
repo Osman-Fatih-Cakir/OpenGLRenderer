@@ -35,6 +35,7 @@ private:
 	GLuint converge_program;
 
 	GLuint hdrFBO;
+	GLuint hdrRBO;
 	GLuint color_buffers[2];
 	GLuint pingpongFBO[2];
 	GLuint pingpong_textures[2];
@@ -48,4 +49,7 @@ private:
 	unsigned int width = WINDOW_WIDTH;
 	unsigned int height = WINDOW_HEIGHT;
 	unsigned int blur_amount = 10;
+
+	unsigned int quadVAO = 0;
+	unsigned int quadVBO;
 };
