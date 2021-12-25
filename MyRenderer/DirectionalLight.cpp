@@ -19,8 +19,10 @@ DirectionalLight::DirectionalLight(vec3 dir, vec3 col, bool shadow)
 		//create_shadow(-100.f, 100.f, -100.f, 100.f, 0.01f, 10000.f,
 		//	vec3(100.f, 100.f, 100.f), vec3(0.f, 0.f, 0.f), vec3(-1.f, 1.f, -1.f)
 		//);
-		create_shadow(-20.f, 20.f, -20.f, 20.f, 0.01f, 1000.f,
-			vec3(20, 20.f, 20.f), vec3(0.f, 0.f, 0.f), vec3(-1.f, 1.f, -1.f)
+		//create_shadow(-20.f, 20.f, -20.f, 20.f, 0.01f, 1000.f,
+		//	vec3(20, 20.f, 20.f), vec3(0.f, 0.f, 0.f), vec3(-1.f, 1.f, -1.f)
+		create_shadow(-50.f, 50.f, -50.f, 50.f, 0.01f, 1000.f,
+			vec3(2, 20.f, 2.f), vec3(0.f, 0.f, 0.f), vec3(-1.f, 1.f, -1.f)
 		);
 	}
 }

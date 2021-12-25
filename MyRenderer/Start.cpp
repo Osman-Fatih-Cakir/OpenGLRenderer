@@ -42,7 +42,7 @@ typedef glm::vec4 vec4;
 typedef glm::vec2 vec2;
 
 // Point lights
-const int point_light_count = 2;
+const int point_light_count = 3;
 const int direct_light_count = 1;
 
 // Window
@@ -289,19 +289,21 @@ void resize_window(int w, int h)
 void init_models()
 {
 	// Scene meshes
-	Model* model = new Model("mesh/helmet/DamagedHelmet.gltf");
-	model->rotate(vec3(1.f, 0.f, 0.f), 90.f, 1.f);
-	//model->scale(0.01f, 0.01f, 0.01f, 1.0f);
+	Model* model = new Model("mesh/test_scene/sponza/sponza.glb");
+	model->scale(vec3(0.01f, 0.01f, 0.01f), 1.f);
+	scene->add_model(model);
+	model = new Model("mesh/simple/sphere.obj");
+	model->translate(2.f, 20.f, 2.f, 1.f);
 	scene->add_model(model);
 }
 
 // Initialize skyboxes
 void init_skyboxes()
 {
-	scene->add_skybox("mesh/ibl_test/hall_2k.hdr", 3, false, 1.0f);
-	scene->add_skybox("mesh/ibl_test/dreifaltigkeitsberg_2k.hdr", 2, false, 1.5f);
-	scene->add_skybox("mesh/ibl_test/dikhololo_night_2k.hdr", 1, false, 0.1f);
-	scene->render_skybox_id(3);
+	//scene->add_skybox("mesh/ibl_test/hall_2k.hdr", 3, false, 1.0f);
+	//scene->add_skybox("mesh/ibl_test/dreifaltigkeitsberg_2k.hdr", 2, false, 1.5f);
+	//scene->add_skybox("mesh/ibl_test/dikhololo_night_2k.hdr", 1, false, 0.1f);
+	//scene->render_skybox_id(3);
 }
 
 // Initialize camera
@@ -321,16 +323,16 @@ void init_lights()
 	//srand((unsigned int)time(NULL));
 
 	vec3 _positions[] = {
-		vec3(30.f, 5.f, 0.f),
-		vec3(-30.f, 30.f, 0.f),
-		vec3(0.f, 9.f, 8.f)
+		vec3(7.f, 6.f, 0.f),
+		vec3(3.f, 6.f, 0.f),
+		vec3(-2.f, 6.f, 0.f)
 	};
 
 	// Color sequential
 	vec3 _colors[] = {
-		vec3(1.f, 1.f, 1.f),
-		vec3(1.f, 1.f, 1.f),
-		vec3(1.f, 1.f, 1.f)
+		vec3(1.f, 0.8f, 0.f),
+		vec3(0.f, 0.8f, 1.f),
+		vec3(1.f, 0.5f, 0.8f)
 	};
 
 	// Light positions
@@ -339,12 +341,12 @@ void init_lights()
 	{
 		// Initialize light
 		PointLight* light = new PointLight(_positions[i], _colors[i], false);
-		light->set_intensity(0.f);
+		light->set_intensity(30.f);
 		std::cout << "Radius: " << light->radius << "\n";
 		// Draw a mesh for represent a light
 		Model* light_model = new Model("mesh/simple/sphere.obj");
 		light->model = light_model;
-		light->scale(0.2f, 0.2f, 0.2f, 1.0f);
+		light->scale(0.05f, 0.05f, 0.05f, 1.0f);
 		//Model* light_debug_model = new Model("mesh/simple/icosphere.obj");
 		//light->debug(light_debug_model);
 		// Add light to scene
@@ -358,8 +360,8 @@ void init_lights()
 	for (int i = 0; i < direct_light_count; i++)
 	{
 		DirectionalLight* light = new DirectionalLight(
-			vec3(-1.0f, -1.0f, -1.0f), vec3(1.f, 1.f, 1.f), false);
-		light->intensity = 0.5f;
+			vec3(-1.0f, -10.0f, -1.0f), vec3(1.f, 1.f, 1.f), false);
+		light->intensity = 0.0f;
 		scene->add_direct_light(light);
 	}
 }
@@ -377,9 +379,9 @@ void init_scene()
 
 	// Set camera parameters
 	init_camera(
-		vec3(0.f, 0.f, 5.f), // Eye
+		vec3(-10.f, 3.f, 0.f), // Eye
 		vec3(0.f, 1.f, 0.f), // Up
-		vec3(0.f, 0.f, 0.f) // Center
+		vec3(0.f, 3.f, 0.f) // Center
 		//vec3(50.f, 10.f, 0.f), // Eye
 		//vec3(0.f, 1.f, 0.f), // Up
 		//vec3(-50.f, 10.f, 0.f) // Center
@@ -430,7 +432,7 @@ void render()
 	}
 	if (input->hold_key(Key::KEY_Z))
 	{
-		scene->camera->rotate(vec3(-1.f, 0.f, 0.f), 2.f, delta_over_h);
+		scene->camera->rotate(vec3(1.f, 0.f, 0.f), 2.f, delta_over_h);
 	}
 	if (input->hold_key(Key::KEY_C))
 	{

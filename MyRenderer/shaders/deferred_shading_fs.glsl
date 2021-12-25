@@ -35,7 +35,7 @@ struct Point_Light
 	float intensity;
 };
 
-const int NUMBER_OF_POINT_LIGHTS = 2; // TODO number of lights is hardcoded
+const int NUMBER_OF_POINT_LIGHTS = 3; // TODO number of lights is hardcoded
 uniform Point_Light point_lights[NUMBER_OF_POINT_LIGHTS];
 
 struct Direct_Light
@@ -73,15 +73,15 @@ float directional_shadow_calculation(int light_index, vec3 _fPos, float bias)
 
 	// Soft shadows (PCF)
 	vec2 texel_size = 1.0 / textureSize(direct_lights[light_index].directional_shadow_map, 0);
-	for (int i = -1; i <= 1; i++)
+	for (int i = -4; i <= 4; i++)
 	{
-		for (int j = -1; j <= 1; j++)
+		for (int j = -4; j <= 4; j++)
 		{
 			float pcf_depth = texture(direct_lights[light_index].directional_shadow_map, proj_coord.xy + vec2(i, j) * texel_size).r;
 			shadow += current_depth - bias > pcf_depth ? 1.0 : 0.0;
 		}
 	}
-	shadow /= 9.0;
+	shadow /= 81.0;//9.0;
 
 	if (proj_coord.z > 1.0) // Out of projection borders
 	{
@@ -296,8 +296,8 @@ vec3 calculate_direct_light(vec3 frag_pos, vec3 normal, vec3 albedo, float rough
 		if (direct_lights[i].cast_shadow != 0.0)
 		{
 			// Calculate shadow
-			float max_bias = 0.00002;
-			float min_bias = 0.00000;
+			float max_bias = 0.002;//0.0005;
+			float min_bias = 0.00001;
 			float bias = max(max_bias * (1.0 - dot(normal, light_dir)), min_bias);
 			shadow = directional_shadow_calculation(i, frag_pos, bias);
 		}
