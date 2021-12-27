@@ -289,18 +289,20 @@ void resize_window(int w, int h)
 void init_models()
 {
 	// Scene meshes
-	Model* model = new Model("mesh/test_scene/sponza/sponza.glb");
-	model->scale(vec3(0.01f, 0.01f, 0.01f), 1.f);
+	//Model* model = new Model("mesh/test_scene/sponza/sponza.glb");
+	//model->scale(vec3(0.01f, 0.01f, 0.01f), 1.f);
+	//scene->add_model(model);
+	Model* model = new Model("mesh/simple/cube.obj");
 	scene->add_model(model);
 }
 
 // Initialize skyboxes
 void init_skyboxes()
 {
-	//scene->add_skybox("mesh/ibl_test/hall_2k.hdr", 3, false, 1.0f);
-	//scene->add_skybox("mesh/ibl_test/dreifaltigkeitsberg_2k.hdr", 2, false, 1.5f);
-	//scene->add_skybox("mesh/ibl_test/dikhololo_night_2k.hdr", 1, false, 0.1f);
-	//scene->render_skybox_id(3);
+	scene->add_skybox("mesh/ibl_test/hall_2k.hdr", 3, false, 1.0f);
+	scene->add_skybox("mesh/ibl_test/dreifaltigkeitsberg_2k.hdr", 2, false, 1.5f);
+	scene->add_skybox("mesh/ibl_test/dikhololo_night_2k.hdr", 1, false, 0.1f);
+	scene->render_skybox_id(3);
 }
 
 // Initialize camera
@@ -376,9 +378,9 @@ void init_scene()
 
 	// Set camera parameters
 	init_camera(
-		vec3(-10.f, 3.f, 0.f), // Eye
+		vec3(0.f, 0.f, 5.f), // Eye
 		vec3(0.f, 1.f, 0.f), // Up
-		vec3(0.f, 3.f, 0.f) // Center
+		vec3(0.f, 0.f, 0.f) // Center
 		//vec3(50.f, 10.f, 0.f), // Eye
 		//vec3(0.f, 1.f, 0.f), // Up
 		//vec3(-50.f, 10.f, 0.f) // Center
@@ -394,6 +396,15 @@ void init_scene()
 // Renders the scene
 void render()
 {
+	///////////////////////////////////////////////////
+	//vec3 pos = scene->camera->get_position();
+	//mat4 x = scene->camera->get_view_matrix();
+	//scene->camera->translate(pos.x, pos.y, pos.z, 1.f);
+	//mat4 y = scene->camera->get_view_matrix();
+	//scene->camera->translate(-pos.x, -pos.y, -pos.z, 1.f);
+	//mat4 z = scene->camera->get_view_matrix();
+	///////////////////////////////////////////////////
+	
 	// Get delta time
 	float delta = timer->get_delta_time();
 
@@ -403,37 +414,38 @@ void render()
 	float camera_speed = 15.f;
 	float delta_over_t = delta / 1000;
 	float delta_over_h = delta / 100;
+	Camera* cam = scene->camera;
 	if (input->hold_key(Key::KEY_W))
 	{
-		scene->camera->translate(0.f, 0.f, camera_speed, delta_over_t);
+		cam->translate(0.f, 0.f, -camera_speed, delta_over_t);
 	}
 	if (input->hold_key(Key::KEY_S))
 	{
-		scene->camera->translate(0.f, 0.f, -camera_speed, delta_over_t);
+		cam->translate(0.f, 0.f, camera_speed, delta_over_t);
 	}
 	if (input->hold_key(Key::KEY_A))
 	{
-		scene->camera->translate(camera_speed, 0.f, 0.f, delta_over_t);
+		cam->translate(-camera_speed, 0.f, 0.f, delta_over_t);
 	}
 	if (input->hold_key(Key::KEY_D))
 	{
-		scene->camera->translate(-camera_speed, 0.f, 0.f, delta_over_t);
+		cam->translate(camera_speed, 0.f, 0.f, delta_over_t);
 	}
 	if (input->hold_key(Key::KEY_Q))
 	{
-		scene->camera->translate(0.f, camera_speed, 0.f, delta_over_t);
+		cam->translate(0.f, camera_speed, 0.f, delta_over_t);
 	}
 	if (input->hold_key(Key::KEY_E))
 	{
-		scene->camera->translate(0.f, -camera_speed, 0.f, delta_over_t);
+		cam->translate(0.f, -camera_speed, 0.f, delta_over_t);
 	}
 	if (input->hold_key(Key::KEY_Z))
 	{
-		scene->camera->rotate(vec3(1.f, 0.f, 0.f), 2.f, delta_over_h);
+		cam->local_rotate(vec3(-1.f, 0.f, 0.f), 0.02f);
 	}
 	if (input->hold_key(Key::KEY_C))
 	{
-		scene->camera->rotate(vec3(0.f, -1.f, 0.f), 2.f, delta_over_h);
+		cam->rotate(vec3(0.f, -1.f, 0.f), 2.f, delta_over_h);
 	}
 	if (input->press_key(Key::KEY_F))
 	{
@@ -453,6 +465,10 @@ void render()
 	{
 		exit_app();
 	}
+	
+	// Mouse interaction
+	//cam->local_rotate(vec3(0.f, 1.f, 0.f), input->mouse_deltaX() / 400.f);
+	//cam->local_rotate(vec3(1.f, 0.f, 0.f), input->mouse_deltaY() / 400.f);
 
 	// Error check
 	GLuint err = glGetError(); if (err) fprintf(stderr, "ERROR: %s\n", gluErrorString(err));

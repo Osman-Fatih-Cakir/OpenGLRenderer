@@ -48,13 +48,13 @@ void Camera::lookAt(vec3 eye, vec3 up, vec3 center)
 void Camera::translate(vec3 tra, float delta)
 {
 	view_matrix = glm::translate(view_matrix, tra * delta);
-	position -= tra * delta;
+	position += tra * delta;
 }
 
 void Camera::translate(float x, float y, float z, float delta)
 {
 	view_matrix = glm::translate(view_matrix, vec3(x, y, z) * delta);
-	position -= vec3(x, y, z) * delta;
+	position += vec3(x, y, z) * delta;
 }
 
 // Camera rotate
@@ -130,4 +130,18 @@ vec3 Camera::get_position()
 void Camera::set_position(vec3 vec)
 {
 	position = vec;
+	// TODO fix here
+	//mat4 _view_matrix = view_matrix;
+	//view_matrix = glm::translate(mat4(1.f), vec);
+	//for (int i = 0; i < 3; i++)
+	//	for (int j = 0; j < 3; j++)
+	//		view_matrix[i][j] = _view_matrix[i][j];
+}
+
+void Camera::local_rotate(vec3 rot, float angle)
+{
+	view_matrix = glm::translate(view_matrix, vec3(position.x,position.y, position.z));
+	view_matrix = glm::rotate(view_matrix, angle, rot);
+	view_matrix = glm::translate(view_matrix, vec3(-1.f * position.x,
+		-1.f * position.y, -1.f * position.z));
 }
