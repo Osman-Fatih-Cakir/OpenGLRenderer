@@ -138,10 +138,10 @@ void Camera::set_position(vec3 vec)
 	//		view_matrix[i][j] = _view_matrix[i][j];
 }
 
-void Camera::local_rotate(vec3 rot, float angle)
+void Camera::local_rotate(vec3 rot, float angle, float delta)
 {
 	view_matrix = glm::translate(view_matrix, vec3(position.x,position.y, position.z));
-	view_matrix = glm::rotate(view_matrix, angle, rot);
+	view_matrix = glm::rotate(view_matrix, delta*angle, rot);
 	view_matrix = glm::translate(view_matrix, vec3(-1.f * position.x,
 		-1.f * position.y, -1.f * position.z));
 }

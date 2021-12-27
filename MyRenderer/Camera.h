@@ -41,7 +41,7 @@ public:
 	void translate(vec3 tra, float delta);
 	void translate(float x, float y, float z, float delta);
 	void rotate(vec3 rot, float angle, float delta);
-	void local_rotate(vec3 rot, float angle);
+	void local_rotate(vec3 rot, float angle, float delta);
 
 	// Getters and setters
 	Projection_Type get_projection_type();

@@ -441,7 +441,7 @@ void render()
 	}
 	if (input->hold_key(Key::KEY_Z))
 	{
-		cam->local_rotate(vec3(-1.f, 0.f, 0.f), 0.02f);
+		cam->local_rotate(vec3(0.f, 1.f, 0.f), 2.f, delta_over_t);
 	}
 	if (input->hold_key(Key::KEY_C))
 	{
