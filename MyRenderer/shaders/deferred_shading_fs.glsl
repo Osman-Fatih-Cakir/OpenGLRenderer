@@ -348,10 +348,10 @@ void main()
 	vec3 emissive = texture(gEmissive, fTexCoord).rgb;
 
 	////////////////////////////////
-	albedo = vec3(0.3, 0.3, 0.3);
-	metallic = 0.2;
-	roughness = 0.5;
-	ao = 1.0;
+	//albedo = vec3(0.3, 0.3, 0.3);
+	//metallic = 0.2;
+	//roughness = 0.5;
+	//ao = 1.0;
 	////////////////////////////////
 
 	// Outgoing light

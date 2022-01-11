@@ -290,13 +290,12 @@ void init_models()
 {
 	// Scene meshes
 	//Model* model = new Model("mesh/test_scene/sponza/sponza.glb");
-	//model->scale(vec3(0.01f, 0.01f, 0.01f), 1.f);
 	//scene->add_model(model);
 	//Model* model = new Model("mesh/test_scene/helmet/DamagedHelmet.gltf");
 	//model->rotate(vec3(1.f, 0.f, 0.f), 90.f, 1.f);
 	//scene->add_model(model);
-	Model* model = new Model("mesh/cornell_box/cornell_box.gltf");	
-	scene->add_model(model);
+	//Model* model = new Model("mesh/cornell_box/cornell_box.gltf");	
+	//scene->add_model(model);
 }
 
 // Initialize skyboxes
@@ -305,7 +304,7 @@ void init_skyboxes()
 	//scene->add_skybox("mesh/ibl_test/hall_2k.hdr", 2, false, 1.0f);
 	//scene->add_skybox("mesh/ibl_test/dreifaltigkeitsberg_2k.hdr", 3, false, 1.5f);
 	//scene->add_skybox("mesh/ibl_test/dikhololo_night_2k.hdr", 1, false, 0.1f);
-	scene->render_skybox_id(3);
+	//scene->render_skybox_id(3);
 }
 
 // Initialize camera
@@ -396,15 +395,6 @@ void init_scene()
 // Renders the scene
 void render()
 {
-	///////////////////////////////////////////////////
-	//vec3 pos = scene->camera->get_position();
-	//mat4 x = scene->camera->get_view_matrix();
-	//scene->camera->translate(pos.x, pos.y, pos.z, 1.f);
-	//mat4 y = scene->camera->get_view_matrix();
-	//scene->camera->translate(-pos.x, -pos.y, -pos.z, 1.f);
-	//mat4 z = scene->camera->get_view_matrix();
-	///////////////////////////////////////////////////
-	
 	// Get delta time
 	float delta = timer->get_delta_time();
 
@@ -417,19 +407,19 @@ void render()
 	Camera* cam = scene->camera;
 	if (input->hold_key(Key::KEY_W))
 	{
-		cam->translate(0.f, 0.f, camera_speed, delta_over_t);
+		cam->translate(camera_speed, 0.f, 0.f, delta_over_t);
 	}
 	if (input->hold_key(Key::KEY_S))
 	{
-		cam->translate(0.f, 0.f, -camera_speed, delta_over_t);
+		cam->translate(-camera_speed, 0.f, 0.f, delta_over_t);
 	}
 	if (input->hold_key(Key::KEY_A))
 	{
-		cam->translate(camera_speed, 0.f, 0.f, delta_over_t);
+		cam->translate(0.f, 0.f, -camera_speed, delta_over_t);
 	}
 	if (input->hold_key(Key::KEY_D))
 	{
-		cam->translate(-camera_speed, 0.f, 0.f, delta_over_t);
+		cam->translate(0.f, 0.f, camera_speed, delta_over_t);
 	}
 	if (input->hold_key(Key::KEY_Q))
 	{
@@ -465,6 +455,9 @@ void render()
 	{
 		exit_app();
 	}
+	std::cout << cam->get_position().x << " ";
+	std::cout << cam->get_position().y << " ";
+	std::cout << cam->get_position().z << "\n";
 
 	// Error check
 	GLuint err = glGetError(); if (err) fprintf(stderr, "ERROR: %s\n", gluErrorString(err));

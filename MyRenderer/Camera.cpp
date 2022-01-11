@@ -48,13 +48,15 @@ void Camera::lookAt(vec3 eye, vec3 up, vec3 center)
 void Camera::translate(vec3 tra, float delta)
 {
 	view_matrix = glm::translate(view_matrix, tra * delta);
-	position += tra * delta;
+	mat4 inv = glm::inverse(view_matrix);
+	position = vec3(inv[3][0], inv[3][1], inv[3][2]);
 }
 
 void Camera::translate(float x, float y, float z, float delta)
 {
-	view_matrix = glm::translate(view_matrix, vec3(x, y, z) * delta);
-	position += vec3(x, y, z) * delta;
+	view_matrix = glm::translate(view_matrix, vec3(x * delta, y * delta, z * delta));
+	mat4 inv = glm::inverse(view_matrix);
+	position = vec3(inv[3][0], inv[3][1], inv[3][2]);
 }
 
 // Camera rotate
