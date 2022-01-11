@@ -45,9 +45,11 @@ void main()
 	// Albdedo
 	gAlbedoSpec.rgb = texture(albedo_map, fTexCoord).rgb;
 	// Roughness
+	//gPbr_materials.r = texture(metallic_roughness_map, fTexCoord).g;
 	gPbr_materials.r = texture(metallic_roughness_map, fTexCoord).g;
 	// Metallic
-	gPbr_materials.g = texture(metallic_roughness_map, fTexCoord).r;
+	//gPbr_materials.g = texture(metallic_roughness_map, fTexCoord).r;
+	gPbr_materials.g = texture(metallic_roughness_map, fTexCoord).b;
 	// Ambient Occlusion
 	if (has_ao_map)
 	{

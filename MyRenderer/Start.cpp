@@ -42,7 +42,7 @@ typedef glm::vec4 vec4;
 typedef glm::vec2 vec2;
 
 // Point lights
-const int point_light_count = 3;
+const int point_light_count = 1;
 const int direct_light_count = 1;
 
 // Window
@@ -292,16 +292,19 @@ void init_models()
 	//Model* model = new Model("mesh/test_scene/sponza/sponza.glb");
 	//model->scale(vec3(0.01f, 0.01f, 0.01f), 1.f);
 	//scene->add_model(model);
-	Model* model = new Model("mesh/simple/cube.obj");
+	//Model* model = new Model("mesh/test_scene/helmet/DamagedHelmet.gltf");
+	//model->rotate(vec3(1.f, 0.f, 0.f), 90.f, 1.f);
+	//scene->add_model(model);
+	Model* model = new Model("mesh/cornell_box/cornell_box.gltf");	
 	scene->add_model(model);
 }
 
 // Initialize skyboxes
 void init_skyboxes()
 {
-	scene->add_skybox("mesh/ibl_test/hall_2k.hdr", 3, false, 1.0f);
-	scene->add_skybox("mesh/ibl_test/dreifaltigkeitsberg_2k.hdr", 2, false, 1.5f);
-	scene->add_skybox("mesh/ibl_test/dikhololo_night_2k.hdr", 1, false, 0.1f);
+	//scene->add_skybox("mesh/ibl_test/hall_2k.hdr", 2, false, 1.0f);
+	//scene->add_skybox("mesh/ibl_test/dreifaltigkeitsberg_2k.hdr", 3, false, 1.5f);
+	//scene->add_skybox("mesh/ibl_test/dikhololo_night_2k.hdr", 1, false, 0.1f);
 	scene->render_skybox_id(3);
 }
 
@@ -322,14 +325,14 @@ void init_lights()
 	//srand((unsigned int)time(NULL));
 
 	vec3 _positions[] = {
-		vec3(7.f, 6.f, 0.f),
+		vec3(0.f, 0.0f, 0.0f),
 		vec3(3.f, 6.f, 0.f),
 		vec3(-2.f, 6.f, 0.f)
 	};
 
 	// Color sequential
 	vec3 _colors[] = {
-		vec3(1.f, 0.8f, 0.f),
+		vec3(0.9f, 0.9f, 0.9f),
 		vec3(0.f, 0.8f, 1.f),
 		vec3(1.f, 0.5f, 0.8f)
 	};
@@ -339,13 +342,13 @@ void init_lights()
 	for (int i = 0; i < point_light_count; i++)
 	{
 		// Initialize light
-		PointLight* light = new PointLight(_positions[i], _colors[i], false);
-		light->set_intensity(30.f);
+		PointLight* light = new PointLight(_positions[i], _colors[i], true);
+		light->set_intensity(5.f);
 		std::cout << "Radius: " << light->radius << "\n";
 		// Draw a mesh for represent a light
 		Model* light_model = new Model("mesh/simple/sphere.obj");
+		light_model->scale(0.05f, 0.05f, 0.05f, 1.0f);
 		light->model = light_model;
-		light->scale(0.05f, 0.05f, 0.05f, 1.0f);
 		//Model* light_debug_model = new Model("mesh/simple/icosphere.obj");
 		//light->debug(light_debug_model);
 		// Add light to scene
@@ -378,12 +381,9 @@ void init_scene()
 
 	// Set camera parameters
 	init_camera(
-		vec3(0.f, 0.f, 5.f), // Eye
+		vec3(3.f, 0.2f, 0.f), // Eye
 		vec3(0.f, 1.f, 0.f), // Up
-		vec3(0.f, 0.f, 0.f) // Center
-		//vec3(50.f, 10.f, 0.f), // Eye
-		//vec3(0.f, 1.f, 0.f), // Up
-		//vec3(-50.f, 10.f, 0.f) // Center
+		vec3(0.f, 0.2f, 0.f) // Center
 	);
 	
 	// Initialize lights
@@ -411,37 +411,37 @@ void render()
 	renderer->render(delta);
 	
 	// Camera actions
-	float camera_speed = 15.f;
+	float camera_speed = 10.f;
 	float delta_over_t = delta / 1000;
 	float delta_over_h = delta / 100;
 	Camera* cam = scene->camera;
 	if (input->hold_key(Key::KEY_W))
 	{
-		cam->translate(0.f, 0.f, -camera_speed, delta_over_t);
+		cam->translate(0.f, 0.f, camera_speed, delta_over_t);
 	}
 	if (input->hold_key(Key::KEY_S))
 	{
-		cam->translate(0.f, 0.f, camera_speed, delta_over_t);
+		cam->translate(0.f, 0.f, -camera_speed, delta_over_t);
 	}
 	if (input->hold_key(Key::KEY_A))
 	{
-		cam->translate(-camera_speed, 0.f, 0.f, delta_over_t);
+		cam->translate(camera_speed, 0.f, 0.f, delta_over_t);
 	}
 	if (input->hold_key(Key::KEY_D))
 	{
-		cam->translate(camera_speed, 0.f, 0.f, delta_over_t);
+		cam->translate(-camera_speed, 0.f, 0.f, delta_over_t);
 	}
 	if (input->hold_key(Key::KEY_Q))
 	{
-		cam->translate(0.f, camera_speed, 0.f, delta_over_t);
+		cam->translate(0.f, -camera_speed, 0.f, delta_over_t);
 	}
 	if (input->hold_key(Key::KEY_E))
 	{
-		cam->translate(0.f, -camera_speed, 0.f, delta_over_t);
+		cam->translate(0.f, camera_speed, 0.f, delta_over_t);
 	}
 	if (input->hold_key(Key::KEY_Z))
 	{
-		cam->local_rotate(vec3(0.f, 1.f, 0.f), 2.f, delta_over_t);
+		cam->rotate(vec3(1.f, 0.f, 0.f), 2.f, delta_over_t);
 	}
 	if (input->hold_key(Key::KEY_C))
 	{
@@ -465,10 +465,6 @@ void render()
 	{
 		exit_app();
 	}
-	
-	// Mouse interaction
-	//cam->local_rotate(vec3(0.f, 1.f, 0.f), input->mouse_deltaX() / 400.f);
-	//cam->local_rotate(vec3(1.f, 0.f, 0.f), input->mouse_deltaY() / 400.f);
 
 	// Error check
 	GLuint err = glGetError(); if (err) fprintf(stderr, "ERROR: %s\n", gluErrorString(err));

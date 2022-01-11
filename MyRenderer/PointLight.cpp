@@ -101,12 +101,11 @@ bool PointLight::does_cast_shadow()
 // Translate
 void PointLight::translate(float x, float y, float z, float delta)
 {
-	position.x += x * delta;
-	position.y += y * delta;
-	position.z += z * delta;
-
 	// Calculate model matrix
 	model_matrix = glm::translate(model_matrix, vec3(x * delta, y * delta, z * delta));
+	position.x = model_matrix[3][0];
+	position.y = model_matrix[3][1];
+	position.z = model_matrix[3][2];
 
 	if (shadow_calculated)
 	{
@@ -183,7 +182,7 @@ void PointLight::calculate_radius()
 	float light_luminance = glm::dot(color, vec3(0.2126, 0.7152, 0.0722));
 
 	// Minimum luminance threshold - tweak to taste
-	float min_luminance = 0.01;
+	float min_luminance = 0.01f;
 
 	// Solve attenuation equation to get radius where it falls to min_luminance
 	radius = solve_quadratic(constant - light_luminance/ min_luminance, linear, quadratic);

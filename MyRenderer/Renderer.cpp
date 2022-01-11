@@ -56,11 +56,6 @@ void Renderer::render(float delta)
 		GBuffer->render(scene->camera, scene->all_models[i]);
 	}
 
-	// Attach depth buffer to main framebuffer
-	// TODO might delete here
-	//GBuffer->attach_depthbuffer_to_framebuffer(main_fb->get_FBO());
-	//glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
 	//
 	//// Shadow pass: Get the depth map of the scene
 	//
@@ -153,14 +148,12 @@ void Renderer::render(float delta)
 	{
 		if (scene->point_lights[i]->model != nullptr)
 		{
-			forwardRender->set_model_matrix(scene->point_lights[i]->get_model_matrix());
 			forwardRender->set_color(scene->point_lights[i]->color);
 			forwardRender->render(scene->camera, scene->point_lights[i]->model);
 		}
 
 		if (scene->point_lights[i]->is_debug_active())
 		{
-			forwardRender->set_model_matrix(scene->point_lights[i]->get_debug_model_matrix());
 			forwardRender->set_color(scene->point_lights[i]->color);
 			// Light radius renders wih wireframe
 			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);

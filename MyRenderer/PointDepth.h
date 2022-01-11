@@ -19,7 +19,6 @@ public:
 	void start_program(PointLight* _light);
 	GLuint get_shader_program();
 	void set_space_matrices(mat4 mats[6]);
-	void set_model_matrix(mat4 mat);
 	void set_far(float num);
 	void set_position(vec3 pos);
 	void render(Model* model);

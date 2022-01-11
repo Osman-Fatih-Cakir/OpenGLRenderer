@@ -74,7 +74,7 @@ void Model::draw(GLuint shader_program)
 {
     for (unsigned int i = 0; i < meshes.size(); i++)
     {
-        meshes[i]->draw(shader_program, has_normal_map, has_ao_map, has_emissive_map);
+        meshes[i]->draw(shader_program, has_normal_map, has_ao_map, has_emissive_map, model_matrix);
     }
 }
 
@@ -101,6 +101,7 @@ void Model::load_model(std::string path)
 // Process each node in model
 void Model::process_node(aiNode* node, const aiScene* scene, aiMatrix4x4 tr)
 {
+    tr = tr * node->mTransformation;
     // process all the node's meshes (if any)
     for (unsigned int i = 0; i < node->mNumMeshes; i++)
     {
@@ -110,7 +111,6 @@ void Model::process_node(aiNode* node, const aiScene* scene, aiMatrix4x4 tr)
     // then do the same for each of its children
     for (unsigned int i = 0; i < node->mNumChildren; i++)
     {
-        tr = tr * node->mTransformation;
         process_node(node->mChildren[i], scene, tr);
     }
 }

@@ -45,12 +45,6 @@ void DirectionalDepth::set_space_matrix(mat4 mat)
 	glUniformMatrix4fv(loc_space_matrix, 1, GL_FALSE, &mat[0][0]);
 }
 
-// Sets model matrix
-void DirectionalDepth::set_model_matrix(mat4 mat)
-{
-	glUniformMatrix4fv(loc_model_matrix, 1, GL_FALSE, &mat[0][0]);
-}
-
 // Renders the scene
 void DirectionalDepth::render(Model* model)
 {
@@ -58,9 +52,6 @@ void DirectionalDepth::render(Model* model)
 
 	// Space matrix
 	set_space_matrix(light->get_space_matrix());
-
-	// Model matrix
-	set_model_matrix(model->get_model_matrix());
 
 	// Draw call
 	model->draw(program);

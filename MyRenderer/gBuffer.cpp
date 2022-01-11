@@ -123,18 +123,6 @@ void gBuffer::set_view_matrix(mat4 mat)
 	glUniformMatrix4fv(loc_view_matrix, 1, GL_FALSE, &mat[0][0]);
 }
 
-// Sets model matrix of model
-void gBuffer::set_model_matrix(mat4 mat)
-{
-	glUniformMatrix4fv(loc_model_matrix, 1, GL_FALSE, &mat[0][0]);
-}
-
-// Sets normal matrix of model
-void gBuffer::set_normal_matrix(mat4 mat)
-{
-	glUniformMatrix4fv(loc_normal_matrix, 1, GL_FALSE, &mat[0][0]);
-}
-
 unsigned int gBuffer::get_width()
 {
 	return gBuffer_width;
@@ -157,8 +145,8 @@ void gBuffer::render(Camera* camera, Model* model)
 	set_view_matrix(camera->get_view_matrix());
 
 	// Model matrix and normal matrix
-	set_model_matrix(model->get_model_matrix());
-	set_normal_matrix(model->get_normal_matrix());
+	//set_model_matrix(model->get_model_matrix());
+	//set_normal_matrix(model->get_normal_matrix());
 	
 	// Draw call
 	model->draw(program);

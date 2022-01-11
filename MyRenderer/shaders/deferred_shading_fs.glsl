@@ -35,7 +35,7 @@ struct Point_Light
 	float intensity;
 };
 
-const int NUMBER_OF_POINT_LIGHTS = 3; // TODO number of lights is hardcoded
+const int NUMBER_OF_POINT_LIGHTS = 1; // TODO number of lights is hardcoded
 uniform Point_Light point_lights[NUMBER_OF_POINT_LIGHTS];
 
 struct Direct_Light
@@ -348,10 +348,10 @@ void main()
 	vec3 emissive = texture(gEmissive, fTexCoord).rgb;
 
 	////////////////////////////////
-	//albedo = vec3(0.3, 0.3, 0.3);
-	//metallic = 0.2;
-	//roughness = 0.5;
-	//ao = 1.0;
+	albedo = vec3(0.3, 0.3, 0.3);
+	metallic = 0.2;
+	roughness = 0.5;
+	ao = 1.0;
 	////////////////////////////////
 
 	// Outgoing light

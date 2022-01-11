@@ -255,6 +255,7 @@ void DeferredShading::render(Camera* camera, Skybox* skybox)
 	set_gAlbedoSpec(GBuffer->get_gAlbedoSpec());
 	set_gPbr_materials(GBuffer->get_gPbr_materials());
 	set_emissive(GBuffer->get_emissive());
+	
 	// Set IBL textures
 	if (skybox != nullptr)
 	{
@@ -275,7 +276,6 @@ void DeferredShading::render(Camera* camera, Skybox* skybox)
 
 	// Draw call
 	draw_quad(program);
-	GLuint err = glGetError(); if (err) fprintf(stderr, "ERROR: %s\n", gluErrorString(err));
 }
 
 // Compiles the shaders and generates the shader program
@@ -303,7 +303,7 @@ void DeferredShading::get_uniform_locations()
 	loc_brdf_lut = glGetUniformLocation(program, "brdf_lut");
 	loc_is_ibl_active = glGetUniformLocation(program, "is_ibl_active");
 
-	static_texture_uniform_count = 7;
+	static_texture_uniform_count = 8;
 }
 
 // Initialize a quad
@@ -340,5 +340,6 @@ void DeferredShading::draw_quad(GLuint shader_program)
 {
 	glBindVertexArray(quad_VAO);
 	glDrawArrays(GL_TRIANGLES, 0, 6);
+	//GLuint err = glGetError(); if (err) fprintf(stderr, "ERROR: %s\n", gluErrorString(err));
 	glBindVertexArray(0);
 }

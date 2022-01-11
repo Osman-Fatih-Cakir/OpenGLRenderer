@@ -18,7 +18,6 @@ public:
 	void start_program(DirectionalLight* _light);
 	GLuint get_shader_program();
 	void set_space_matrix(mat4 mat);
-	void set_model_matrix(mat4 mat);
 	void render(Model* model);
 
 private:

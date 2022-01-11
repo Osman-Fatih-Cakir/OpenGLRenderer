@@ -31,8 +31,6 @@ public:
 	void start_program();
 	void set_projection_matrix(mat4 mat);
 	void set_view_matrix(mat4 mat);
-	void set_model_matrix(mat4 mat);
-	void set_normal_matrix(mat4 mat);
 	unsigned int get_width();
 	unsigned int get_height();
 	void render(Camera* camera, Model* model);

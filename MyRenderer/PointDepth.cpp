@@ -42,11 +42,6 @@ void PointDepth::set_space_matrices(mat4 mats[6])
 	glUniformMatrix4fv(loc_space_matrices, 6, GL_FALSE, &mats[0][0][0]);
 }
 
-void PointDepth::set_model_matrix(mat4 mat)
-{
-	glUniformMatrix4fv(loc_model_matrix, 1, GL_FALSE, &mat[0][0]);
-}
-
 void PointDepth::set_far(float num)
 {
 	glUniform1f(loc_far, num);
@@ -63,8 +58,6 @@ void PointDepth::render(Model* model)
 	glEnable(GL_CULL_FACE);
 	glCullFace(GL_BACK);
 
-	// Set model matrix
-	set_model_matrix(model->get_model_matrix());
 	// Set space matrices
 	set_space_matrices(light->space_matrices);
 	// Set far
