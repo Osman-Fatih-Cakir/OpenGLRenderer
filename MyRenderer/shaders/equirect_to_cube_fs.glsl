@@ -22,7 +22,6 @@ void main()
 
     // Convert colors to LDR because images might have very high rgb values that are higher
     // than the float size, causing inf values
-    // TODO get exposure from uniform
     
     // Tone mapping
     color = vec3(1.0) - exp(-color * exposure);
