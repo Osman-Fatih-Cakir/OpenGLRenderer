@@ -40,8 +40,10 @@ Since I am new to computer graphics, I would be happy to receive suggestions abo
 ## Resources
 - https://learnopengl.com/
 - https://www.youtube.com/c/TheChernoProject
-- https://www.artstation.com/artwork/battle-damaged-sci-fi-helmet-pbr
+
 ## Models:
+- https://www.artstation.com/artwork/battle-damaged-sci-fi-helmet-pbr
+
 
 ## HDR Files
 - https://polyhaven.com/a/museum_of_ethnography
