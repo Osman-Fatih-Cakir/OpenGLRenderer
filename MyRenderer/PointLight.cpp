@@ -67,16 +67,10 @@ void PointLight::set_intensity(float val)
 	intensity = val;
 }
 
-// Return model matrix
-mat4 PointLight::get_model_matrix()
-{
-	return model_matrix;
-}
-
 // Return the debug model matrix for light radius
 mat4 PointLight::get_debug_model_matrix()
 {
-	return glm::scale(model_matrix, vec3(radius, radius, radius));
+	return glm::scale(model->get_model_matrix(), vec3(radius, radius, radius));
 }
 
 // Set model of the point light
@@ -108,11 +102,9 @@ bool PointLight::does_cast_shadow()
 // Translate
 void PointLight::translate(float x, float y, float z, float delta)
 {
-	// Calculate model matrix
-	model_matrix = glm::translate(model_matrix, vec3(x * delta, y * delta, z * delta));
-	position.x = model_matrix[3][0];
-	position.y = model_matrix[3][1];
-	position.z = model_matrix[3][2];
+	position.x += delta * x;
+	position.y += delta * y;
+	position.z += delta * z;
 	
 	// Translate light model too
 	if (model)
@@ -122,12 +114,6 @@ void PointLight::translate(float x, float y, float z, float delta)
 	{
 		init_space_matrices();
 	}
-}
-
-// Scale
-void PointLight::scale(float x, float y, float z, float delta)
-{
-	model_matrix = glm::scale(model_matrix, vec3(x*delta, y*delta, z*delta));
 }
 
 // Create point light shadow maps

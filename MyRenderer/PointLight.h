@@ -21,7 +21,6 @@ public:
 	GLfloat* get_position_pointer();
 	GLfloat* get_color_pointer();
 	void set_intensity(float val);
-	mat4 get_model_matrix();
 	mat4 get_debug_model_matrix();
 	void set_model(Model* _model);
 	bool is_debug_active();
@@ -29,7 +28,6 @@ public:
 	void create_shadow();
 	bool does_cast_shadow();
 	void translate(float x, float y, float z, float delta);
-	void scale(float x, float y, float z, float delta);
 
 	Model* model = nullptr;
 	Model* debug_model = nullptr;
@@ -61,7 +59,4 @@ private:
 
 	bool debug_mode = false;
 	bool shadow_calculated = false;
-	// TODO model matrix delete
-	mat4 model_matrix = mat4(1.f);
-	mat4 debug_model_matrix = mat4(1.f);
 };

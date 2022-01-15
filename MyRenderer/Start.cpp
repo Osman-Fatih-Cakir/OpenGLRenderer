@@ -294,9 +294,9 @@ void init_models()
 	//Model* model = new Model("mesh/test_scene/helmet/DamagedHelmet.gltf");
 	//model->rotate(vec3(1.f, 0.f, 0.f), 90.f, 1.f);
 	//scene->add_model(model);
-	//Model* model = new Model("mesh/cornell_box/cornell_box.gltf");	
-	//model->scale(2.f, 2.f, 2.f, 1.f);
-	//scene->add_model(model);
+	Model* model = new Model("mesh/cornell_box/cornell_box.gltf");	
+	model->scale(2.f, 2.f, 2.f, 1.f);
+	scene->add_model(model);
 }
 
 // Initialize skyboxes
@@ -408,33 +408,27 @@ void render()
 	Camera* cam = scene->camera;
 	if (input->hold_key(Key::KEY_W))
 	{
-		//cam->translate(camera_speed, 0.f, 0.f, delta_over_t);
-		scene->point_lights[0]->translate(camera_speed/2.f, 0.f, 0.f, delta_over_t);
+		cam->translate(camera_speed, 0.f, 0.f, delta_over_t);
 	}
 	if (input->hold_key(Key::KEY_S))
 	{
-		//cam->translate(-camera_speed, 0.f, 0.f, delta_over_t);
-		scene->point_lights[0]->translate(-camera_speed / 2.f, 0.f, 0.f, delta_over_t);
+		cam->translate(-camera_speed, 0.f, 0.f, delta_over_t);
 	}
 	if (input->hold_key(Key::KEY_A))
 	{
-		//cam->translate(0.f, 0.f, -camera_speed, delta_over_t);
-		scene->point_lights[0]->translate(0.f, 0.f, -camera_speed / 2.f, delta_over_t);
+		cam->translate(0.f, 0.f, -camera_speed, delta_over_t);
 	}
 	if (input->hold_key(Key::KEY_D))
 	{
-		//cam->translate(0.f, 0.f, camera_speed, delta_over_t);
-		scene->point_lights[0]->translate(0.f, 0.f, camera_speed / 2.f, delta_over_t);
+		cam->translate(0.f, 0.f, camera_speed, delta_over_t);
 	}
 	if (input->hold_key(Key::KEY_Q))
 	{
-		//cam->translate(0.f, -camera_speed, 0.f, delta_over_t);
-		scene->point_lights[0]->translate(0.f, -camera_speed / 2.f, 0.f, delta_over_t);
+		cam->translate(0.f, -camera_speed, 0.f, delta_over_t);
 	}
 	if (input->hold_key(Key::KEY_E))
 	{
-		//cam->translate(0.f, camera_speed, 0.f, delta_over_t);
-		scene->point_lights[0]->translate(0.f, camera_speed / 2.f, 0.f, delta_over_t);
+		cam->translate(0.f, camera_speed, 0.f, delta_over_t);
 	}
 	if (input->hold_key(Key::KEY_Z))
 	{
@@ -462,9 +456,6 @@ void render()
 	{
 		exit_app();
 	}
-	std::cout << scene->point_lights[0]->position.x << " ";
-	std::cout << scene->point_lights[0]->position.y << " ";
-	std::cout << scene->point_lights[0]->position.z << "\n";
 
 	// Error check
 	GLuint err = glGetError(); if (err) fprintf(stderr, "ERROR: %s\n", gluErrorString(err));
