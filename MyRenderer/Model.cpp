@@ -19,7 +19,7 @@ Model::Model(const char* path)
 // Destructor
 Model::~Model()
 {
-    // Deallocate mesh
+    // Deallocate meshes
     for (int i = 0; i < meshes.size(); i++)
         delete meshes[i];
 
@@ -28,7 +28,7 @@ Model::~Model()
         glDeleteTextures(1, &textures_loaded[i].id);
 }
 
-// Translate mesh
+// Translate model
 void Model::translate(vec3 vec, float delta)
 {
     vec3 _vec = vec3(vec.x * delta, vec.y * delta, vec.z * delta);
@@ -46,7 +46,7 @@ void Model::rotate(vec3 vec, float angle, float delta)
     update_normal_matrix();
 }
 
-// Scale mesh
+// Scale model
 void Model::scale(vec3 vec, float delta)
 {
     vec3 _vec = vec3(vec.x * delta, vec.y * delta, vec.z * delta);

@@ -79,6 +79,13 @@ mat4 PointLight::get_debug_model_matrix()
 	return glm::scale(model_matrix, vec3(radius, radius, radius));
 }
 
+// Set model of the point light
+void PointLight::set_model(Model* _model)
+{
+	model = _model;
+	model->translate(position.x, position.y, position.z, 1.f);
+}
+
 // Returns true if the debug mode is active
 bool PointLight::is_debug_active()
 {
@@ -106,6 +113,10 @@ void PointLight::translate(float x, float y, float z, float delta)
 	position.x = model_matrix[3][0];
 	position.y = model_matrix[3][1];
 	position.z = model_matrix[3][2];
+	
+	// Translate light model too
+	if (model)
+		model->translate(x, y, z, delta);
 
 	if (shadow_calculated)
 	{

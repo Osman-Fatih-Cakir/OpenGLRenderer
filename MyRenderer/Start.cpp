@@ -295,6 +295,7 @@ void init_models()
 	//model->rotate(vec3(1.f, 0.f, 0.f), 90.f, 1.f);
 	//scene->add_model(model);
 	//Model* model = new Model("mesh/cornell_box/cornell_box.gltf");	
+	//model->scale(2.f, 2.f, 2.f, 1.f);
 	//scene->add_model(model);
 }
 
@@ -324,7 +325,7 @@ void init_lights()
 	//srand((unsigned int)time(NULL));
 
 	vec3 _positions[] = {
-		vec3(0.f, 0.0f, 0.0f),
+		vec3(0.f, 1.0f, 0.f),
 		vec3(3.f, 6.f, 0.f),
 		vec3(-2.f, 6.f, 0.f)
 	};
@@ -342,12 +343,12 @@ void init_lights()
 	{
 		// Initialize light
 		PointLight* light = new PointLight(_positions[i], _colors[i], true);
-		light->set_intensity(5.f);
+		light->set_intensity(10.f);
 		std::cout << "Radius: " << light->radius << "\n";
 		// Draw a mesh for represent a light
 		Model* light_model = new Model("mesh/simple/sphere.obj");
-		light_model->scale(0.05f, 0.05f, 0.05f, 1.0f);
-		light->model = light_model;
+		//light_model->scale(0.05f, 0.05f, 0.05f, 1.0f);
+		light->set_model(light_model);
 		//Model* light_debug_model = new Model("mesh/simple/icosphere.obj");
 		//light->debug(light_debug_model);
 		// Add light to scene
@@ -380,9 +381,9 @@ void init_scene()
 
 	// Set camera parameters
 	init_camera(
-		vec3(3.f, 0.2f, 0.f), // Eye
+		vec3(6.f, 0.4f, 0.f), // Eye
 		vec3(0.f, 1.f, 0.f), // Up
-		vec3(0.f, 0.2f, 0.f) // Center
+		vec3(0.f, 0.4f, 0.f) // Center
 	);
 	
 	// Initialize lights
@@ -407,27 +408,33 @@ void render()
 	Camera* cam = scene->camera;
 	if (input->hold_key(Key::KEY_W))
 	{
-		cam->translate(camera_speed, 0.f, 0.f, delta_over_t);
+		//cam->translate(camera_speed, 0.f, 0.f, delta_over_t);
+		scene->point_lights[0]->translate(camera_speed/2.f, 0.f, 0.f, delta_over_t);
 	}
 	if (input->hold_key(Key::KEY_S))
 	{
-		cam->translate(-camera_speed, 0.f, 0.f, delta_over_t);
+		//cam->translate(-camera_speed, 0.f, 0.f, delta_over_t);
+		scene->point_lights[0]->translate(-camera_speed / 2.f, 0.f, 0.f, delta_over_t);
 	}
 	if (input->hold_key(Key::KEY_A))
 	{
-		cam->translate(0.f, 0.f, -camera_speed, delta_over_t);
+		//cam->translate(0.f, 0.f, -camera_speed, delta_over_t);
+		scene->point_lights[0]->translate(0.f, 0.f, -camera_speed / 2.f, delta_over_t);
 	}
 	if (input->hold_key(Key::KEY_D))
 	{
-		cam->translate(0.f, 0.f, camera_speed, delta_over_t);
+		//cam->translate(0.f, 0.f, camera_speed, delta_over_t);
+		scene->point_lights[0]->translate(0.f, 0.f, camera_speed / 2.f, delta_over_t);
 	}
 	if (input->hold_key(Key::KEY_Q))
 	{
-		cam->translate(0.f, -camera_speed, 0.f, delta_over_t);
+		//cam->translate(0.f, -camera_speed, 0.f, delta_over_t);
+		scene->point_lights[0]->translate(0.f, -camera_speed / 2.f, 0.f, delta_over_t);
 	}
 	if (input->hold_key(Key::KEY_E))
 	{
-		cam->translate(0.f, camera_speed, 0.f, delta_over_t);
+		//cam->translate(0.f, camera_speed, 0.f, delta_over_t);
+		scene->point_lights[0]->translate(0.f, camera_speed / 2.f, 0.f, delta_over_t);
 	}
 	if (input->hold_key(Key::KEY_Z))
 	{
@@ -455,9 +462,9 @@ void render()
 	{
 		exit_app();
 	}
-	std::cout << cam->get_position().x << " ";
-	std::cout << cam->get_position().y << " ";
-	std::cout << cam->get_position().z << "\n";
+	std::cout << scene->point_lights[0]->position.x << " ";
+	std::cout << scene->point_lights[0]->position.y << " ";
+	std::cout << scene->point_lights[0]->position.z << "\n";
 
 	// Error check
 	GLuint err = glGetError(); if (err) fprintf(stderr, "ERROR: %s\n", gluErrorString(err));

@@ -10,5 +10,5 @@ uniform mat4 transformation;
 
 void main()
 {
-    gl_Position = space_matrix * model_matrix * transformation * vec4(vPos, 1.0);
+    gl_Position = space_matrix * model_matrix * vec4(vPos, 1.0);
 }

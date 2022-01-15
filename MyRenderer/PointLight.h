@@ -23,6 +23,7 @@ public:
 	void set_intensity(float val);
 	mat4 get_model_matrix();
 	mat4 get_debug_model_matrix();
+	void set_model(Model* _model);
 	bool is_debug_active();
 	void debug(Model* model);
 	void create_shadow();
@@ -60,6 +61,7 @@ private:
 
 	bool debug_mode = false;
 	bool shadow_calculated = false;
+	// TODO model matrix delete
 	mat4 model_matrix = mat4(1.f);
 	mat4 debug_model_matrix = mat4(1.f);
 };
