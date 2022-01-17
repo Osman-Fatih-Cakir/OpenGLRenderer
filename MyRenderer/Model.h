@@ -16,7 +16,7 @@ class Model
 {
 public:
     // Constructor and destructor
-    Model(const char* path);
+    Model(const char* path, bool _translucent);
     ~Model();
 
     void translate(vec3 vec, float delta);
@@ -26,6 +26,7 @@ public:
     void scale(float x, float y, float z, float delta);
     mat4 get_model_matrix();
     mat4 get_normal_matrix();
+    bool is_translucent();
     void draw(GLuint shader_program);
 
 private:
@@ -39,6 +40,8 @@ private:
     bool has_normal_map = false;
     bool has_ao_map = false;
     bool has_emissive_map = false;
+    bool has_opacity_map = false;
+    bool translucent = false;
 
     void load_model(std::string path);
     void process_node(aiNode* node, const aiScene* scene, aiMatrix4x4 tr);

@@ -25,7 +25,7 @@ Mesh::~Mesh()
 
 // Draw the mesh
 void Mesh::draw(GLuint shader_program, bool has_normal_map, bool has_ao_map, bool has_emissive_map,
-	mat4 model_matrix)
+	bool has_opacity_map, mat4 model_matrix)
 {
 	// Set the textures
 	for (unsigned int i = 0; i < textures.size(); i++)
@@ -40,6 +40,7 @@ void Mesh::draw(GLuint shader_program, bool has_normal_map, bool has_ao_map, boo
 	glUniform1i(glGetUniformLocation(shader_program, "has_normal_map"), has_normal_map);
 	glUniform1i(glGetUniformLocation(shader_program, "has_ao_map"), has_ao_map);
 	glUniform1i(glGetUniformLocation(shader_program, "has_emissive_map"), has_emissive_map);
+	glUniform1i(glGetUniformLocation(shader_program, "has_opacity_map"), has_opacity_map);
 
 	mat4 mt = model_matrix * transformation;
 	mat4 nmt = glm::transpose(glm::inverse(mt));

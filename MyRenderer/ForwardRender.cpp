@@ -56,12 +56,6 @@ void ForwardRender::set_view_matrix(mat4 mat)
 	glUniformMatrix4fv(loc_view_matrix, 1, GL_FALSE, &mat[0][0]);
 }
 
-// Sets model matrix
-void ForwardRender::set_model_matrix(mat4 mat)
-{
-	glUniformMatrix4fv(loc_model_matrix, 1, GL_FALSE, &mat[0][0]);
-}
-
 // Sets color
 void ForwardRender::set_color(vec3 vec)
 {
@@ -96,6 +90,5 @@ void ForwardRender::get_uniform_locations()
 {
 	loc_projection_matrix = glGetUniformLocation(program, "projection_matrix");
 	loc_view_matrix = glGetUniformLocation(program, "view_matrix");
-	loc_model_matrix = glGetUniformLocation(program, "model_matrix");
 	loc_color = glGetUniformLocation(program, "color");
 }

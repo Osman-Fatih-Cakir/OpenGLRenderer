@@ -136,12 +136,18 @@ void Renderer::render(float delta)
 	deferredShading->render(scene->camera, scene->get_render_skybox());
 
 	//
+	//// 2.1: Draw lit translucent meshes
+	//
+
+	// Draw scene
+	forwardLitRender->render(GBuffer, main_fb, scene);
+
+	//
 	//// 3: Draw light meshes (The meshes that are not lit but in the same scene with other meshes)
 	//
 
 	// Start forward rendering program
 	forwardRender->start_program(GBuffer, main_fb);
-	forwardRender->change_viewport_resolution(WINDOW_WIDTH, WINDOW_HEIGHT);
 
 	// Draw scene
 	for (unsigned int i = 0; i < scene->point_lights.size(); i++)
@@ -201,6 +207,10 @@ void Renderer::init()
 	// Deferred shading program
 	deferredShading = new DeferredShading();
 	deferredShading->change_viewport_resolution(WINDOW_WIDTH, WINDOW_HEIGHT);
+
+	// Forward Lit Renderer
+	forwardLitRender = new ForwardLitRender();
+	forwardLitRender->change_viewport_resolution(WINDOW_WIDTH, WINDOW_HEIGHT);
 
 	// Forward render program
 	forwardRender = new ForwardRender();

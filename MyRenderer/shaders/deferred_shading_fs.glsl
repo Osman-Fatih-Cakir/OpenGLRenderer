@@ -296,7 +296,7 @@ vec3 calculate_direct_light(vec3 frag_pos, vec3 normal, vec3 albedo, float rough
 		if (direct_lights[i].cast_shadow != 0.0)
 		{
 			// Calculate shadow
-			float max_bias = 0.002;//0.0005;
+			float max_bias = 0.0003;
 			float min_bias = 0.00001;
 			float bias = max(max_bias * (1.0 - dot(normal, light_dir)), min_bias);
 			shadow = directional_shadow_calculation(i, frag_pos, bias);
@@ -348,10 +348,10 @@ void main()
 	vec3 emissive = texture(gEmissive, fTexCoord).rgb;
 
 	////////////////////////////////
-	albedo = vec3(0.3, 0.3, 0.3);
-	metallic = 0.2;
-	roughness = 0.5;
-	ao = 1.0;
+	//albedo = vec3(0.7, 0.3, 0.95);
+	//metallic = 0.2;
+	//roughness = 0.5;
+	//ao = 1.0;
 	////////////////////////////////
 
 	// Outgoing light

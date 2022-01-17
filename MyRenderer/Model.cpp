@@ -8,12 +8,14 @@
 typedef glm::vec2 vec2;
 
 // Constructor
-Model::Model(const char* path)
+Model::Model(const char* path, bool _translucent)
 {
 	load_model(path);
 
     // Set normal matrix
     update_normal_matrix();
+
+    translucent = _translucent;
 }
 
 // Destructor
@@ -69,12 +71,18 @@ mat4 Model::get_normal_matrix()
     return normal_matrix;
 }
 
+bool Model::is_translucent()
+{
+    return translucent;
+}
+
 // Draws every mesh
 void Model::draw(GLuint shader_program)
 {
     for (unsigned int i = 0; i < meshes.size(); i++)
     {
-        meshes[i]->draw(shader_program, has_normal_map, has_ao_map, has_emissive_map, model_matrix);
+        meshes[i]->draw(shader_program, has_normal_map, has_ao_map, has_emissive_map, 
+            has_opacity_map, model_matrix);
     }
 }
 
@@ -197,6 +205,8 @@ Mesh* Model::process_mesh(aiMesh* mesh, const aiScene* scene, aiMatrix4x4 transf
     std::vector<Texture> ems_maps = load_material_textures(material, aiTextureType_EMISSIVE, "emissive_map");
     if (ems_maps.size() > 0) has_emissive_map = true;
     textures.insert(textures.end(), ems_maps.begin(), ems_maps.end());
+    // Opacity map // TODO implement
+    has_opacity_map = false;
     
     mat4 _transformation = {
         transformation.a1, transformation.b1, transformation.c1, transformation.d1,

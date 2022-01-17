@@ -30,8 +30,8 @@ public:
 	GLuint depth_map;
 	GLuint depth_map_fbo;
 
-	int depth_map_width = 2048;
-	int depth_map_height = 2048;
+	int depth_map_width = 2*2048;
+	int depth_map_height =2* 2048;
 
 	float intensity;
 

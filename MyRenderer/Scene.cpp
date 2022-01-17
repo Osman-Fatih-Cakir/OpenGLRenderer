@@ -20,6 +20,11 @@ Scene::~Scene()
 		delete all_models[i];
 	}
 	all_models.clear();
+	for (unsigned int i = 0; i < translucent_models.size(); i++)
+	{
+		delete translucent_models[i];
+	}
+	translucent_models.clear();
 
 	// Direct lights
 	for (unsigned int i = 0; i < direct_lights.size(); i++)
@@ -48,7 +53,14 @@ Scene::~Scene()
 // Add mesh to scene
 void Scene::add_model(Model* m)
 {
-	all_models.push_back(m);
+	if (m->is_translucent())
+	{
+		translucent_models.push_back(m);
+	}
+	else
+	{
+		all_models.push_back(m);
+	}
 }
 
 // Add point light to scene

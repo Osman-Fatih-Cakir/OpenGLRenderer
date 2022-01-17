@@ -69,6 +69,9 @@
     <ClCompile Include="Bloom.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="ForwardLitRender.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Mesh.h">
@@ -131,6 +134,9 @@
     <ClInclude Include="Bloom.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ForwardLitRender.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\gbuffer_vs.glsl" />
@@ -162,5 +168,7 @@
     <None Include="shaders\converge_2_image_fs.glsl" />
     <None Include="shaders\render_texture2D_vs.glsl" />
     <None Include="shaders\render_texture2D_fs.glsl" />
+    <None Include="shaders\forward_lit_render_vs.glsl" />
+    <None Include="shaders\forward_lit_render_fs.glsl" />
   </ItemGroup>
 </Project>
