@@ -297,10 +297,10 @@ void init_models()
 	//scene->add_model(model);
 	//Model* model = new Model("mesh/test_scene/sponza/sponza.glb", false);
 	//scene->add_model(model);
-	Model* model = new Model("mesh/test_scene/tree/scene.gltf", true);
-	model->rotate(vec3(0.f, 1.f, 0.f), 180.f, 1.f);
-	model->scale(0.5f, 0.5f, 0.5f, 1.f);
-	scene->add_model(model);
+	//Model* model = new Model("mesh/test_scene/tree/scene.gltf", true);
+	//model->rotate(vec3(0.f, 1.f, 0.f), 180.f, 1.f);
+	//model->scale(0.5f, 0.5f, 0.5f, 1.f);
+	//scene->add_model(model);
 	// TODO for testing, render opaque and translucent meshes together
 }
 
