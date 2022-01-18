@@ -26,6 +26,7 @@ Since I am new to computer graphics, I would be happy to receive suggestions abo
 - Emission
 - Post Process
 	- Bloom
+- Translucency (Not that great, I will come back to it)
 
 ## Material files pipeline
 - Albedo map
