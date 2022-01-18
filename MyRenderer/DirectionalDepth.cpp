@@ -46,7 +46,7 @@ void DirectionalDepth::set_space_matrix(mat4 mat)
 }
 
 // Renders the scene
-void DirectionalDepth::render(Model* model)
+void DirectionalDepth::render(Model* model, vec3 cam_pos)
 {
 	glEnable(GL_CULL_FACE);
 
@@ -54,7 +54,7 @@ void DirectionalDepth::render(Model* model)
 	set_space_matrix(light->get_space_matrix());
 
 	// Draw call
-	model->draw(program);
+	model->draw(program, cam_pos);
 
 	glDisable(GL_CULL_FACE);
 }

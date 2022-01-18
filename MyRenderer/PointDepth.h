@@ -21,7 +21,7 @@ public:
 	void set_space_matrices(mat4 mats[6]);
 	void set_far(float num);
 	void set_position(vec3 pos);
-	void render(Model* model);
+	void render(Model* model, vec3 cam_pos);
 	
 private:
 

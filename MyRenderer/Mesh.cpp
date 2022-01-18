@@ -1,14 +1,16 @@
 
 #include "Mesh.h"
+#include <iostream>
 
 // Constructor
 Mesh::Mesh(std::vector<Vertex> _vertices, std::vector<GLuint> _indices,
-	std::vector<Texture> _textures, mat4 _transformation)
+	std::vector<Texture> _textures, mat4 _transformation, bool alpha)
 {
 	vertices = _vertices;
 	indices = _indices;
 	textures = _textures;
 	transformation = _transformation;
+	_has_alpha = alpha;
 
 	// Set the buffers
 	setup_mesh();
@@ -21,11 +23,15 @@ Mesh::~Mesh()
 	glDeleteVertexArrays(1, &VAO);
 	glDeleteBuffers(1, &VBO);
 	glDeleteBuffers(1, &EBO);
-};
+}
+bool Mesh::has_alpha()
+{
+	return _has_alpha;
+}
 
 // Draw the mesh
 void Mesh::draw(GLuint shader_program, bool has_normal_map, bool has_ao_map, bool has_emissive_map,
-	mat4 model_matrix)
+	bool has_opacity_map, mat4 model_matrix)
 {
 	// Set the textures
 	for (unsigned int i = 0; i < textures.size(); i++)
@@ -40,6 +46,7 @@ void Mesh::draw(GLuint shader_program, bool has_normal_map, bool has_ao_map, boo
 	glUniform1i(glGetUniformLocation(shader_program, "has_normal_map"), has_normal_map);
 	glUniform1i(glGetUniformLocation(shader_program, "has_ao_map"), has_ao_map);
 	glUniform1i(glGetUniformLocation(shader_program, "has_emissive_map"), has_emissive_map);
+	glUniform1i(glGetUniformLocation(shader_program, "has_opacity_map"), has_opacity_map);
 
 	mat4 mt = model_matrix * transformation;
 	mat4 nmt = glm::transpose(glm::inverse(mt));
@@ -50,7 +57,6 @@ void Mesh::draw(GLuint shader_program, bool has_normal_map, bool has_ao_map, boo
 
 	// Draw mesh
 	glBindVertexArray(VAO);
-	
 	glDrawElements(GL_TRIANGLES, (GLsizei)indices.size(), GL_UNSIGNED_INT, 0);
 	glBindVertexArray(0);
 }

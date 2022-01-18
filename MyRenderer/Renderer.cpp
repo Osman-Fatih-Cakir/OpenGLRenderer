@@ -73,7 +73,11 @@ void Renderer::render(float delta)
 		for (unsigned int ii = 0; ii < scene->all_models.size(); ii++)
 		{
 			// Draw
-			dirDepth->render(scene->all_models[ii]);
+			dirDepth->render(scene->all_models[ii], scene->camera->get_position());
+		}
+		for (unsigned int ii = 0; ii < scene->translucent_models.size(); ii++)
+		{
+			dirDepth->render(scene->translucent_models[ii], scene->camera->get_position());
 		}
 	}
 
@@ -90,7 +94,7 @@ void Renderer::render(float delta)
 		for (unsigned int ii = 0; ii < scene->all_models.size(); ii++)
 		{
 			// Draw
-			pointDepth->render(scene->all_models[ii]);
+			pointDepth->render(scene->all_models[ii], scene->camera->get_position());
 		}
 	}
 
@@ -136,12 +140,18 @@ void Renderer::render(float delta)
 	deferredShading->render(scene->camera, scene->get_render_skybox());
 
 	//
+	//// 2.1: Draw lit translucent meshes
+	//
+
+	// Draw scene
+	forwardLitRender->render(GBuffer, main_fb, scene);
+
+	//
 	//// 3: Draw light meshes (The meshes that are not lit but in the same scene with other meshes)
 	//
 
 	// Start forward rendering program
 	forwardRender->start_program(GBuffer, main_fb);
-	forwardRender->change_viewport_resolution(WINDOW_WIDTH, WINDOW_HEIGHT);
 
 	// Draw scene
 	for (unsigned int i = 0; i < scene->point_lights.size(); i++)
@@ -174,7 +184,7 @@ void Renderer::render(float delta)
 	//// 5: Post Processing
 	//
 
-	bloom->start(main_fb->get_FBO(),  main_fb->get_color_texture());
+	//bloom->render(main_fb->get_FBO(),  main_fb->get_color_texture());
 
 	//
 	//// 6. Render the scene after post process
@@ -201,6 +211,10 @@ void Renderer::init()
 	// Deferred shading program
 	deferredShading = new DeferredShading();
 	deferredShading->change_viewport_resolution(WINDOW_WIDTH, WINDOW_HEIGHT);
+
+	// Forward Lit Renderer
+	forwardLitRender = new ForwardLitRender();
+	forwardLitRender->change_viewport_resolution(WINDOW_WIDTH, WINDOW_HEIGHT);
 
 	// Forward render program
 	forwardRender = new ForwardRender();

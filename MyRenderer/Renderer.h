@@ -11,6 +11,7 @@
 #include <Timer.h>
 #include <MainFramebuffer.h>
 #include <Bloom.h>
+#include <ForwardLitRender.h>
 
 class Renderer
 {
@@ -38,6 +39,7 @@ private:
 	DeferredShading* deferredShading = nullptr;
 	MainFramebuffer* main_fb = nullptr;
 	Bloom* bloom = nullptr;
+	ForwardLitRender* forwardLitRender = nullptr;
 	unsigned long time = 0;
 
 	GLuint render_program;

@@ -18,7 +18,7 @@ public:
 	void start_program(DirectionalLight* _light);
 	GLuint get_shader_program();
 	void set_space_matrix(mat4 mat);
-	void render(Model* model);
+	void render(Model* model, vec3 cam_pos);
 
 private:
 

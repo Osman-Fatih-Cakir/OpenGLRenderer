@@ -8,12 +8,14 @@
 typedef glm::vec2 vec2;
 
 // Constructor
-Model::Model(const char* path)
+Model::Model(const char* path, bool _translucent)
 {
 	load_model(path);
 
     // Set normal matrix
     update_normal_matrix();
+
+    translucent = _translucent;
 }
 
 // Destructor
@@ -22,6 +24,8 @@ Model::~Model()
     // Deallocate meshes
     for (int i = 0; i < meshes.size(); i++)
         delete meshes[i];
+    for (int i = 0; i < translucent_meshes.size(); i++)
+        delete translucent_meshes[i];
 
     // Deallocate textures
     for (int i = 0; i < textures_loaded.size(); i++)
@@ -69,12 +73,28 @@ mat4 Model::get_normal_matrix()
     return normal_matrix;
 }
 
-// Draws every mesh
-void Model::draw(GLuint shader_program)
+bool Model::is_translucent()
 {
+    return translucent;
+}
+
+// Draws every mesh
+void Model::draw(GLuint shader_program, vec3 cam_pos)
+{
+    // Draw opaque meshes first
     for (unsigned int i = 0; i < meshes.size(); i++)
     {
-        meshes[i]->draw(shader_program, has_normal_map, has_ao_map, has_emissive_map, model_matrix);
+        meshes[i]->draw(shader_program, has_normal_map, has_ao_map, has_emissive_map, 
+            has_opacity_map, model_matrix);
+    }
+    // Draw translucent meshes in sorted order
+    std::map<float, Mesh*> sorted = sort_translucent_meshes(cam_pos);
+    
+    for (std::map<float, Mesh*>::reverse_iterator it = sorted.rbegin();
+        it != sorted.rend(); ++it)
+    {
+        it->second->draw(shader_program, has_normal_map, has_ao_map, has_emissive_map,
+            has_opacity_map, model_matrix);
     }
 }
 
@@ -106,7 +126,15 @@ void Model::process_node(aiNode* node, const aiScene* scene, aiMatrix4x4 tr)
     for (unsigned int i = 0; i < node->mNumMeshes; i++)
     {
         aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
-        meshes.push_back(process_mesh(mesh, scene, tr));
+        Mesh* _mesh = process_mesh(mesh, scene, tr);
+        if (_mesh->has_alpha()) // Store translucent meshes in another array
+        {
+            translucent_meshes.push_back(_mesh);
+        }
+        else
+        {
+            meshes.push_back(_mesh);
+        }
     }
     // then do the same for each of its children
     for (unsigned int i = 0; i < node->mNumChildren; i++)
@@ -180,6 +208,7 @@ Mesh* Model::process_mesh(aiMesh* mesh, const aiScene* scene, aiMatrix4x4 transf
     aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
 
     // Albedo map
+    has_alpha = false;
     std::vector<Texture> albedo_maps = load_material_textures(material, aiTextureType_DIFFUSE, "albedo_map");
     textures.insert(textures.end(), albedo_maps.begin(), albedo_maps.end());
     // Normal map
@@ -197,6 +226,8 @@ Mesh* Model::process_mesh(aiMesh* mesh, const aiScene* scene, aiMatrix4x4 transf
     std::vector<Texture> ems_maps = load_material_textures(material, aiTextureType_EMISSIVE, "emissive_map");
     if (ems_maps.size() > 0) has_emissive_map = true;
     textures.insert(textures.end(), ems_maps.begin(), ems_maps.end());
+    // Opacity map // TODO implement
+    has_opacity_map = false;
     
     mat4 _transformation = {
         transformation.a1, transformation.b1, transformation.c1, transformation.d1,
@@ -206,11 +237,12 @@ Mesh* Model::process_mesh(aiMesh* mesh, const aiScene* scene, aiMatrix4x4 transf
     };
 
     // Return a mesh object created from the extracted mesh data
-    return new Mesh(vertices, indices, textures, _transformation);
+    return new Mesh(vertices, indices, textures, _transformation, has_alpha);
 }
 
 // Load textures
-std::vector<Texture> Model::load_material_textures(aiMaterial* mat, aiTextureType type, std::string typeName)
+std::vector<Texture> Model::load_material_textures(aiMaterial* mat, aiTextureType type, 
+    std::string typeName)
 {
     std::vector<Texture> textures;
     for (unsigned int i = 0; i < mat->GetTextureCount(type); i++)
@@ -224,13 +256,14 @@ std::vector<Texture> Model::load_material_textures(aiMaterial* mat, aiTextureTyp
             {
                 textures.push_back(textures_loaded[j]);
                 skip = true;
+                has_alpha = true;
                 break;
             }
         }
         if (!skip)
         {   // if texture hasn't been loaded already, load it
             Texture texture;
-            texture.id = texture_from_file(str.C_Str(), directory);
+            texture.id = texture_from_file(str.C_Str(), directory, typeName);
             texture.type = typeName;
             texture.path = str.C_Str();
             textures.push_back(texture);
@@ -241,7 +274,8 @@ std::vector<Texture> Model::load_material_textures(aiMaterial* mat, aiTextureTyp
 }
 
 // Loads texture from image file
-unsigned int Model::texture_from_file(const char* path, const std::string& directory)
+unsigned int Model::texture_from_file(const char* path, const std::string& directory,
+        std::string& typeName)
 {
     stbi_set_flip_vertically_on_load(false);
     std::string filename = std::string(path);
@@ -261,7 +295,11 @@ unsigned int Model::texture_from_file(const char* path, const std::string& direc
         else if (nrComponents == 3)
             format = GL_RGB;
         else if (nrComponents == 4)
+        {
             format = GL_RGBA;
+            if (typeName.compare("albedo_map") == 0)
+                has_alpha = true;
+        }
 
         glBindTexture(GL_TEXTURE_2D, textureID);
         glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
@@ -287,4 +325,26 @@ unsigned int Model::texture_from_file(const char* path, const std::string& direc
 void Model::update_normal_matrix()
 {
     normal_matrix = glm::transpose(glm::inverse(model_matrix));
+}
+
+// Sorts meshes via the first vertex distance to camera
+// (This is not good and I will come back to it later)
+std::map<float, Mesh*> Model::sort_translucent_meshes(vec3 cam_pos)
+{
+    std::map<float, Mesh*> tr_mesh_map;
+    for (std::vector<Mesh*>::iterator itr = translucent_meshes.begin();
+        itr != translucent_meshes.end(); itr++)
+    {
+        //float avg = 0.f;
+        //for (std::vector<Vertex>::iterator it = (*itr)->vertices.begin();
+        //    it != (*itr)->vertices.end(); it++)
+        //{
+        //    avg += glm::length(cam_pos - (*it).position);
+        //}
+        //avg = avg / (*itr)->vertices.size();
+        //tr_mesh_map[avg] = (*itr);
+        float avg = glm::length(cam_pos - (*itr)->vertices[0].position);
+        tr_mesh_map[avg] = (*itr);
+    }
+    return tr_mesh_map;
 }

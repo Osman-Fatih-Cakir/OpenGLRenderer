@@ -156,6 +156,7 @@
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="DeferredShading.cpp" />
     <ClCompile Include="DirectionalDepth.cpp" />
+    <ClCompile Include="ForwardLitRender.cpp" />
     <ClCompile Include="ForwardRender.cpp" />
     <ClCompile Include="MainFramebuffer.cpp" />
     <ClCompile Include="gBuffer.cpp" />
@@ -176,6 +177,7 @@
     <ClInclude Include="Camera.h" />
     <ClInclude Include="DeferredShading.h" />
     <ClInclude Include="DirectionalDepth.h" />
+    <ClInclude Include="ForwardLitRender.h" />
     <ClInclude Include="ForwardRender.h" />
     <ClInclude Include="MainFramebuffer.h" />
     <ClInclude Include="gBuffer.h" />
@@ -208,6 +210,8 @@
     <None Include="shaders\deferred_unlit_meshes_vs.glsl" />
     <None Include="shaders\depth_vs.glsl" />
     <None Include="shaders\depth_fs.glsl" />
+    <None Include="shaders\forward_lit_render_fs.glsl" />
+    <None Include="shaders\forward_lit_render_vs.glsl" />
     <None Include="shaders\gbuffer_fs.glsl" />
     <None Include="shaders\gbuffer_vs.glsl" />
     <None Include="shaders\irradiance_map_fs.glsl" />

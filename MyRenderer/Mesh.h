@@ -34,8 +34,9 @@ class Mesh
 public:
 	// Constructor and destructor
 	Mesh(std::vector<Vertex> _vertices, std::vector<unsigned int> _indices,
-		std::vector<Texture> _textures, mat4 _transformation);
+		std::vector<Texture> _textures, mat4 _transformation, bool alpha);
 	~Mesh();
+	bool has_alpha();
 
 	// Mesh data
 	std::vector<Vertex> vertices;
@@ -44,12 +45,14 @@ public:
 	mat4 transformation;
 	GLuint VAO;
 
-	void draw(GLuint shader_program, bool has_normal_map, bool has_ao_map, bool has_emissive_map, 
-		mat4 model_matrix);
+	void draw(GLuint shader_program, bool has_normal_map, bool has_ao_map, bool has_emissive_map,
+		bool has_opacity_map, mat4 model_matrix);
 
 private:
 	Mesh();
+
 	GLuint VBO, EBO;
+	bool _has_alpha = false;
 
 	void setup_mesh();
 };

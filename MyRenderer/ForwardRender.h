@@ -22,7 +22,6 @@ public:
 	GLuint get_shader_program();
 	void set_projection_matrix(mat4 mat);
 	void set_view_matrix(mat4 mat);
-	void set_model_matrix(mat4 mat);
 	void set_color(vec3 vec);
 	void render(Camera* camera, Model* model);
 

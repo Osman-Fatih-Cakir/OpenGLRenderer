@@ -10,7 +10,7 @@ public:
 	Bloom();
 	~Bloom();
 	
-	void start(GLuint main_fb, GLuint texture);
+	void render(GLuint main_fb, GLuint texture);
 
 private:
 

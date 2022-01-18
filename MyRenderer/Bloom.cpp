@@ -28,7 +28,7 @@ Bloom::~Bloom()
     glDeleteBuffers(1, &quadVBO);
 }
 
-void Bloom::start(GLuint main_fb, GLuint texture)
+void Bloom::render(GLuint main_fb, GLuint texture)
 {
     // Take hdr image and bright image
     take_hdr_image(texture);

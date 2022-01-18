@@ -289,14 +289,22 @@ void resize_window(int w, int h)
 void init_models()
 {
 	// Scene meshes
-	//Model* model = new Model("mesh/test_scene/sponza/sponza.glb");
+	//Model* model = new Model("mesh/test_scene/helmet/DamagedHelmet.gltf", false);
+	//model->translate(-15.f, 0.f, 0.f, 1.f);
+	//model->scale(10.f, 10.f, 10.f, 1.f);
 	//scene->add_model(model);
-	//Model* model = new Model("mesh/test_scene/helmet/DamagedHelmet.gltf");
-	//model->rotate(vec3(1.f, 0.f, 0.f), 90.f, 1.f);
+	//Model* model = new Model("mesh/cornell_box/cornell_box.gltf", false);	
+	//model->scale(2.f, 2.f, 2.f, 1.f);
 	//scene->add_model(model);
-	Model* model = new Model("mesh/cornell_box/cornell_box.gltf");	
-	model->scale(2.f, 2.f, 2.f, 1.f);
+	Model* model = new Model("mesh/test_scene/sponza/sponza.glb", true);
 	scene->add_model(model);
+	//Model* model = new Model("mesh/test_scene/tree/scene.gltf", true);
+	//model->rotate(vec3(0.f, 1.f, 0.f), 180.f, 1.f);
+	//model->scale(0.5f, 0.5f, 0.5f, 1.f);
+	//scene->add_model(model);
+	//Model* model = new Model("mesh/test_scene/fuel_glasses/scene.gltf", true);
+	//scene->add_model(model);
+	// TODO for testing, render opaque and translucent meshes together
 }
 
 // Initialize skyboxes
@@ -325,16 +333,16 @@ void init_lights()
 	//srand((unsigned int)time(NULL));
 
 	vec3 _positions[] = {
-		vec3(0.f, 1.0f, 0.f),
-		vec3(3.f, 6.f, 0.f),
-		vec3(-2.f, 6.f, 0.f)
+		vec3(0.f, 16.f, 0.f),
+		vec3(-2.f, 3.f, 3.f),
+		vec3(1.8f, 3.f, 2.6f)
 	};
 
 	// Color sequential
 	vec3 _colors[] = {
 		vec3(0.9f, 0.9f, 0.9f),
-		vec3(0.f, 0.8f, 1.f),
-		vec3(1.f, 0.5f, 0.8f)
+		vec3(0.9f, 0.9f, 0.9f),
+		vec3(0.9f, 0.9f, 0.9f)
 	};
 
 	// Light positions
@@ -342,12 +350,12 @@ void init_lights()
 	for (int i = 0; i < point_light_count; i++)
 	{
 		// Initialize light
-		PointLight* light = new PointLight(_positions[i], _colors[i], true);
-		light->set_intensity(10.f);
+		PointLight* light = new PointLight(_positions[i], _colors[i], false);
+		light->set_intensity(0.f);
 		std::cout << "Radius: " << light->radius << "\n";
 		// Draw a mesh for represent a light
-		Model* light_model = new Model("mesh/simple/sphere.obj");
-		//light_model->scale(0.05f, 0.05f, 0.05f, 1.0f);
+		Model* light_model = new Model("mesh/simple/sphere.obj", false);
+		//light_model->scale(10.f, 10.f, 10.f, 1.0f);
 		light->set_model(light_model);
 		//Model* light_debug_model = new Model("mesh/simple/icosphere.obj");
 		//light->debug(light_debug_model);
@@ -362,8 +370,9 @@ void init_lights()
 	for (int i = 0; i < direct_light_count; i++)
 	{
 		DirectionalLight* light = new DirectionalLight(
-			vec3(-1.0f, -10.0f, -1.0f), vec3(1.f, 1.f, 1.f), false);
-		light->intensity = 0.0f;
+			vec3(-1.0f, -10.0f, -1.0f),
+			vec3(1.f, 1.f, 0.9f), true);
+		light->intensity = 1.0f;
 		scene->add_direct_light(light);
 	}
 }
@@ -381,14 +390,14 @@ void init_scene()
 
 	// Set camera parameters
 	init_camera(
-		vec3(6.f, 0.4f, 0.f), // Eye
+		vec3(18.f, 6.f, 0.f), // Eye
 		vec3(0.f, 1.f, 0.f), // Up
-		vec3(0.f, 0.4f, 0.f) // Center
+		vec3(0.f, 6.f, 0.f) // Center
 	);
 	
 	// Initialize lights
 	init_lights();
-	
+
 	// Initialize renderer
 	renderer = new Renderer(scene);
 }
@@ -432,7 +441,7 @@ void render()
 	}
 	if (input->hold_key(Key::KEY_Z))
 	{
-		cam->rotate(vec3(1.f, 0.f, 0.f), 2.f, delta_over_t);
+		cam->rotate(vec3(0.f, 0.f, -1.f), 2.f, delta_over_t);
 	}
 	if (input->hold_key(Key::KEY_C))
 	{

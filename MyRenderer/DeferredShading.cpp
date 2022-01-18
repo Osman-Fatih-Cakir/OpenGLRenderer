@@ -29,7 +29,7 @@ void DeferredShading::start_program(gBuffer* _GBuffer, MainFramebuffer* fb)
 	glBindFramebuffer(GL_FRAMEBUFFER, fb->get_FBO());
 	glViewport(0, 0, width, height);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	glClearColor(0.4f, 0.4f, 0.4f, 1.0f);
+	glClearColor(0.05f, 0.05f, 0.05f, 1.0f);
 
 	GBuffer = _GBuffer;
 	framebuffer = fb;
@@ -57,40 +57,40 @@ void DeferredShading::set_viewer_pos(vec3 vec)
 // Sets g-buffer position color attachment
 void DeferredShading::set_gPosition(GLuint id)
 {
-	glUniform1i(loc_gPosition, 0);
-	glActiveTexture(GL_TEXTURE0 + 0);
+	glUniform1i(loc_gPosition, texture_uniform_starting_point);
+	glActiveTexture(GL_TEXTURE0 + texture_uniform_starting_point);
 	glBindTexture(GL_TEXTURE_2D, id);
 }
 
 // Sets g-buffer normal color attachment
 void DeferredShading::set_gNormal(GLuint id)
 {
-	glUniform1i(loc_gNormal, 1);
-	glActiveTexture(GL_TEXTURE0 + 1);
+	glUniform1i(loc_gNormal, texture_uniform_starting_point+1);
+	glActiveTexture(GL_TEXTURE0 + texture_uniform_starting_point + 1);
 	glBindTexture(GL_TEXTURE_2D, id);
 }
 
 // Sets g-buffer Albdeo Specs color attachment
 void DeferredShading::set_gAlbedoSpec(GLuint id)
 {
-	glUniform1i(loc_gAlbedoSpec, 2);
-	glActiveTexture(GL_TEXTURE0 + 2);
+	glUniform1i(loc_gAlbedoSpec, texture_uniform_starting_point + 2);
+	glActiveTexture(GL_TEXTURE0 + texture_uniform_starting_point + 2);
 	glBindTexture(GL_TEXTURE_2D, id);
 }
 
 // Sets g-buffer roughness color attachment
 void DeferredShading::set_gPbr_materials(GLuint id)
 {
-	glUniform1i(loc_gPbr_materials, 3);
-	glActiveTexture(GL_TEXTURE0 + 3);
+	glUniform1i(loc_gPbr_materials, texture_uniform_starting_point + 3);
+	glActiveTexture(GL_TEXTURE0 + texture_uniform_starting_point + 3);
 	glBindTexture(GL_TEXTURE_2D, id);
 }
 
 // Set irradiance map to the uniform
 void DeferredShading::set_irradiance_map(GLuint id)
 {
-	glUniform1i(loc_irradiance_map, 4);
-	glActiveTexture(GL_TEXTURE0 + 4);
+	glUniform1i(loc_irradiance_map, texture_uniform_starting_point + 4);
+	glActiveTexture(GL_TEXTURE0 + texture_uniform_starting_point + 4);
 	if (!glIsTexture(id) || id == -1)
 		return;
 	glBindTexture(GL_TEXTURE_CUBE_MAP, id);
@@ -99,8 +99,8 @@ void DeferredShading::set_irradiance_map(GLuint id)
 // Set prefiltered map to the uniform
 void DeferredShading::set_prefiltered_map(GLuint id)
 {
-	glUniform1i(loc_prefiltered_map, 5);
-	glActiveTexture(GL_TEXTURE0 + 5);
+	glUniform1i(loc_prefiltered_map, texture_uniform_starting_point + 5);
+	glActiveTexture(GL_TEXTURE0 + texture_uniform_starting_point + 5);
 	if (!glIsTexture(id) || id == -1)
 		return;
 	glBindTexture(GL_TEXTURE_CUBE_MAP, id);
@@ -109,18 +109,17 @@ void DeferredShading::set_prefiltered_map(GLuint id)
 // Set brdf lut to the uniform
 void DeferredShading::set_brdf_lut(GLuint id)
 {
-	glUniform1i(loc_brdf_lut, 6);
-	glActiveTexture(GL_TEXTURE0 + 6);
+	glUniform1i(loc_brdf_lut, texture_uniform_starting_point + 6);
+	glActiveTexture(GL_TEXTURE0 + texture_uniform_starting_point + 6);
 	if (!glIsTexture(id) || id == -1)
 		return;
 	glBindTexture(GL_TEXTURE_2D, id);
 }
-
 // Set emissive to the uniform
 void DeferredShading::set_emissive(GLuint id)
 {
-	glUniform1i(loc_emissive, 7);
-	glActiveTexture(GL_TEXTURE0 + 7);
+	glUniform1i(loc_emissive, texture_uniform_starting_point + 7);
+	glActiveTexture(GL_TEXTURE0 + texture_uniform_starting_point + 7);
 	if (!glIsTexture(id) || id == -1)
 		return;
 	glBindTexture(GL_TEXTURE_2D, id);
@@ -303,7 +302,7 @@ void DeferredShading::get_uniform_locations()
 	loc_brdf_lut = glGetUniformLocation(program, "brdf_lut");
 	loc_is_ibl_active = glGetUniformLocation(program, "is_ibl_active");
 
-	static_texture_uniform_count = 8;
+	static_texture_uniform_count = 8 + texture_uniform_starting_point - 1;
 }
 
 // Initialize a quad

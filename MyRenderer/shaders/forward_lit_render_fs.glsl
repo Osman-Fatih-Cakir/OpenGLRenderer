@@ -1,23 +1,28 @@
 #version 450 core
 
+in vec3 fFragPos;
 in vec2 fTexCoord;
+in vec3 fNormal;
+in mat3 TBN;
 
 out vec4 OutColor;
 
-uniform sampler2D gPosition;
-uniform sampler2D gNormal;
-uniform sampler2D gAlbedoSpec;
-uniform sampler2D gEmissive;
-// For gPbr_materials,
-//	R component : Roughness
-//	G component : Metallic
-//	B component : Ambient Occlusion
-uniform sampler2D gPbr_materials;
+uniform sampler2D albedo_map;
+uniform sampler2D normal_map;
+uniform sampler2D metallic_roughness_map;
+uniform sampler2D ao_map;
+uniform sampler2D emissive_map;
+uniform sampler2D opacity_map;
 uniform samplerCube irradiance_map;
 uniform samplerCube prefiltered_map;
 uniform sampler2D brdf_lut;
 uniform float MAX_REFLECTION_LOD;
 uniform int is_ibl_active;
+
+uniform bool has_normal_map;
+uniform bool has_ao_map;
+uniform bool has_emissive_map;
+uniform bool has_opacity_map;
 
 struct Point_Light
 {
@@ -86,7 +91,7 @@ float directional_shadow_calculation(int light_index, vec3 _fPos, float bias)
 	{
 		shadow = 0.0;
 	}
-	
+
 	return shadow;
 }
 
@@ -107,7 +112,7 @@ float point_shadow_calculation(int light_index, vec3 _fPos, float bias)
 		vec3(1, 1, 0), vec3(1, -1, 0), vec3(-1, -1, 0), vec3(-1, 1, 0),
 		vec3(1, 0, 1), vec3(-1, 0, 1), vec3(1, 0, -1), vec3(-1, 0, -1),
 		vec3(0, 1, 1), vec3(0, -1, 1), vec3(0, -1, -1), vec3(0, 1, -1)
-	);
+		);
 
 	float radius = 0.03;
 
@@ -120,7 +125,7 @@ float point_shadow_calculation(int light_index, vec3 _fPos, float bias)
 	}
 
 	shadow /= 20.f;
-	
+
 	return shadow;
 }
 
@@ -266,7 +271,7 @@ vec3 calculate_point_light(vec3 frag_pos, vec3 normal, vec3 albedo, float roughn
 		// Calculate Lo
 		float angle = max(dot(normal, light_dir), 0.0);
 		Lo += (kD * albedo / PI + specular) * attenuation * angle;
-		Lo *= point_lights[i].intensity * (1.0 - shadow) * point_lights[i].color;	
+		Lo *= point_lights[i].intensity * (1.0 - shadow) * point_lights[i].color;
 
 		col += Lo;
 	}
@@ -334,42 +339,74 @@ vec3 calculate_direct_light(vec3 frag_pos, vec3 normal, vec3 albedo, float rough
 	return col;
 }
 
+
 void main()
 {
-	// Sample the data from gBuffer
-	vec3 frag_pos = texture(gPosition, fTexCoord).rgb;
-	vec3 view_dir = normalize(viewer_pos - frag_pos);
-	vec3 normal = texture(gNormal, fTexCoord).rgb;
-	vec3 albedo = texture(gAlbedoSpec, fTexCoord).rgb;
-	float roughness = texture(gPbr_materials, fTexCoord).r;
-	float metallic = texture(gPbr_materials, fTexCoord).g;
-	float ao = texture(gPbr_materials, fTexCoord).b;
-	vec3 emissive = texture(gEmissive, fTexCoord).rgb;
+	// Albdedo
+	vec4 albedo = texture(albedo_map, fTexCoord).rgba;
+	////////////////////////////////////////////////////
+	//if (albedo.a < 0.1)
+	//	discard;
+	/////////////////////////////////////////////////////
+	
+	// Normal
+	vec3 normal;
+	if (has_normal_map)
+	{
+		vec3 _gNormal = texture(normal_map, fTexCoord).xyz;
+		_gNormal = _gNormal * 2.0 - 1.0;
+		normal = normalize(TBN * _gNormal);
+	}
+	else
+	{
+		// TODO check here (Meshes without normal maps)
+		/*
+		vec3 _gNormal = fNormal * 2.0 - 1.0;
+		normal = normalize(TBN * _gNormal);
+		*/
+		normal = normalize(fNormal);
+	}
+	// Opacity map (if there is any)
+	if (has_opacity_map)
+	{
+		albedo.a = texture(opacity_map, fTexCoord).a;
+	}
+	// Roughness
+	float roughness = texture(metallic_roughness_map, fTexCoord).g;
+	// Metallic
+	float metallic = texture(metallic_roughness_map, fTexCoord).r;
+	// Ambient Occlusion
+	float ao = 1.0;
+	if (has_ao_map)
+	{
+		ao = texture(ao_map, fTexCoord).r;
+	}
+	// Emissive
+	vec3 emissive = vec3(0.0);
+	if (has_emissive_map)
+	{
+		emissive = texture(emissive_map, fTexCoord).rgb;
+	}
 
-	////////////////////////////////
-	//albedo = vec3(0.7, 0.3, 0.95);
-	//metallic = 0.2;
-	//roughness = 0.5;
-	//ao = 1.0;
-	////////////////////////////////
+	vec3 view_dir = normalize(viewer_pos - fFragPos);
 
 	// Outgoing light
 	vec3 Lo = vec3(0.0);
 
 	// Point light calculation
-	Lo += calculate_point_light(frag_pos, normal, albedo, roughness, metallic);
+	Lo += calculate_point_light(fFragPos, normal, albedo.xyz, roughness, metallic);
 
 	// Direct light calculation
-	Lo += calculate_direct_light(frag_pos, normal, albedo, roughness, metallic);
-	
+	Lo += calculate_direct_light(fFragPos, normal, albedo.xyz, roughness, metallic);
+
 	if (is_ibl_active != 0)
 	{
 		// IBL
-		Lo += IBL(normal, view_dir, metallic, roughness, albedo, ao);
+		Lo += IBL(normal, view_dir, metallic, roughness, albedo.xyz, ao);
 	}
 	else
 	{
-		Lo += vec3(0.01) * albedo * ao;
+		Lo += vec3(0.01) * albedo.xyz * ao;
 	}
 
 	// Emissive
@@ -379,6 +416,6 @@ void main()
 	Lo = vec3(1.0) - exp(-Lo * 1.0);
 	// Gamma correct while we're at it       
 	Lo = pow(Lo, vec3(1.0 / 2.2));
-	
-	OutColor = vec4(Lo, 1.0);
+
+	OutColor = vec4(Lo, albedo.a);
 }
