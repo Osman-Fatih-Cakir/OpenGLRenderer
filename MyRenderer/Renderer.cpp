@@ -75,6 +75,10 @@ void Renderer::render(float delta)
 			// Draw
 			dirDepth->render(scene->all_models[ii]);
 		}
+		for (unsigned int ii = 0; ii < scene->translucent_models.size(); ii++)
+		{
+			dirDepth->render(scene->translucent_models[ii]);
+		}
 	}
 
 	// Point light shadows

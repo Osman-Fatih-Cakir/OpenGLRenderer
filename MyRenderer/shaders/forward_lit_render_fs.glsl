@@ -418,6 +418,4 @@ void main()
 	Lo = pow(Lo, vec3(1.0 / 2.2));
 
 	OutColor = vec4(Lo, albedo.a);
-
-	//OutColor = vec4(0.3, 0.6, 0.9, 0.2);
 }

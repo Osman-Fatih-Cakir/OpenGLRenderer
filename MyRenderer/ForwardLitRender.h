@@ -52,6 +52,7 @@ private:
 	unsigned int height = WINDOW_HEIGHT;
 
 	unsigned int static_texture_uniform_count = -1;
+	unsigned int texture_uniform_starting_point = 6;
 	int point_light_count = 0;
 	int direct_light_count = 0;
 };

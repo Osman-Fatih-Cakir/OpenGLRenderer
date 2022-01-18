@@ -88,7 +88,7 @@ void ForwardLitRender::init_uniforms()
 	loc_is_ibl_active = glGetUniformLocation(program, "is_ibl_active");
 	loc_max_reflection_lod = glGetUniformLocation(program, "MAX_REFLECTION_LOD");
 
-	static_texture_uniform_count = 3;
+	static_texture_uniform_count = 3 + texture_uniform_starting_point - 1;
 }
 
 // Blit depth buffer of gBuffer
@@ -226,24 +226,24 @@ void ForwardLitRender::set_light_uniforms(Scene* scene)
 
 void ForwardLitRender::set_irradiance_map(GLuint id)
 {
-	glUniform1i(loc_irradiance_map, 0);
-	glActiveTexture(GL_TEXTURE0 + 0);
+	glUniform1i(loc_irradiance_map, texture_uniform_starting_point + 0);
+	glActiveTexture(GL_TEXTURE0 + texture_uniform_starting_point + 0);
 	if (!glIsTexture(id) || id == -1)
 		return;
 	glBindTexture(GL_TEXTURE_CUBE_MAP, id);
 }
 void ForwardLitRender::set_prefiltered_map(GLuint id)
 {
-	glUniform1i(loc_prefiltered_map, 1);
-	glActiveTexture(GL_TEXTURE0 + 1);
+	glUniform1i(loc_prefiltered_map, texture_uniform_starting_point + 1);
+	glActiveTexture(GL_TEXTURE0 + texture_uniform_starting_point + 1);
 	if (!glIsTexture(id) || id == -1)
 		return;
 	glBindTexture(GL_TEXTURE_CUBE_MAP, id);
 }
 void ForwardLitRender::set_brdf_lut(GLuint id)
 {
-	glUniform1i(loc_brdf_lut, 2);
-	glActiveTexture(GL_TEXTURE0 + 2);
+	glUniform1i(loc_brdf_lut, texture_uniform_starting_point + 2);
+	glActiveTexture(GL_TEXTURE0 + texture_uniform_starting_point + 2);
 	if (!glIsTexture(id) || id == -1)
 		return;
 	glBindTexture(GL_TEXTURE_2D, id);
