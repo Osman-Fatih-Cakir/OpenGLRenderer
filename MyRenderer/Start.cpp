@@ -290,7 +290,8 @@ void init_models()
 {
 	// Scene meshes
 	//Model* model = new Model("mesh/test_scene/helmet/DamagedHelmet.gltf", false);
-	//model->rotate(vec3(1.f, 0.f, 0.f), 90.f, 1.f);
+	//model->translate(-15.f, 0.f, 0.f, 1.f);
+	//model->scale(10.f, 10.f, 10.f, 1.f);
 	//scene->add_model(model);
 	//Model* model = new Model("mesh/cornell_box/cornell_box.gltf", false);	
 	//model->scale(2.f, 2.f, 2.f, 1.f);

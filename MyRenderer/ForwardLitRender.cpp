@@ -20,6 +20,9 @@ ForwardLitRender::~ForwardLitRender()
 // Renders the scene
 void ForwardLitRender::render(gBuffer* GBuffer, MainFramebuffer* main_fb, Scene* scene)
 {
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
 	blit_depth_buffer(GBuffer, main_fb);
 
 	glUseProgram(program);
@@ -27,8 +30,7 @@ void ForwardLitRender::render(gBuffer* GBuffer, MainFramebuffer* main_fb, Scene*
 	glViewport(0, 0, width, height);
 
 	// Set camera attributes
-	set_projection_matrix(scene->camera->get_projection_matrix());
-	set_view_matrix(scene->camera->get_view_matrix());
+	set_uniforms(scene);
 
 	// Draw call for each object (forward rendering)
 	std::vector<Model*>::iterator itr;
@@ -37,6 +39,7 @@ void ForwardLitRender::render(gBuffer* GBuffer, MainFramebuffer* main_fb, Scene*
 		(*itr)->draw(program);
 	}
 
+	glDisable(GL_BLEND);
 	glBindVertexArray(0);
 }
 
@@ -78,6 +81,14 @@ void ForwardLitRender::init_uniforms()
 	loc_projection_matrix = glGetUniformLocation(program, "projection_matrix");
 	loc_view_matrix = glGetUniformLocation(program, "view_matrix");
 	// TODO after fragment shader implementation
+	loc_viewer_pos = glGetUniformLocation(program, "viewer_pos");
+	loc_irradiance_map = glGetUniformLocation(program, "irradiance_map");
+	loc_prefiltered_map = glGetUniformLocation(program, "prefiltered_map");
+	loc_brdf_lut = glGetUniformLocation(program, "brdf_lut");
+	loc_is_ibl_active = glGetUniformLocation(program, "is_ibl_active");
+	loc_max_reflection_lod = glGetUniformLocation(program, "MAX_REFLECTION_LOD");
+
+	static_texture_uniform_count = 3;
 }
 
 // Blit depth buffer of gBuffer
@@ -88,4 +99,164 @@ void ForwardLitRender::blit_depth_buffer(gBuffer* GBuffer, MainFramebuffer* fb)
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fb->get_FBO()); // Write to default framebuffer
 	glBlitFramebuffer(0, 0, GBuffer->get_width(), GBuffer->get_height(), 0, 0,
 		GBuffer->get_width(), GBuffer->get_height(), GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+}
+
+// Set uniforms to shader
+void ForwardLitRender::set_uniforms(Scene* scene)
+{
+	// Set matrices
+	set_projection_matrix(scene->camera->get_projection_matrix());
+	set_view_matrix(scene->camera->get_view_matrix());
+	set_viewer_position(scene->camera->get_position());
+
+	// Set IBL uniforms
+	Skybox* skybox = scene->get_render_skybox();
+	if (skybox != nullptr)
+	{
+		set_irradiance_map(skybox->get_irradiance_map());
+		set_prefiltered_map(skybox->get_prefiltered_map());
+		set_brdf_lut(skybox->get_brdf_lut());
+		set_max_reflection_lod((float)skybox->get_max_mip_level());
+		set_is_ibl_active(skybox->is_ibl_active());
+	}
+	else
+	{
+		set_irradiance_map(-1);
+		set_prefiltered_map(-1);
+		set_brdf_lut(-1);
+		set_max_reflection_lod(-1);
+		set_is_ibl_active(false);
+	}
+
+	point_light_count = 0;
+	direct_light_count = 0;
+
+	set_light_uniforms(scene);
+}
+
+// Set light uniforms to shader
+void ForwardLitRender::set_light_uniforms(Scene* scene)
+{
+	// Set point lights
+	std::vector<PointLight*>::iterator itr;
+	for (itr = scene->point_lights.begin(); itr != scene->point_lights.end(); itr++)
+	{
+		std::string light_array_str = "point_lights[" + std::to_string(point_light_count) + "].position";
+		GLuint loc_lights_pos = glGetUniformLocation(program, (GLchar*)light_array_str.c_str());
+		glUniform3fv(loc_lights_pos, 1, &((*itr)->position)[0]);
+
+		light_array_str = "point_lights[" + std::to_string(point_light_count) + "].color";
+		GLuint loc_lights_col = glGetUniformLocation(program, (GLchar*)light_array_str.c_str());
+		glUniform3fv(loc_lights_col, 1, &((*itr)->color)[0]);
+
+		light_array_str = "point_lights[" + std::to_string(point_light_count) + "].radius";
+		GLuint loc_light_r = glGetUniformLocation(program, (GLchar*)light_array_str.c_str());
+		glUniform1f(loc_light_r, (GLfloat)(*itr)->radius);
+
+		light_array_str = "point_lights[" + std::to_string(point_light_count) + "].cutoff";
+		GLuint loc_cutoff = glGetUniformLocation(program, (GLchar*)light_array_str.c_str());
+		glUniform1f(loc_cutoff, (GLfloat)(*itr)->cutoff);
+
+		light_array_str = "point_lights[" + std::to_string(point_light_count) + "].half_radius";
+		GLuint loc_light_hr = glGetUniformLocation(program, (GLchar*)light_array_str.c_str());
+		glUniform1f(loc_light_hr, (GLfloat)(*itr)->half_radius);
+
+		light_array_str = "point_lights[" + std::to_string(point_light_count) + "].linear";
+		GLuint loc_light_l = glGetUniformLocation(program, (GLchar*)light_array_str.c_str());
+		glUniform1f(loc_light_l, (GLfloat)(*itr)->linear);
+
+		light_array_str = "point_lights[" + std::to_string(point_light_count) + "].quadratic";
+		GLuint loc_light_q = glGetUniformLocation(program, (GLchar*)light_array_str.c_str());
+		glUniform1f(loc_light_q, (GLfloat)(*itr)->quadratic);
+
+		light_array_str = "point_lights[" + std::to_string(point_light_count) + "].far";
+		GLuint loc_light_far = glGetUniformLocation(program, (GLchar*)light_array_str.c_str());
+		glUniform1f(loc_light_far, (GLfloat)(*itr)->shadow_projection_far);
+
+		light_array_str = "point_lights[" + std::to_string(point_light_count) + "].cast_shadow";
+		GLuint loc_cast_shadow = glGetUniformLocation(program, (GLchar*)light_array_str.c_str());
+		glUniform1i(loc_cast_shadow, (GLint)(*itr)->does_cast_shadow());
+
+		light_array_str = "point_lights[" + std::to_string(point_light_count) + "].point_shadow_map";
+		GLuint loc_light_cubemap = glGetUniformLocation(program, (GLchar*)light_array_str.c_str());
+		glUniform1i(loc_light_cubemap, static_texture_uniform_count + point_light_count + direct_light_count);
+		glActiveTexture(GL_TEXTURE0 + static_texture_uniform_count + point_light_count + direct_light_count);
+		if ((*itr)->does_cast_shadow()) // If there is a proper shadow map, assign the uniform
+			glBindTexture(GL_TEXTURE_CUBE_MAP, (*itr)->depth_cubemap);
+
+		light_array_str = "point_lights[" + std::to_string(point_light_count) + "].intensity";
+		GLuint loc_light_int = glGetUniformLocation(program, (GLchar*)light_array_str.c_str());
+		glUniform1f(loc_light_int, (GLfloat)(*itr)->intensity);
+		point_light_count++;
+	}
+	// Set directional lights
+	std::vector<DirectionalLight*>::iterator itrr;
+	for (itrr = scene->direct_lights.begin(); itrr != scene->direct_lights.end(); itrr++)
+	{
+		std::string light_array_str = "direct_lights[" + std::to_string(direct_light_count) + "].color";
+		GLuint loc_lights_pos = glGetUniformLocation(program, (GLchar*)light_array_str.c_str());
+		glUniform3fv(loc_lights_pos, 1, &((*itrr)->get_color())[0]);
+
+		light_array_str = "direct_lights[" + std::to_string(direct_light_count) + "].direction";
+		GLuint loc_lights_dir = glGetUniformLocation(program, (GLchar*)light_array_str.c_str());
+		glUniform3fv(loc_lights_dir, 1, &((*itrr)->get_direction())[0]);
+
+		light_array_str = "direct_lights[" + std::to_string(direct_light_count) + "].intensity";
+		GLuint loc_lights_in = glGetUniformLocation(program, (GLchar*)light_array_str.c_str());
+		glUniform1f(loc_lights_in, (GLfloat)(*itrr)->intensity);
+
+		light_array_str = "direct_lights[" + std::to_string(direct_light_count) + "].cast_shadow";
+		GLuint loc_cast_shadow = glGetUniformLocation(program, (GLchar*)light_array_str.c_str());
+		glUniform1i(loc_cast_shadow, (GLint)(*itrr)->does_cast_shadow());
+
+		light_array_str = "direct_lights[" + std::to_string(direct_light_count) + "].directional_shadow_map";
+		GLuint loc_lights_sm = glGetUniformLocation(program, (GLchar*)light_array_str.c_str());
+		glUniform1i(loc_lights_sm, static_texture_uniform_count + point_light_count + direct_light_count);
+		glActiveTexture(GL_TEXTURE0 + static_texture_uniform_count + point_light_count + direct_light_count);
+		if ((*itrr)->does_cast_shadow()) // If there is a proper shadow map, assign the uniform
+			glBindTexture(GL_TEXTURE_2D, (*itrr)->get_depth_map());
+
+		light_array_str = "direct_lights[" + std::to_string(direct_light_count) + "].light_space_matrix";
+		GLuint loc_lights_lsm = glGetUniformLocation(program, (GLchar*)light_array_str.c_str());
+		glUniformMatrix4fv(loc_lights_lsm, 1, GL_FALSE, &((*itrr)->get_space_matrix())[0][0]);
+
+		direct_light_count++;
+	}
+}
+
+void ForwardLitRender::set_irradiance_map(GLuint id)
+{
+	glUniform1i(loc_irradiance_map, 0);
+	glActiveTexture(GL_TEXTURE0 + 0);
+	if (!glIsTexture(id) || id == -1)
+		return;
+	glBindTexture(GL_TEXTURE_CUBE_MAP, id);
+}
+void ForwardLitRender::set_prefiltered_map(GLuint id)
+{
+	glUniform1i(loc_prefiltered_map, 1);
+	glActiveTexture(GL_TEXTURE0 + 1);
+	if (!glIsTexture(id) || id == -1)
+		return;
+	glBindTexture(GL_TEXTURE_CUBE_MAP, id);
+}
+void ForwardLitRender::set_brdf_lut(GLuint id)
+{
+	glUniform1i(loc_brdf_lut, 2);
+	glActiveTexture(GL_TEXTURE0 + 2);
+	if (!glIsTexture(id) || id == -1)
+		return;
+	glBindTexture(GL_TEXTURE_2D, id);
+}
+void ForwardLitRender::set_max_reflection_lod(float id)
+{
+	glUniform1f(loc_max_reflection_lod, id);
+}
+void ForwardLitRender::set_is_ibl_active(bool id)
+{
+	glUniform1i(loc_is_ibl_active, (int)id);
+}
+void ForwardLitRender::set_viewer_position(vec3 vec)
+{
+	glUniform3fv(loc_viewer_pos, 1, &vec[0]);
 }
