@@ -107,7 +107,7 @@ void gBuffer::start_program()
 {
 	glBindFramebuffer(GL_FRAMEBUFFER, gBuffer_fbo);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-	glClearColor(0.3f, 0.3f, 0.3f, 1.0f);
+	glClearColor(0.05f, 0.05f, 0.05f, 1.0f);
 	glUseProgram(program);
 }
 
@@ -149,7 +149,7 @@ void gBuffer::render(Camera* camera, Model* model)
 	//set_normal_matrix(model->get_normal_matrix());
 	
 	// Draw call
-	model->draw(program);
+	model->draw(program, camera->get_position());
 
 	glDisable(GL_CULL_FACE); // Disable culling when rendering is done
 }

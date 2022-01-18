@@ -36,7 +36,7 @@ void ForwardLitRender::render(gBuffer* GBuffer, MainFramebuffer* main_fb, Scene*
 	std::vector<Model*>::iterator itr;
 	for (itr = scene->translucent_models.begin(); itr != scene->translucent_models.end(); itr++)
 	{
-		(*itr)->draw(program);
+		(*itr)->draw(program, scene->camera->get_position());
 	}
 
 	glDisable(GL_BLEND);

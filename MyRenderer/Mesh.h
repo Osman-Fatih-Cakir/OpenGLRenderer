@@ -34,8 +34,9 @@ class Mesh
 public:
 	// Constructor and destructor
 	Mesh(std::vector<Vertex> _vertices, std::vector<unsigned int> _indices,
-		std::vector<Texture> _textures, mat4 _transformation);
+		std::vector<Texture> _textures, mat4 _transformation, bool alpha);
 	~Mesh();
+	bool has_alpha();
 
 	// Mesh data
 	std::vector<Vertex> vertices;
@@ -49,7 +50,9 @@ public:
 
 private:
 	Mesh();
+
 	GLuint VBO, EBO;
+	bool _has_alpha = false;
 
 	void setup_mesh();
 };

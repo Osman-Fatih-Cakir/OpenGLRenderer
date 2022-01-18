@@ -29,7 +29,7 @@ void DeferredShading::start_program(gBuffer* _GBuffer, MainFramebuffer* fb)
 	glBindFramebuffer(GL_FRAMEBUFFER, fb->get_FBO());
 	glViewport(0, 0, width, height);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	glClearColor(0.4f, 0.4f, 0.4f, 1.0f);
+	glClearColor(0.05f, 0.05f, 0.05f, 1.0f);
 
 	GBuffer = _GBuffer;
 	framebuffer = fb;

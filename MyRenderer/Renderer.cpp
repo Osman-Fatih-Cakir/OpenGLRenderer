@@ -73,11 +73,11 @@ void Renderer::render(float delta)
 		for (unsigned int ii = 0; ii < scene->all_models.size(); ii++)
 		{
 			// Draw
-			dirDepth->render(scene->all_models[ii]);
+			dirDepth->render(scene->all_models[ii], scene->camera->get_position());
 		}
 		for (unsigned int ii = 0; ii < scene->translucent_models.size(); ii++)
 		{
-			dirDepth->render(scene->translucent_models[ii]);
+			dirDepth->render(scene->translucent_models[ii], scene->camera->get_position());
 		}
 	}
 
@@ -94,7 +94,7 @@ void Renderer::render(float delta)
 		for (unsigned int ii = 0; ii < scene->all_models.size(); ii++)
 		{
 			// Draw
-			pointDepth->render(scene->all_models[ii]);
+			pointDepth->render(scene->all_models[ii], scene->camera->get_position());
 		}
 	}
 

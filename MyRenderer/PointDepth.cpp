@@ -53,7 +53,7 @@ void PointDepth::set_position(vec3 pos)
 }
 
 // Draw scene
-void PointDepth::render(Model* model)
+void PointDepth::render(Model* model, vec3 cam_pos)
 {
 	glEnable(GL_CULL_FACE);
 	glCullFace(GL_BACK);
@@ -66,7 +66,7 @@ void PointDepth::render(Model* model)
 	set_position(light->position);
 
 	// Draw call
-	model->draw(program);
+	model->draw(program, cam_pos);
 
 	glDisable(GL_CULL_FACE);
 }

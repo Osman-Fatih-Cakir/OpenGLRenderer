@@ -8,6 +8,7 @@
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
+#include <map>
 
 typedef glm::vec3 vec3;
 typedef glm::mat4 mat4;
@@ -27,11 +28,12 @@ public:
     mat4 get_model_matrix();
     mat4 get_normal_matrix();
     bool is_translucent();
-    void draw(GLuint shader_program);
+    void draw(GLuint shader_program, vec3 cam_pos);
 
 private:
     // Model data
     std::vector<Mesh*> meshes;
+    std::vector<Mesh*> translucent_meshes;
     std::vector<Texture> textures_loaded;
     std::string directory;
     mat4 model_matrix = mat4(1.0f);
@@ -42,11 +44,13 @@ private:
     bool has_emissive_map = false;
     bool has_opacity_map = false;
     bool translucent = false;
+    bool has_alpha = false;
 
     void load_model(std::string path);
     void process_node(aiNode* node, const aiScene* scene, aiMatrix4x4 tr);
     Mesh* process_mesh(aiMesh* mesh, const aiScene* scene, aiMatrix4x4 transformation);
     std::vector<Texture> load_material_textures(aiMaterial* mat, aiTextureType type, std::string typeName);
-    unsigned int texture_from_file(const char* path, const std::string& directory);
+    unsigned int texture_from_file(const char* path, const std::string& directory, std::string& typeName);
     void update_normal_matrix();
+    std::map<float, Mesh*> sort_translucent_meshes(vec3 cam_pos);
 };

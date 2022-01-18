@@ -72,7 +72,7 @@ void ForwardRender::render(Camera* camera, Model* model)
 	set_view_matrix(camera->get_view_matrix());
 	
 	// Draw call
-	model->draw(program);
+	model->draw(program, camera->get_position());
 
 	glBindVertexArray(0);
 }
