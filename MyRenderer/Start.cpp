@@ -296,15 +296,14 @@ void init_models()
 	//Model* model = new Model("mesh/cornell_box/cornell_box.gltf", false);	
 	//model->scale(2.f, 2.f, 2.f, 1.f);
 	//scene->add_model(model);
-	//Model* model = new Model("mesh/test_scene/sponza/sponza.glb", true);
-	//scene->add_model(model);
+	Model* model = new Model("mesh/test_scene/sponza/sponza.glb", true);
+	scene->add_model(model);
 	//Model* model = new Model("mesh/test_scene/tree/scene.gltf", true);
 	//model->rotate(vec3(0.f, 1.f, 0.f), 180.f, 1.f);
 	//model->scale(0.5f, 0.5f, 0.5f, 1.f);
 	//scene->add_model(model);
 	//Model* model = new Model("mesh/test_scene/fuel_glasses/scene.gltf", true);
 	//scene->add_model(model);
-	// TODO for testing, render opaque and translucent meshes together
 }
 
 // Initialize skyboxes
@@ -418,6 +417,7 @@ void render()
 	if (input->hold_key(Key::KEY_W))
 	{
 		cam->translate(camera_speed, 0.f, 0.f, delta_over_t);
+		//std::cout << "hey\n";
 	}
 	if (input->hold_key(Key::KEY_S))
 	{
