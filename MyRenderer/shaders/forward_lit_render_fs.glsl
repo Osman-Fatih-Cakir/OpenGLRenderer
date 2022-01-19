@@ -339,15 +339,13 @@ vec3 calculate_direct_light(vec3 frag_pos, vec3 normal, vec3 albedo, float rough
 	return col;
 }
 
-
 void main()
 {
 	// Albdedo
 	vec4 albedo = texture(albedo_map, fTexCoord).rgba;
-	////////////////////////////////////////////////////
-	//if (albedo.a < 0.1)
-	//	discard;
-	/////////////////////////////////////////////////////
+	// For easy render of fully transparency just discard very translucent fragments :)
+	if (albedo.a < 0.25)
+		discard;
 	
 	// Normal
 	vec3 normal;

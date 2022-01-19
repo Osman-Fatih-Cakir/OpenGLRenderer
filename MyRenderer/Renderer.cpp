@@ -43,6 +43,11 @@ void Renderer::render(float delta)
 	}
 	//////////////////////////////////////////////////////
 
+	// TODO make sorting here instead of every draw call !!
+	// Sort meshes of the models inside function
+	// Make a distance ordered map of the models, call draws in order
+	//sort_transparent(scene);
+
 	//
 	//// 1. GBuffer Pass: Generate geometry/color data into gBuffers
 	//
@@ -80,7 +85,7 @@ void Renderer::render(float delta)
 			dirDepth->render(scene->translucent_models[ii], scene->camera->get_position());
 		}
 	}
-
+	
 	// Point light shadows
 	for (unsigned int i = 0; i < scene->point_lights.size(); i++)
 	{
@@ -89,15 +94,19 @@ void Renderer::render(float delta)
 			continue;
 
 		pointDepth->start_program(scene->point_lights[i]);
-
+		
 		// Draw scene
 		for (unsigned int ii = 0; ii < scene->all_models.size(); ii++)
 		{
 			// Draw
 			pointDepth->render(scene->all_models[ii], scene->camera->get_position());
 		}
+		for (unsigned int ii = 0; ii < scene->translucent_models.size(); ii++)
+		{
+			pointDepth->render(scene->translucent_models[ii], scene->camera->get_position());
+		}
 	}
-
+	
 	//
 	//// 2: Calculate lighting pixel by pixel using gBuffer
 	//
@@ -184,7 +193,7 @@ void Renderer::render(float delta)
 	//// 5: Post Processing
 	//
 
-	//bloom->render(main_fb->get_FBO(),  main_fb->get_color_texture());
+	bloom->render(main_fb->get_FBO(),  main_fb->get_color_texture());
 
 	//
 	//// 6. Render the scene after post process

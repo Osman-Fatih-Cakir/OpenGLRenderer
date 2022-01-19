@@ -143,10 +143,6 @@ void gBuffer::render(Camera* camera, Model* model)
 	// Camera matrix
 	set_projection_matrix(camera->get_projection_matrix());
 	set_view_matrix(camera->get_view_matrix());
-
-	// Model matrix and normal matrix
-	//set_model_matrix(model->get_model_matrix());
-	//set_normal_matrix(model->get_normal_matrix());
 	
 	// Draw call
 	model->draw(program, camera->get_position());

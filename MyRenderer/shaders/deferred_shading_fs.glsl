@@ -113,12 +113,13 @@ float point_shadow_calculation(int light_index, vec3 _fPos, float bias)
 
 	for (int i = 0; i < 20; i++)
 	{
-		float pcf_depth = texture(point_lights[light_index].point_shadow_map, light_to_frag + sample_offset_directions[i] * radius).r;
+		float pcf_depth = texture(point_lights[light_index].point_shadow_map,
+			light_to_frag + sample_offset_directions[i] * radius).r;
 		pcf_depth *= point_lights[light_index].far;
 		if (current_depth - bias > pcf_depth)
 			shadow += 1.0;
 	}
-
+	
 	shadow /= 20.f;
 	
 	return shadow;
@@ -358,7 +359,7 @@ void main()
 
 	// Point light calculation
 	Lo += calculate_point_light(frag_pos, normal, albedo, roughness, metallic);
-
+	
 	// Direct light calculation
 	Lo += calculate_direct_light(frag_pos, normal, albedo, roughness, metallic);
 	
