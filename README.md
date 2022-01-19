@@ -26,7 +26,7 @@ Since I am new to computer graphics, I would be happy to receive suggestions abo
 - Emission
 - Post Process
 	- Bloom
-- Transparency (Semi-transparent rendering will be better)
+- Transparent rendering
 
 ## Material files pipeline
 - Albedo map
