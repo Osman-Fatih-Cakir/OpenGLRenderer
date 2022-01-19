@@ -90,5 +90,5 @@ private:
 	MainFramebuffer* framebuffer = nullptr;
 
 	unsigned int static_texture_uniform_count = -1;
-	unsigned int texture_uniform_starting_point = 6;
+	unsigned int texture_uniform_starting_point = 8;
 };

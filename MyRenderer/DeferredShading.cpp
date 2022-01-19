@@ -191,7 +191,7 @@ void DeferredShading::set_point_light
 	light_array_str = "point_lights[" + std::to_string(point_light_count) + "].point_shadow_map";
 	GLuint loc_light_cubemap = glGetUniformLocation(program, (GLchar*)light_array_str.c_str());
 	glUniform1i(loc_light_cubemap, static_texture_uniform_count + point_light_count + direct_light_count);
-	glActiveTexture(GL_TEXTURE0 + static_texture_uniform_count + point_light_count + direct_light_count);
+	glActiveTexture(GL_TEXTURE0 + static_texture_uniform_count + point_light_count + direct_light_count );
 	if (cast_shadow) // If there is a proper shadow map, assign the uniform
 		glBindTexture(GL_TEXTURE_CUBE_MAP, shadow_map);
 
@@ -302,7 +302,7 @@ void DeferredShading::get_uniform_locations()
 	loc_brdf_lut = glGetUniformLocation(program, "brdf_lut");
 	loc_is_ibl_active = glGetUniformLocation(program, "is_ibl_active");
 
-	static_texture_uniform_count = 8 + texture_uniform_starting_point - 1;
+	static_texture_uniform_count = 5 + texture_uniform_starting_point;
 }
 
 // Initialize a quad
@@ -339,6 +339,5 @@ void DeferredShading::draw_quad(GLuint shader_program)
 {
 	glBindVertexArray(quad_VAO);
 	glDrawArrays(GL_TRIANGLES, 0, 6);
-	//GLuint err = glGetError(); if (err) fprintf(stderr, "ERROR: %s\n", gluErrorString(err));
 	glBindVertexArray(0);
 }

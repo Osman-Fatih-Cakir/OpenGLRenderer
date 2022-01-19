@@ -88,7 +88,7 @@ void ForwardLitRender::init_uniforms()
 	loc_is_ibl_active = glGetUniformLocation(program, "is_ibl_active");
 	loc_max_reflection_lod = glGetUniformLocation(program, "MAX_REFLECTION_LOD");
 
-	static_texture_uniform_count = 3 + texture_uniform_starting_point - 1;
+	static_texture_uniform_count = 5 + texture_uniform_starting_point;
 }
 
 // Blit depth buffer of gBuffer

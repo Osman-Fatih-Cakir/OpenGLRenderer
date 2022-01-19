@@ -344,7 +344,7 @@ void main()
 	// Albdedo
 	vec4 albedo = texture(albedo_map, fTexCoord).rgba;
 	// For easy render of fully transparency just discard very translucent fragments :)
-	if (albedo.a < 0.1)
+	if (albedo.a < 0.25)
 		discard;
 	
 	// Normal
