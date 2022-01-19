@@ -296,8 +296,8 @@ void init_models()
 	//Model* model = new Model("mesh/cornell_box/cornell_box.gltf", false);	
 	//model->scale(2.f, 2.f, 2.f, 1.f);
 	//scene->add_model(model);
-	//Model* model = new Model("mesh/test_scene/sponza/sponza.glb", true);
-	//scene->add_model(model);
+	Model* model = new Model("mesh/test_scene/sponza/sponza.glb", true);
+	scene->add_model(model);
 	//Model* model = new Model("mesh/test_scene/tree/scene.gltf", true);
 	//model->rotate(vec3(0.f, 1.f, 0.f), 180.f, 1.f);
 	//model->scale(0.5f, 0.5f, 0.5f, 1.f);
@@ -332,7 +332,7 @@ void init_lights()
 	//srand((unsigned int)time(NULL));
 
 	vec3 _positions[] = {
-		vec3(3.f, 14.f, -3.f),
+		vec3(0.f, 4.f, 0.f),
 		vec3(0.f, 15.f, 0.f),
 		vec3(1.8f, 3.f, 2.6f)
 	};
@@ -350,7 +350,7 @@ void init_lights()
 	{
 		// Initialize light
 		PointLight* light = new PointLight(_positions[i], _colors[i], true);
-		light->set_intensity(50.f);
+		light->set_intensity(30.f);
 		std::cout << "Radius: " << light->radius << "\n";
 		// Draw a mesh for represent a light
 		Model* light_model = new Model("mesh/simple/sphere.obj", false);
@@ -370,8 +370,8 @@ void init_lights()
 	{
 		DirectionalLight* light = new DirectionalLight(
 			vec3(-1.0f, -10.0f, -1.0f),
-			vec3(1.f, 1.f, 0.9f), true);
-		light->intensity = 1.f;
+			vec3(1.f, 1.f, 0.9f), false);
+		light->intensity = 0.f;
 		scene->add_direct_light(light);
 	}
 }
@@ -408,7 +408,7 @@ void render()
 	float delta = timer->get_delta_time();
 
 	renderer->render(delta);
-	
+
 	// Camera actions
 	float camera_speed = 10.f;
 	float delta_over_t = delta / 1000;
@@ -417,7 +417,6 @@ void render()
 	if (input->hold_key(Key::KEY_W))
 	{
 		cam->translate(camera_speed, 0.f, 0.f, delta_over_t);
-		//std::cout << "hey\n";
 	}
 	if (input->hold_key(Key::KEY_S))
 	{

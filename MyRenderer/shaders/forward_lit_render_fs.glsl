@@ -300,8 +300,8 @@ vec3 calculate_direct_light(vec3 frag_pos, vec3 normal, vec3 albedo, float rough
 		if (direct_lights[i].cast_shadow != 0.0)
 		{
 			// Calculate shadow
-			float max_bias = 0.0003;
-			float min_bias = 0.00001;
+			float max_bias = 0.000;//3;
+			float min_bias = 0.000;//01;
 			float bias = max(max_bias * (1.0 - dot(normal, light_dir)), min_bias);
 			shadow = directional_shadow_calculation(i, frag_pos, bias);
 		}
