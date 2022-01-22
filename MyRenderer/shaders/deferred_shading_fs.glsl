@@ -34,8 +34,8 @@ struct Point_Light
 	float quadratic;
 	float intensity;
 };
-const int NUMBER_OF_POINT_LIGHTS = 1; // TODO number of lights is hardcoded
-uniform Point_Light point_lights[NUMBER_OF_POINT_LIGHTS];
+uniform int NUMBER_OF_POINT_LIGHTS; 
+uniform Point_Light point_lights[2]; // TODO max number of lights is hardcoded
 
 struct Direct_Light
 {
@@ -48,8 +48,8 @@ struct Direct_Light
 
 	float intensity;
 };
-const int NUMBER_OF_DIRECT_LIGHTS = 1; // TODO hardcoded
-uniform Direct_Light direct_lights[NUMBER_OF_DIRECT_LIGHTS];
+uniform int NUMBER_OF_DIRECT_LIGHTS; 
+uniform Direct_Light direct_lights[4]; // TODO hardcoded
 
 uniform vec3 viewer_pos;
 

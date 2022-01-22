@@ -42,7 +42,7 @@ typedef glm::vec4 vec4;
 typedef glm::vec2 vec2;
 
 // Point lights
-const int point_light_count = 1;
+const int point_light_count = 2;
 const int direct_light_count = 1;
 
 // Window
@@ -93,6 +93,14 @@ int main(int argc, char* argv[])
 	return 0;
 }
 
+void GLAPIENTRY MessageCallback(GLenum source, GLenum type,	GLuint id, GLenum severity,
+	GLsizei length,	const GLchar* message,	const void* userParam)
+{
+	fprintf(stderr, "GL CALLBACK: %s type = 0x%x, severity = 0x%x, message = %s\n",
+		(type == GL_DEBUG_TYPE_ERROR ? "** GL ERROR **" : ""),
+		type, severity, message);
+}
+
 // Initialize glut and glew
 void Init_Glut_and_Glew(int argc, char* argv[])
 {
@@ -118,7 +126,7 @@ void Init_Glut_and_Glew(int argc, char* argv[])
 		std::cout << "Unable to initalize Glew ! " << std::endl;
 		return;
 	}
-	
+
 	// Enable depth test
 	glEnable(GL_DEPTH_TEST);
 	// Enable linear filtering across the cubemap faces
@@ -131,6 +139,7 @@ void Init_Glut_and_Glew(int argc, char* argv[])
 	glutMouseFunc(mouse_click);
 	glutPassiveMotionFunc(mouse_passive);
 	glutDisplayFunc(render);
+	//glDebugMessageCallback(MessageCallback, 0);
 }
 
 // Initialize the parameters
@@ -298,10 +307,10 @@ void init_models()
 	//scene->add_model(model);
 	//Model* model = new Model("mesh/test_scene/sponza/sponza.glb", true);
 	//scene->add_model(model);
-	//Model* model = new Model("mesh/test_scene/tree/scene.gltf", true);
-	//model->rotate(vec3(0.f, 1.f, 0.f), 180.f, 1.f);
-	//model->scale(0.5f, 0.5f, 0.5f, 1.f);
-	//scene->add_model(model);
+	Model* model = new Model("mesh/test_scene/tree/scene.gltf", true);
+	model->rotate(vec3(0.f, 1.f, 0.f), 180.f, 1.f);
+	model->scale(0.5f, 0.5f, 0.5f, 1.f);
+	scene->add_model(model);
 	//Model* model = new Model("mesh/test_scene/fuel_glasses/scene.gltf", true);
 	//scene->add_model(model);
 }
@@ -332,15 +341,15 @@ void init_lights()
 	//srand((unsigned int)time(NULL));
 
 	vec3 _positions[] = {
-		vec3(0.f, 4.f, 0.f),
-		vec3(0.f, 15.f, 0.f),
-		vec3(1.8f, 3.f, 2.6f)
+		vec3(0.f, 12.f, -5.f),
+		vec3(0.f, 12.f, 5.f),
+		vec3(3.8f, 8.f, 2.6f)
 	};
 
 	// Color sequential
 	vec3 _colors[] = {
-		vec3(0.9f, 0.9f, 0.9f),
-		vec3(0.9f, 0.9f, 0.9f),
+		vec3(0.9f, 0.9f, 0.3f),
+		vec3(0.9f, 0.3f, 0.9f),
 		vec3(0.9f, 0.9f, 0.9f)
 	};
 
@@ -370,8 +379,8 @@ void init_lights()
 	{
 		DirectionalLight* light = new DirectionalLight(
 			vec3(-1.0f, -10.0f, -1.0f),
-			vec3(1.f, 1.f, 0.9f), false);
-		light->intensity = 0.f;
+			vec3(1.f, 1.f, 0.9f), true);
+		light->intensity = 1.f;
 		scene->add_direct_light(light);
 	}
 }
@@ -407,6 +416,8 @@ void render()
 	// Get delta time
 	float delta = timer->get_delta_time();
 
+	// During init, enable debug output
+	glEnable(GL_DEBUG_OUTPUT);
 	renderer->render(delta);
 
 	// Camera actions

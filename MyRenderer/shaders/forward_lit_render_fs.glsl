@@ -39,8 +39,8 @@ struct Point_Light
 	float quadratic;
 	float intensity;
 };
-const int NUMBER_OF_POINT_LIGHTS = 1; // TODO number of lights is hardcoded
-uniform Point_Light point_lights[NUMBER_OF_POINT_LIGHTS];
+uniform int NUMBER_OF_POINT_LIGHTS;
+uniform Point_Light point_lights[2]; // TODO max number of lights is hardcoded
 
 struct Direct_Light
 {
@@ -53,8 +53,8 @@ struct Direct_Light
 
 	float intensity;
 };
-const int NUMBER_OF_DIRECT_LIGHTS = 1; // TODO hardcoded
-uniform Direct_Light direct_lights[NUMBER_OF_DIRECT_LIGHTS];
+uniform int NUMBER_OF_DIRECT_LIGHTS; 
+uniform Direct_Light direct_lights[4]; // TODO hardcoded
 
 uniform vec3 viewer_pos;
 
@@ -118,12 +118,12 @@ float point_shadow_calculation(int light_index, vec3 _fPos, float bias)
 
 	for (int i = 0; i < 20; i++)
 	{
-		float pcf_depth = texture(point_lights[light_index].point_shadow_map, light_to_frag + sample_offset_directions[i] * radius).r;
+		float pcf_depth = texture(point_lights[light_index].point_shadow_map,
+		  light_to_frag + sample_offset_directions[i] * radius).r;
 		pcf_depth *= point_lights[light_index].far;
 		if (current_depth - bias > pcf_depth)
 			shadow += 1.0;
 	}
-
 	shadow /= 20.f;
 
 	return shadow;

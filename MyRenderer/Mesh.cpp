@@ -41,20 +41,17 @@ void Mesh::draw(GLuint shader_program, bool has_normal_map, bool has_ao_map, boo
 		glUniform1i(glGetUniformLocation(shader_program, name.c_str()), i);
 		glBindTexture(GL_TEXTURE_2D, textures[i].id);
 	}
-
 	// Check for these variables
 	glUniform1i(glGetUniformLocation(shader_program, "has_normal_map"), has_normal_map);
 	glUniform1i(glGetUniformLocation(shader_program, "has_ao_map"), has_ao_map);
 	glUniform1i(glGetUniformLocation(shader_program, "has_emissive_map"), has_emissive_map);
 	glUniform1i(glGetUniformLocation(shader_program, "has_opacity_map"), has_opacity_map);
-
 	mat4 mt = model_matrix * transformation;
 	mat4 nmt = glm::transpose(glm::inverse(mt));
 	glUniformMatrix4fv(glGetUniformLocation(shader_program, "normal_matrix"), 1, GL_FALSE,
 		&nmt[0][0]);
 	glUniformMatrix4fv(glGetUniformLocation(shader_program, "model_matrix"), 1, GL_FALSE, 
 		&mt[0][0]);
-
 	// Draw mesh
 	glBindVertexArray(VAO);
 	glDrawElements(GL_TRIANGLES, (GLsizei)indices.size(), GL_UNSIGNED_INT, 0);

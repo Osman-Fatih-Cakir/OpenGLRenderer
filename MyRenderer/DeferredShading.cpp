@@ -247,6 +247,7 @@ void DeferredShading::render(Camera* camera, Skybox* skybox)
 {
 	glBindFramebuffer(GL_FRAMEBUFFER, framebuffer->get_FBO());
 
+	// TODO call a set_uniforms function
 	set_viewer_pos(camera->get_position());
 	// Set g-buffer color attachments
 	set_gPosition(GBuffer->get_gPosition());
@@ -254,6 +255,8 @@ void DeferredShading::render(Camera* camera, Skybox* skybox)
 	set_gAlbedoSpec(GBuffer->get_gAlbedoSpec());
 	set_gPbr_materials(GBuffer->get_gPbr_materials());
 	set_emissive(GBuffer->get_emissive());
+	glUniform1i(loc_point_light_count, point_light_count);
+	glUniform1i(loc_direct_light_count, direct_light_count);
 	
 	// Set IBL textures
 	if (skybox != nullptr)
@@ -301,6 +304,8 @@ void DeferredShading::get_uniform_locations()
 	loc_prefiltered_map = glGetUniformLocation(program, "prefiltered_map");
 	loc_brdf_lut = glGetUniformLocation(program, "brdf_lut");
 	loc_is_ibl_active = glGetUniformLocation(program, "is_ibl_active");
+	loc_point_light_count = glGetUniformLocation(program, "NUMBER_OF_POINT_LIGHTS");
+	loc_direct_light_count = glGetUniformLocation(program, "NUMBER_OF_DIRECT_LIGHTS");
 
 	static_texture_uniform_count = 5 + texture_uniform_starting_point;
 }

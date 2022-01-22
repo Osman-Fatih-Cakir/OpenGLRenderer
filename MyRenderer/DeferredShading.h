@@ -79,6 +79,8 @@ private:
 	GLuint loc_brdf_lut;
 	GLuint loc_max_reflection_lod;
 	GLuint loc_is_ibl_active;
+	GLuint loc_point_light_count;
+	GLuint loc_direct_light_count;
 
 	GLuint quad_VAO;
 	GLuint quadVBO;

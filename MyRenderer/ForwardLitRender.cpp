@@ -31,14 +31,13 @@ void ForwardLitRender::render(gBuffer* GBuffer, MainFramebuffer* main_fb, Scene*
 
 	// Set camera attributes
 	set_uniforms(scene);
-
+	
 	// Draw call for each object (forward rendering)
 	std::vector<Model*>::iterator itr;
 	for (itr = scene->translucent_models.begin(); itr != scene->translucent_models.end(); itr++)
 	{
 		(*itr)->draw(program, scene->camera->get_position());
 	}
-
 	glDisable(GL_BLEND);
 	glBindVertexArray(0);
 }
@@ -80,13 +79,15 @@ void ForwardLitRender::init_uniforms()
 	// Get uniform locaitons
 	loc_projection_matrix = glGetUniformLocation(program, "projection_matrix");
 	loc_view_matrix = glGetUniformLocation(program, "view_matrix");
-	// TODO after fragment shader implementation
+
 	loc_viewer_pos = glGetUniformLocation(program, "viewer_pos");
 	loc_irradiance_map = glGetUniformLocation(program, "irradiance_map");
 	loc_prefiltered_map = glGetUniformLocation(program, "prefiltered_map");
 	loc_brdf_lut = glGetUniformLocation(program, "brdf_lut");
 	loc_is_ibl_active = glGetUniformLocation(program, "is_ibl_active");
 	loc_max_reflection_lod = glGetUniformLocation(program, "MAX_REFLECTION_LOD");
+	loc_point_light_count = glGetUniformLocation(program, "NUMBER_OF_POINT_LIGHTS");
+	loc_direct_light_count = glGetUniformLocation(program, "NUMBER_OF_DIRECT_LIGHTS");
 
 	static_texture_uniform_count = 5 + texture_uniform_starting_point;
 }
@@ -138,6 +139,7 @@ void ForwardLitRender::set_uniforms(Scene* scene)
 void ForwardLitRender::set_light_uniforms(Scene* scene)
 {
 	// Set point lights
+	glUniform1i(loc_point_light_count, (GLint)scene->point_lights.size());
 	std::vector<PointLight*>::iterator itr;
 	for (itr = scene->point_lights.begin(); itr != scene->point_lights.end(); itr++)
 	{
@@ -190,6 +192,7 @@ void ForwardLitRender::set_light_uniforms(Scene* scene)
 		point_light_count++;
 	}
 	// Set directional lights
+	glUniform1i(loc_direct_light_count, (GLint)scene->direct_lights.size());
 	std::vector<DirectionalLight*>::iterator itrr;
 	for (itrr = scene->direct_lights.begin(); itrr != scene->direct_lights.end(); itrr++)
 	{

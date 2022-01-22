@@ -10,7 +10,7 @@ PointLight::PointLight(vec3 pos, vec3 col, bool shadow)
 	color = col;
 
 	set_intensity(1.0f);
-	shadow_projection_far = 100.0f;
+	shadow_projection_far = 100.0f; // TODO test if radius is ok for far value
 	depth_cubemap = -1;
 	depth_cubemap_fbo = -1;
 	for (int i = 0; i < 6; i++)
@@ -157,8 +157,6 @@ void PointLight::create_depth_map_framebuffer()
 // Initialize space matrices for point light shadows
 void PointLight::init_space_matrices()
 {
-	// Projection matrix
-	shadow_projection_far = 500.f;
 	mat4 pointlight_projection = glm::perspective(glm::radians(90.0f), 1.0f, 0.01f, shadow_projection_far);
 	// View matrices (for each cube plane)
 	space_matrices[0] = pointlight_projection * glm::lookAt(position, position + vec3(1.f, 0.f, 0.f), vec3(0.f, -1.f, 0.f));

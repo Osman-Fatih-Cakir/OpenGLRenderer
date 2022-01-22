@@ -47,6 +47,8 @@ private:
 	GLuint loc_brdf_lut;
 	GLuint loc_is_ibl_active;
 	GLuint loc_max_reflection_lod;
+	GLuint loc_point_light_count;
+	GLuint loc_direct_light_count;
 
 	unsigned int width = WINDOW_WIDTH;
 	unsigned int height = WINDOW_HEIGHT;
