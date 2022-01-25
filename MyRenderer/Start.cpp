@@ -307,10 +307,10 @@ void init_models()
 	//scene->add_model(model);
 	//Model* model = new Model("mesh/test_scene/sponza/sponza.glb", true);
 	//scene->add_model(model);
-	Model* model = new Model("mesh/test_scene/tree/scene.gltf", true);
-	model->rotate(vec3(0.f, 1.f, 0.f), 180.f, 1.f);
-	model->scale(0.5f, 0.5f, 0.5f, 1.f);
-	scene->add_model(model);
+	//Model* model = new Model("mesh/test_scene/tree/scene.gltf", true);
+	//model->rotate(vec3(0.f, 1.f, 0.f), 180.f, 1.f);
+	//model->scale(0.5f, 0.5f, 0.5f, 1.f);
+	//scene->add_model(model);
 	//Model* model = new Model("mesh/test_scene/fuel_glasses/scene.gltf", true);
 	//scene->add_model(model);
 }
@@ -379,8 +379,8 @@ void init_lights()
 	{
 		DirectionalLight* light = new DirectionalLight(
 			vec3(-1.0f, -10.0f, -1.0f),
-			vec3(1.f, 1.f, 0.9f), true);
-		light->intensity = 1.f;
+			vec3(1.f, 1.f, 0.9f), false);
+		light->intensity = 0.f;
 		scene->add_direct_light(light);
 	}
 }
@@ -398,9 +398,9 @@ void init_scene()
 
 	// Set camera parameters
 	init_camera(
-		vec3(18.f, 6.f, 0.f), // Eye
+		vec3(10.f, 4.f, 0.f), // Eye
 		vec3(0.f, 1.f, 0.f), // Up
-		vec3(0.f, 6.f, 0.f) // Center
+		vec3(0.f, 4.f, 0.f) // Center
 	);
 	
 	// Initialize lights

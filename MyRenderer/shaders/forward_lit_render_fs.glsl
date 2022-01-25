@@ -237,8 +237,8 @@ vec3 calculate_point_light(vec3 frag_pos, vec3 normal, vec3 albedo, float roughn
 		}
 
 		// If the fragment is in the shadow, there is no need for lighting calculations
-		//if (shadow >= 1.0)
-		//	continue;
+		if (shadow >= 1.0)
+			continue;
 
 		// Surface reflection at zero incidence (F0)
 		vec3 F0 = vec3(0.04);
@@ -300,15 +300,15 @@ vec3 calculate_direct_light(vec3 frag_pos, vec3 normal, vec3 albedo, float rough
 		if (direct_lights[i].cast_shadow != 0.0)
 		{
 			// Calculate shadow
-			float max_bias = 0.0003;
+			float max_bias = 0.002;
 			float min_bias = 0.00001;
 			float bias = max(max_bias * (1.0 - dot(normal, light_dir)), min_bias);
 			shadow = directional_shadow_calculation(i, frag_pos, bias);
 		}
 
 		// If the fragment is in the shadow, there is no need for lighting calculations
-		//if (shadow == 1.0)
-		//	continue;
+		if (shadow >= 1.0)
+			continue;
 
 		// Surface reflection at zero incidence (F0)
 		vec3 F0 = vec3(0.04);
