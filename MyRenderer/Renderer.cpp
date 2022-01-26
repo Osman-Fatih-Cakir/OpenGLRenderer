@@ -111,42 +111,7 @@ void Renderer::render(float delta)
 	//// 2: Calculate lighting pixel by pixel using gBuffer
 	//
 
-	deferredShading->start_program(GBuffer, main_fb);
-
-	// Point lights
-	for (unsigned int i = 0; i < scene->point_lights.size(); i++)
-	{
-		PointLight* light = scene->point_lights[i];
-		deferredShading->set_point_light(
-			light->position,
-			light->color,
-			light->radius,
-			light->cutoff,
-			light->half_radius,
-			light->linear,
-			light->quadratic,
-			light->shadow_projection_far,
-			light->depth_cubemap,
-			light->intensity,
-			light->does_cast_shadow()
-		);
-	}
-	// Directional lights
-	for (unsigned int i = 0; i < scene->direct_lights.size(); i++)
-	{
-		DirectionalLight* light = scene->direct_lights[i];
-		deferredShading->set_direct_light(
-			light->get_color(),
-			light->get_direction(),
-			light->intensity,
-			light->get_depth_map(),
-			light->get_space_matrix(),
-			light->does_cast_shadow()
-		);
-	}
-	
-	// Render with deferred shading
-	deferredShading->render(scene->camera, scene->get_render_skybox());
+	deferredShading->render(GBuffer, main_fb, scene);
 
 	//
 	//// 2.1: Draw lit translucent meshes

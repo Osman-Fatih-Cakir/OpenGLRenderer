@@ -42,7 +42,7 @@ typedef glm::vec4 vec4;
 typedef glm::vec2 vec2;
 
 // Point lights
-const int point_light_count = 2;
+const int point_light_count = 3;
 const int direct_light_count = 1;
 
 // Window

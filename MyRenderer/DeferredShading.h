@@ -8,6 +8,7 @@
 #include <Skybox.h>
 #include <Window.h>
 #include <MainFramebuffer.h>
+#include <Scene.h>
 
 typedef glm::mat4 mat4;
 typedef glm::vec3 vec3;
@@ -19,36 +20,16 @@ public:
 	DeferredShading();
 	~DeferredShading();
 
-	void start_program(gBuffer* _GBuffer, MainFramebuffer* fb);
 	void change_viewport_resolution(unsigned int w, unsigned int h);
-	void set_point_light(
-		vec3 position,
-		vec3 color,
-		float radius,
-		float cutoff,
-		float half_radius,
-		float linear,
-		float quadratic,
-		float _far,
-		GLuint shadow_map,
-		float intensity,
-		bool cast_shadow
-	);
-	void set_direct_light(
-		vec3 color,
-		vec3 direction,
-		float intensity,
-		GLuint shadow_map,
-		mat4 light_space_matrix,
-		bool cast_shadow
-	);
-	void render(Camera* camera, Skybox* skybox);
+	void render(gBuffer* _GBuffer, MainFramebuffer* fb, Scene* scene);
 
 private:
 
 	void init_shaders();
 	void get_uniform_locations();
 	void init_quad();
+	void set_uniforms(Scene* scene, gBuffer* GBuffer);
+	void set_light_uniforms(Scene* scene);
 	void draw_quad(GLuint shader_program);
 
 	void set_viewer_pos(vec3 vec);
@@ -88,9 +69,8 @@ private:
 	int point_light_count = 0;
 	int direct_light_count = 0;
 
-	gBuffer* GBuffer = nullptr;
-	MainFramebuffer* framebuffer = nullptr;
-
 	unsigned int static_texture_uniform_count = -1;
-	unsigned int texture_uniform_starting_point = 8;
+	unsigned int texture_uniform_starting_point = 5;
+	int max_plight_per_call = 32;
+	int max_dlight_per_call = 4;
 };

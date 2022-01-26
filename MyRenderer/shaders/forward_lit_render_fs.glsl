@@ -40,7 +40,7 @@ struct Point_Light
 	float intensity;
 };
 uniform int NUMBER_OF_POINT_LIGHTS;
-uniform Point_Light point_lights[2]; // TODO max number of lights is hardcoded
+uniform Point_Light point_lights[32]; // Max number of point lights is 32
 
 struct Direct_Light
 {
@@ -54,7 +54,7 @@ struct Direct_Light
 	float intensity;
 };
 uniform int NUMBER_OF_DIRECT_LIGHTS; 
-uniform Direct_Light direct_lights[4]; // TODO hardcoded
+uniform Direct_Light direct_lights[4]; // Max number of directional lights is 4
 
 uniform vec3 viewer_pos;
 

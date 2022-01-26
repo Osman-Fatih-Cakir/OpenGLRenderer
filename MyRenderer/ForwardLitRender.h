@@ -54,7 +54,9 @@ private:
 	unsigned int height = WINDOW_HEIGHT;
 
 	unsigned int static_texture_uniform_count = -1;
-	unsigned int texture_uniform_starting_point = 3;
+	unsigned int texture_uniform_starting_point = 5;
 	int point_light_count = 0;
 	int direct_light_count = 0;
+	int max_plight_per_call = 32;
+	int max_dlight_per_call = 4;
 };

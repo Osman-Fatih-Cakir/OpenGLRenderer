@@ -39,7 +39,6 @@ void ForwardLitRender::render(gBuffer* GBuffer, MainFramebuffer* main_fb, Scene*
 		(*itr)->draw(program, scene->camera->get_position());
 	}
 	glDisable(GL_BLEND);
-	glBindVertexArray(0);
 }
 
 // Change viewport resolution
@@ -89,7 +88,7 @@ void ForwardLitRender::init_uniforms()
 	loc_point_light_count = glGetUniformLocation(program, "NUMBER_OF_POINT_LIGHTS");
 	loc_direct_light_count = glGetUniformLocation(program, "NUMBER_OF_DIRECT_LIGHTS");
 
-	static_texture_uniform_count = 5 + texture_uniform_starting_point;
+	static_texture_uniform_count = 3 + texture_uniform_starting_point;
 }
 
 // Blit depth buffer of gBuffer
@@ -138,10 +137,12 @@ void ForwardLitRender::set_uniforms(Scene* scene)
 // Set light uniforms to shader
 void ForwardLitRender::set_light_uniforms(Scene* scene)
 {
+	GLuint last_valid_cubemap_id = -1;
+	std::vector<int> unassigned_cubemap_ids;
 	// Set point lights
 	glUniform1i(loc_point_light_count, (GLint)scene->point_lights.size());
 	std::vector<PointLight*>::iterator itr;
-	for (itr = scene->point_lights.begin(); itr != scene->point_lights.end(); itr++)
+	for (itr = scene->point_lights.begin(); itr != scene->point_lights.end(); ++itr)
 	{
 		std::string light_array_str = "point_lights[" + std::to_string(point_light_count) + "].position";
 		GLuint loc_lights_pos = glGetUniformLocation(program, (GLchar*)light_array_str.c_str());
@@ -179,18 +180,49 @@ void ForwardLitRender::set_light_uniforms(Scene* scene)
 		GLuint loc_cast_shadow = glGetUniformLocation(program, (GLchar*)light_array_str.c_str());
 		glUniform1i(loc_cast_shadow, (GLint)(*itr)->does_cast_shadow());
 
-		light_array_str = "point_lights[" + std::to_string(point_light_count) + "].point_shadow_map";
-		GLuint loc_light_cubemap = glGetUniformLocation(program, (GLchar*)light_array_str.c_str());
-		glUniform1i(loc_light_cubemap, static_texture_uniform_count + point_light_count + direct_light_count);
-		glActiveTexture(GL_TEXTURE0 + static_texture_uniform_count + point_light_count + direct_light_count);
 		if ((*itr)->does_cast_shadow()) // If there is a proper shadow map, assign the uniform
+		{
+			light_array_str = "point_lights[" + std::to_string(point_light_count) + "].point_shadow_map";
+			GLuint loc_light_cubemap = glGetUniformLocation(program, (GLchar*)light_array_str.c_str());
+			glUniform1i(loc_light_cubemap, static_texture_uniform_count + point_light_count + direct_light_count);
+			glActiveTexture(GL_TEXTURE0 + static_texture_uniform_count + point_light_count + direct_light_count);
 			glBindTexture(GL_TEXTURE_CUBE_MAP, (*itr)->depth_cubemap);
+			last_valid_cubemap_id = (*itr)->depth_cubemap;
+		}
+		else
+		{
+			unassigned_cubemap_ids.push_back(point_light_count);
+		}
 
 		light_array_str = "point_lights[" + std::to_string(point_light_count) + "].intensity";
 		GLuint loc_light_int = glGetUniformLocation(program, (GLchar*)light_array_str.c_str());
 		glUniform1f(loc_light_int, (GLfloat)(*itr)->intensity);
 		point_light_count++;
 	}
+	// Set the samplerCubemaps to a valid value to suppress the error
+	if (last_valid_cubemap_id != -1)
+	{
+		for (int i = point_light_count; i < max_plight_per_call; i++)
+		{
+			std::string str = "point_lights[" + std::to_string(i) + "].point_shadow_map";
+			GLuint loc = glGetUniformLocation(program, (GLchar*)str.c_str());
+			glUniform1i(loc, static_texture_uniform_count + i + direct_light_count);
+			glActiveTexture(GL_TEXTURE0 + static_texture_uniform_count + i + direct_light_count);
+			glBindTexture(GL_TEXTURE_CUBE_MAP, last_valid_cubemap_id);
+		}
+
+		for (int i = 0; i < unassigned_cubemap_ids.size(); i++)
+		{
+			std::string str = "point_lights[" + std::to_string(unassigned_cubemap_ids[i]) + "].point_shadow_map";
+			GLuint loc = glGetUniformLocation(program, (GLchar*)str.c_str());
+			glUniform1i(loc, static_texture_uniform_count
+				+ unassigned_cubemap_ids[i] + direct_light_count);
+			glActiveTexture(GL_TEXTURE0 + static_texture_uniform_count
+				+ unassigned_cubemap_ids[i] + direct_light_count);
+			glBindTexture(GL_TEXTURE_CUBE_MAP, last_valid_cubemap_id);
+		}
+	}
+
 	// Set directional lights
 	glUniform1i(loc_direct_light_count, (GLint)scene->direct_lights.size());
 	std::vector<DirectionalLight*>::iterator itrr;
@@ -212,12 +244,16 @@ void ForwardLitRender::set_light_uniforms(Scene* scene)
 		GLuint loc_cast_shadow = glGetUniformLocation(program, (GLchar*)light_array_str.c_str());
 		glUniform1i(loc_cast_shadow, (GLint)(*itrr)->does_cast_shadow());
 
-		light_array_str = "direct_lights[" + std::to_string(direct_light_count) + "].directional_shadow_map";
-		GLuint loc_lights_sm = glGetUniformLocation(program, (GLchar*)light_array_str.c_str());
-		glUniform1i(loc_lights_sm, static_texture_uniform_count + point_light_count + direct_light_count);
-		glActiveTexture(GL_TEXTURE0 + static_texture_uniform_count + point_light_count + direct_light_count);
 		if ((*itrr)->does_cast_shadow()) // If there is a proper shadow map, assign the uniform
+		{
+			light_array_str = "direct_lights[" + std::to_string(direct_light_count) + "].directional_shadow_map";
+			GLuint loc_lights_sm = glGetUniformLocation(program, (GLchar*)light_array_str.c_str());
+			glUniform1i(loc_lights_sm, static_texture_uniform_count
+				+ max_plight_per_call + direct_light_count);
+			glActiveTexture(GL_TEXTURE0 + static_texture_uniform_count
+				+ max_plight_per_call + direct_light_count);
 			glBindTexture(GL_TEXTURE_2D, (*itrr)->get_depth_map());
+		}
 
 		light_array_str = "direct_lights[" + std::to_string(direct_light_count) + "].light_space_matrix";
 		GLuint loc_lights_lsm = glGetUniformLocation(program, (GLchar*)light_array_str.c_str());
