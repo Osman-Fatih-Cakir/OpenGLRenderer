@@ -62,8 +62,8 @@ void ForwardRender::set_color(vec3 vec)
 	glUniform3fv(loc_color, 1, &vec[0]);
 }
 
-// Render the scene
-void ForwardRender::render(Camera* camera, Model* model)
+// Render the model
+void ForwardRender::render_model(Camera* camera, Model* model)
 {
 	glViewport(0, 0, width, height);
 
@@ -75,6 +75,30 @@ void ForwardRender::render(Camera* camera, Model* model)
 	model->draw(program, camera->get_position());
 
 	glBindVertexArray(0);
+}
+
+void ForwardRender::render(Scene* scene, MainFramebuffer* main_fb, gBuffer* GBuffer)
+{
+	start_program(GBuffer, main_fb);
+
+	// Draw scene
+	for (unsigned int i = 0; i < scene->point_lights.size(); i++)
+	{
+		if (scene->point_lights[i]->model != nullptr)
+		{
+			set_color(scene->point_lights[i]->color);
+			render_model(scene->camera, scene->point_lights[i]->model);
+		}
+
+		if (scene->point_lights[i]->is_debug_active())
+		{
+			set_color(scene->point_lights[i]->color);
+			// Light radius renders wih wireframe
+			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+			render_model(scene->camera, scene->point_lights[i]->debug_model);
+			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+		}
+	}
 }
 
 // Compiles the shaders and generates program

@@ -45,8 +45,7 @@ void DirectionalDepth::set_space_matrix(mat4 mat)
 	glUniformMatrix4fv(loc_space_matrix, 1, GL_FALSE, &mat[0][0]);
 }
 
-// Renders the scene
-void DirectionalDepth::render(Model* model, vec3 cam_pos)
+void DirectionalDepth::render_model(Model* model, vec3 cam_pos)
 {
 	glEnable(GL_CULL_FACE);
 
@@ -57,6 +56,32 @@ void DirectionalDepth::render(Model* model, vec3 cam_pos)
 	model->draw(program, cam_pos);
 
 	glDisable(GL_CULL_FACE);
+}
+
+// Renders the scene
+void DirectionalDepth::render(Scene* scene)
+{
+
+	// Directional shadows
+	for (unsigned int i = 0; i < scene->direct_lights.size(); i++)
+	{
+		// Check if the light casts shadow
+		if (!scene->direct_lights[i]->does_cast_shadow())
+			continue;
+
+		start_program(scene->direct_lights[i]);
+
+		// Draw scene
+		for (unsigned int ii = 0; ii < scene->all_models.size(); ii++)
+		{
+			// Draw
+			render_model(scene->all_models[ii], scene->camera->get_position());
+		}
+		for (unsigned int ii = 0; ii < scene->translucent_models.size(); ii++)
+		{
+			render_model(scene->translucent_models[ii], scene->camera->get_position());
+		}
+	}
 }
 
 // Compiles shaders and generate program

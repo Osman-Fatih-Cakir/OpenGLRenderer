@@ -5,6 +5,7 @@
 #include <glm.hpp>
 #include <Model.h>
 #include <DirectionalLight.h>
+#include <Scene.h>
 
 typedef glm::mat4 mat4;
 
@@ -18,7 +19,7 @@ public:
 	void start_program(DirectionalLight* _light);
 	GLuint get_shader_program();
 	void set_space_matrix(mat4 mat);
-	void render(Model* model, vec3 cam_pos);
+	void render(Scene* scene);
 
 private:
 
@@ -29,5 +30,5 @@ private:
 
 	void init_shaders();
 	void get_uniform_locations();
-
+	void render_model(Model* model, vec3 cam_pos);
 };

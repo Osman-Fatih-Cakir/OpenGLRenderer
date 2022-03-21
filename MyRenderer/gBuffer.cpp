@@ -133,8 +133,8 @@ unsigned int gBuffer::get_height()
 	return gBuffer_height;
 }
 
-// Renders the scene
-void gBuffer::render(Camera* camera, Model* model)
+// Render the model
+void gBuffer::render_model(Camera* camera, Model* model)
 {
 	// Cull backfaces
 	glEnable(GL_CULL_FACE);
@@ -148,6 +148,19 @@ void gBuffer::render(Camera* camera, Model* model)
 	model->draw(program, camera->get_position());
 
 	glDisable(GL_CULL_FACE); // Disable culling when rendering is done
+}
+
+// Render scene
+void gBuffer::render(Scene* scene)
+{
+	start_program();
+
+	// Draw models of the scene
+	for (unsigned int i = 0; i < scene->all_models.size(); i++)
+	{
+		// Draw model
+		render_model(scene->camera, scene->all_models[i]);
+	}
 }
 
 // Compiles shaders and generates the shader program

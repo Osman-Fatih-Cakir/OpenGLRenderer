@@ -5,6 +5,7 @@
 #include <glm.hpp>
 #include <Model.h>
 #include <PointLight.h>
+#include <Scene.h>
 
 typedef glm::mat4 mat4;
 typedef glm::vec3 vec3;
@@ -21,7 +22,7 @@ public:
 	void set_space_matrices(mat4 mats[6]);
 	void set_far(float num);
 	void set_position(vec3 pos);
-	void render(Model* model, vec3 cam_pos);
+	void render(Scene* scene);
 	
 private:
 
@@ -34,5 +35,5 @@ private:
 
 	void init_shaders();
 	void get_uniform_locations();
-
+	void render_model(Model* model, vec3 cam_pos);
 };

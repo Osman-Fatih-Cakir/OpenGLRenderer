@@ -6,6 +6,7 @@
 #include <Model.h>
 #include <Camera.h>
 #include <Window.h>
+#include <Scene.h>
 
 typedef glm::mat4 mat4;
 typedef glm::vec3 vec3;
@@ -33,7 +34,7 @@ public:
 	void set_view_matrix(mat4 mat);
 	unsigned int get_width();
 	unsigned int get_height();
-	void render(Camera* camera, Model* model);
+	void render(Scene* scene);
 
 private:
 
@@ -55,4 +56,5 @@ private:
 	void init_shaders();
 	void create_framebuffer();
 	void get_uniform_locations();
+	void render_model(Camera* camera, Model* model);
 };

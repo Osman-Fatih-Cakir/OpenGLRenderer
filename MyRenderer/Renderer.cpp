@@ -52,60 +52,17 @@ void Renderer::render(float delta)
 	//// 1. GBuffer Pass: Generate geometry/color data into gBuffers
 	//
 
-	GBuffer->start_program();
-
-	// Draw models of the scene
-	for (unsigned int i = 0; i < scene->all_models.size(); i++)
-	{
-		// Draw model
-		GBuffer->render(scene->camera, scene->all_models[i]);
-	}
+	GBuffer->render(scene);
 
 	//
 	//// Shadow pass: Get the depth map of the scene
 	//
 
-	// Directional shadows
-	for (unsigned int i = 0; i < scene->direct_lights.size(); i++)
-	{
-		// Check if the light casts shadow
-		if (!scene->direct_lights[i]->does_cast_shadow())
-			continue;
+	// Directional light shadows
+	dirDepth->render(scene);
 
-		dirDepth->start_program(scene->direct_lights[i]);
-
-		// Draw scene
-		for (unsigned int ii = 0; ii < scene->all_models.size(); ii++)
-		{
-			// Draw
-			dirDepth->render(scene->all_models[ii], scene->camera->get_position());
-		}
-		for (unsigned int ii = 0; ii < scene->translucent_models.size(); ii++)
-		{
-			dirDepth->render(scene->translucent_models[ii], scene->camera->get_position());
-		}
-	}
-	
 	// Point light shadows
-	for (unsigned int i = 0; i < scene->point_lights.size(); i++)
-	{
-		// Check if the light casts shadow
-		if (!scene->point_lights[i]->does_cast_shadow())
-			continue;
-
-		pointDepth->start_program(scene->point_lights[i]);
-		
-		// Draw scene
-		for (unsigned int ii = 0; ii < scene->all_models.size(); ii++)
-		{
-			// Draw
-			pointDepth->render(scene->all_models[ii], scene->camera->get_position());
-		}
-		for (unsigned int ii = 0; ii < scene->translucent_models.size(); ii++)
-		{
-			pointDepth->render(scene->translucent_models[ii], scene->camera->get_position());
-		}
-	}
+	pointDepth->render(scene);
 	
 	//
 	//// 2: Calculate lighting pixel by pixel using gBuffer
@@ -124,32 +81,13 @@ void Renderer::render(float delta)
 	//// 3: Draw light meshes (The meshes that are not lit but in the same scene with other meshes)
 	//
 
-	// Start forward rendering program
-	forwardRender->start_program(GBuffer, main_fb);
-
-	// Draw scene
-	for (unsigned int i = 0; i < scene->point_lights.size(); i++)
-	{
-		if (scene->point_lights[i]->model != nullptr)
-		{
-			forwardRender->set_color(scene->point_lights[i]->color);
-			forwardRender->render(scene->camera, scene->point_lights[i]->model);
-		}
-
-		if (scene->point_lights[i]->is_debug_active())
-		{
-			forwardRender->set_color(scene->point_lights[i]->color);
-			// Light radius renders wih wireframe
-			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-			forwardRender->render(scene->camera, scene->point_lights[i]->debug_model);
-			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-		}
-	}
+	forwardRender->render(scene, main_fb, GBuffer);
 
 	//
 	//// 4: Skybox rendering
 	//
 
+	// If scene has a skybox, render
 	Skybox* skybox = scene->get_render_skybox();
 	if (skybox != nullptr)
 		scene->get_render_skybox()->render(scene->camera);

@@ -52,8 +52,8 @@ void PointDepth::set_position(vec3 pos)
 	glUniform3fv(loc_position, 1,&pos[0]);
 }
 
-// Draw scene
-void PointDepth::render(Model* model, vec3 cam_pos)
+// Draw model
+void PointDepth::render_model(Model* model, vec3 cam_pos)
 {
 	glEnable(GL_CULL_FACE);
 	glCullFace(GL_BACK);
@@ -69,6 +69,30 @@ void PointDepth::render(Model* model, vec3 cam_pos)
 	model->draw(program, cam_pos);
 
 	glDisable(GL_CULL_FACE);
+}
+
+// Draw scene
+void PointDepth::render(Scene* scene)
+{
+	for (unsigned int i = 0; i < scene->point_lights.size(); i++)
+	{
+		// Check if the light casts shadow
+		if (!scene->point_lights[i]->does_cast_shadow())
+			continue;
+
+		start_program(scene->point_lights[i]);
+
+		// Draw scene
+		for (unsigned int ii = 0; ii < scene->all_models.size(); ii++)
+		{
+			// Draw
+			render_model(scene->all_models[ii], scene->camera->get_position());
+		}
+		for (unsigned int ii = 0; ii < scene->translucent_models.size(); ii++)
+		{
+			render_model(scene->translucent_models[ii], scene->camera->get_position());
+		}
+	}
 }
 
 // Compiles shaders and generates program

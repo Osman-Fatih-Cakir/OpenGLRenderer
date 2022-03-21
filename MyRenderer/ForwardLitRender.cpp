@@ -17,7 +17,7 @@ ForwardLitRender::~ForwardLitRender()
 
 }
 
-// Renders the scene
+// Render scene
 void ForwardLitRender::render(gBuffer* GBuffer, MainFramebuffer* main_fb, Scene* scene)
 {
 	glEnable(GL_BLEND);

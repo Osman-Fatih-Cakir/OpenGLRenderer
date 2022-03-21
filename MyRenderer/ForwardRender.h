@@ -6,6 +6,7 @@
 #include <Model.h>
 #include <gBuffer.h>
 #include <MainFramebuffer.h>
+#include <Scene.h>
 
 typedef glm::mat4 mat4;
 typedef glm::vec3 vec3;
@@ -23,7 +24,7 @@ public:
 	void set_projection_matrix(mat4 mat);
 	void set_view_matrix(mat4 mat);
 	void set_color(vec3 vec);
-	void render(Camera* camera, Model* model);
+	void render(Scene* scene, MainFramebuffer* main_fb, gBuffer* GBuffer);
 
 private:
 
@@ -40,4 +41,5 @@ private:
 
 	void init_shaders();
 	void get_uniform_locations();
+	void render_model(Camera* camera, Model* model);
 };
