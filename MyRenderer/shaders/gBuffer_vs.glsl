@@ -10,15 +10,24 @@ out vec3 fFragPos;
 out vec2 fTexCoord;
 out vec3 fNormal;
 out mat3 TBN;
+out vec4 fnew_pos;
+out vec4 fold_pos;
 
 uniform mat4 projection_matrix;
 uniform mat4 view_matrix;
 uniform mat4 model_matrix;
 uniform mat4 normal_matrix;
 
+uniform mat4 prev_view_matrix;
+uniform mat4 prev_model_matrix;
+
 void main()
 {
     gl_Position = projection_matrix * view_matrix * model_matrix * vec4(vPos, 1.0);
+
+    // New and old positions
+    fnew_pos = gl_Position;
+    fold_pos = projection_matrix * prev_view_matrix * prev_model_matrix * vec4(vPos, 1.0);
 
     // I use world coordinates for light calculations
     fFragPos = (model_matrix * vec4(vPos, 1.0)).xyz;

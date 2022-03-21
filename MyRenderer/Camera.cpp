@@ -94,6 +94,16 @@ void Camera::set_view_matrix(mat4 mat)
 	view_matrix = mat;
 }
 
+mat4 Camera::get_prev_view_matrix()
+{
+	return prev_view_matrix;
+}
+
+void Camera::set_prev_view_matrix()
+{
+	prev_view_matrix = view_matrix;
+}
+
 vec3 Camera::get_eye()
 {
 	return eye;

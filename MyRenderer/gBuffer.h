@@ -32,6 +32,7 @@ public:
 	void start_program();
 	void set_projection_matrix(mat4 mat);
 	void set_view_matrix(mat4 mat);
+	void set_prev_view_matrix(mat4 mat);
 	unsigned int get_width();
 	unsigned int get_height();
 	void render(Scene* scene);
@@ -44,6 +45,7 @@ private:
 	GLuint gBuffer_fbo;
 	GLuint loc_projection_matrix;
 	GLuint loc_view_matrix;
+	GLuint loc_prev_view_matrix;
 	GLuint loc_model_matrix;
 	GLuint loc_normal_matrix;
 	GLuint gPosition;
@@ -51,6 +53,7 @@ private:
 	GLuint gAlbedoSpec;
 	GLuint gPbr_materials;
 	GLuint gEmissive;
+	GLuint gVelocity;
 	GLuint rbo_depth;
 
 	void init_shaders();

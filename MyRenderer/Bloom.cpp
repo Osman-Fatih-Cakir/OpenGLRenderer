@@ -28,8 +28,11 @@ Bloom::~Bloom()
     glDeleteBuffers(1, &quadVBO);
 }
 
-void Bloom::render(GLuint main_fb, GLuint texture)
+void Bloom::render(MainFramebuffer* main_fb)
 {
+    GLuint fbo = main_fb->get_FBO();
+    GLuint texture = main_fb->get_color_texture();
+
     // Take hdr image and bright image
     take_hdr_image(texture);
 
@@ -37,7 +40,7 @@ void Bloom::render(GLuint main_fb, GLuint texture)
     blur();
 
     // Converge blurred image to hdr image
-    converge(main_fb);
+    converge(fbo);
 }
 
 void Bloom::take_hdr_image(GLuint texture)

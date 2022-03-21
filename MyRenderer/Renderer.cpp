@@ -38,7 +38,7 @@ void Renderer::render(float delta)
 	for (int i = 0; i < 1; i++)
 	{
 		//scene->all_models[i]->rotate(vec3(0.f, 0.f, 1.f), (float)(4 * (i + 1)), delta / 100.f);
-		//scene->all_models[i]->rotate(vec3(0.f, 1.f, 0.f), (float)(4 * (i + 1)), delta / 100.f);
+		scene->all_models[i]->rotate(vec3(0.f, 1.f, 0.f), (float)(4 * (i + 1)), delta / 800.f);
 		//scene->all_models[i]->translate(vec3(0.f, 0.f, 10.f), delta / 1000.f);
 	}
 	//////////////////////////////////////////////////////
@@ -93,17 +93,28 @@ void Renderer::render(float delta)
 		scene->get_render_skybox()->render(scene->camera);
 	
 	//
-	//// 5: Post Processing
+	//// 5: Anti-aliasing
 	//
 
-	bloom->render(main_fb->get_FBO(),  main_fb->get_color_texture());
+	/*
+	- Get velocity buffer from GBuffer
+	*/
+
+	/*
+	taa->render(main_fb, camera, GBuffer);
+	*/
+
+	//
+	//// 6: Post Processing
+	//
+
+	bloom->render(main_fb);
 
 	//
 	//// 6. Render the scene after post process
 	//
 
 	render_all(main_fb->get_color_texture());
-
 }
 
 // Initialize programs that are going to be used when rendering

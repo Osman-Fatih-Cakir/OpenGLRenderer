@@ -52,10 +52,16 @@ void Mesh::draw(GLuint shader_program, bool has_normal_map, bool has_ao_map, boo
 		&nmt[0][0]);
 	glUniformMatrix4fv(glGetUniformLocation(shader_program, "model_matrix"), 1, GL_FALSE, 
 		&mt[0][0]);
+	glUniformMatrix4fv(glGetUniformLocation(shader_program, "prev_model_matrix"), 1, GL_FALSE,
+		&prev_total_transformation[0][0]);
+
 	// Draw mesh
 	glBindVertexArray(VAO);
 	glDrawElements(GL_TRIANGLES, (GLsizei)indices.size(), GL_UNSIGNED_INT, 0);
 	glBindVertexArray(0);
+
+	// Store previous transformation matrix
+	prev_total_transformation = mt;
 }
 
 // Generate buffers for mesh data

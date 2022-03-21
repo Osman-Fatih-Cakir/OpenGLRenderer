@@ -123,6 +123,12 @@ void gBuffer::set_view_matrix(mat4 mat)
 	glUniformMatrix4fv(loc_view_matrix, 1, GL_FALSE, &mat[0][0]);
 }
 
+// Set last view matrix
+void gBuffer::set_prev_view_matrix(mat4 mat)
+{
+	glUniformMatrix4fv(loc_prev_view_matrix, 1, GL_FALSE, &mat[0][0]);
+}
+
 unsigned int gBuffer::get_width()
 {
 	return gBuffer_width;
@@ -143,6 +149,8 @@ void gBuffer::render_model(Camera* camera, Model* model)
 	// Camera matrix
 	set_projection_matrix(camera->get_projection_matrix());
 	set_view_matrix(camera->get_view_matrix());
+	set_prev_view_matrix(camera->get_prev_view_matrix());
+	camera->set_prev_view_matrix();
 	
 	// Draw call
 	model->draw(program, camera->get_position());
@@ -222,10 +230,19 @@ void gBuffer::create_framebuffer()
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT4, GL_TEXTURE_2D, gEmissive, 0);
 	glBindTexture(GL_TEXTURE_2D, 0);
 
+	// Velocity buffer
+	glGenTextures(1, &gVelocity);
+	glBindTexture(GL_TEXTURE_2D, gVelocity);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RG16, gBuffer_width, gBuffer_height, 0, GL_RG, GL_FLOAT, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT5, GL_TEXTURE_2D, gVelocity, 0);
+	glBindTexture(GL_TEXTURE_2D, 0);
+
 	// Tell OpenGL which color attachments we'll use (of this framebuffer) for rendering 
-	GLuint attachments[5] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1,
-		GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3, GL_COLOR_ATTACHMENT4 };
-	glDrawBuffers(5, attachments);
+	GLuint attachments[6] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1,
+		GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3, GL_COLOR_ATTACHMENT4, GL_COLOR_ATTACHMENT5 };
+	glDrawBuffers(6, attachments);
 
 	// Create and attach depth buffer (renderbuffer)
 	glGenRenderbuffers(1, &rbo_depth);
@@ -246,4 +263,5 @@ void gBuffer::get_uniform_locations()
 	loc_view_matrix = glGetUniformLocation(program, "view_matrix");
 	loc_model_matrix = glGetUniformLocation(program, "model_matrix");
 	loc_normal_matrix = glGetUniformLocation(program, "normal_matrix");
+	loc_prev_view_matrix = glGetUniformLocation(program, "prev_view_matrix");
 }

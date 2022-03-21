@@ -2,6 +2,7 @@
 #include <GL/glew.h>
 #include <GL/freeglut.h>
 #include <Window.h>
+#include <MainFramebuffer.h>
 
 class Bloom
 {
@@ -10,7 +11,7 @@ public:
 	Bloom();
 	~Bloom();
 	
-	void render(GLuint main_fb, GLuint texture);
+	void render(MainFramebuffer* main_fb);
 
 private:
 

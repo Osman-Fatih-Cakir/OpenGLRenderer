@@ -307,7 +307,7 @@ void init_models()
 	//scene->add_model(model);
 	//Model* model = new Model("mesh/test_scene/sponza/sponza.glb", true);
 	//scene->add_model(model);
-	Model* model = new Model("mesh/test_scene/tree/scene.gltf", true);
+	Model* model = new Model("mesh/test_scene/tree/scene.gltf", false);
 	model->rotate(vec3(0.f, 1.f, 0.f), 180.f, 1.f);
 	model->scale(0.5f, 0.5f, 0.5f, 1.f);
 	scene->add_model(model);
@@ -363,7 +363,6 @@ void init_lights()
 		std::cout << "Radius: " << light->radius << "\n";
 		// Draw a mesh for represent a light
 		Model* light_model = new Model("mesh/simple/sphere.obj", false);
-		//light_model->scale(10.f, 10.f, 10.f, 1.0f);
 		light->set_model(light_model);
 		//Model* light_debug_model = new Model("mesh/simple/icosphere.obj");
 		//light->debug(light_debug_model);
@@ -398,9 +397,9 @@ void init_scene()
 
 	// Set camera parameters
 	init_camera(
-		vec3(10.f, 4.f, 0.f), // Eye
+		vec3(15.f, 11.f, 0.f), // Eye
 		vec3(0.f, 1.f, 0.f), // Up
-		vec3(0.f, 4.f, 0.f) // Center
+		vec3(0.f, 6.f, 0.f) // Center
 	);
 	
 	// Initialize lights

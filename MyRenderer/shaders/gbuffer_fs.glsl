@@ -5,11 +5,14 @@ layout(location = 1) out vec3 gNormal;
 layout(location = 2) out vec4 gAlbedoSpec;
 layout(location = 3) out vec3 gPbr_materials;
 layout(location = 4) out vec3 gEmissive;
+layout(location = 5) out vec2 gVelocity;
 
 in vec2 fTexCoord;
 in vec3 fFragPos;
 in vec3 fNormal;
 in mat3 TBN;
+in vec4 fnew_pos;
+in vec4 fold_pos;
 
 uniform sampler2D albedo_map;
 uniform sampler2D normal_map;
@@ -73,4 +76,12 @@ void main()
 	{
 		gEmissive.rgb = vec3(0.0);
 	}
+
+	// Move to UV space
+	vec2 new_pos = ((fnew_pos.xy / fnew_pos.w) * 0.5 + 0.5);
+	vec2 old_pos = ((fold_pos.xy / fold_pos.w) * 0.5 + 0.5);
+
+	// Velocity
+	// Multiply with 10, because the values are too low and the precision is not enough
+	gVelocity = (new_pos - old_pos) * 10.0;
 }

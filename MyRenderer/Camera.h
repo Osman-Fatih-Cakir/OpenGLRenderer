@@ -49,6 +49,9 @@ public:
 	void set_projection_matrix(mat4 mat);
 	mat4 get_view_matrix();
 	void set_view_matrix(mat4 mat);
+	mat4 get_prev_view_matrix();
+	// This function should be called once in a frame (in GBuffer render now)
+	void set_prev_view_matrix();
 	vec3 get_eye();
 	void set_eye(vec3 vec);
 	vec3 get_up();
@@ -65,6 +68,7 @@ private:
 	mat4 projection_matrix = mat4(1.f);
 	// View matrix for camera
 	mat4 view_matrix = mat4(1.f);
+	mat4 prev_view_matrix;
 	// Eye coordinates
 	vec3 eye = vec3(0.f);
 	// Up vector

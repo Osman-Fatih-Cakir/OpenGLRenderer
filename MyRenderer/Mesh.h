@@ -43,6 +43,7 @@ public:
 	std::vector<unsigned int> indices;
 	std::vector<Texture> textures;
 	mat4 transformation;
+	mat4 prev_total_transformation;
 	GLuint VAO;
 
 	void draw(GLuint shader_program, bool has_normal_map, bool has_ao_map, bool has_emissive_map,
