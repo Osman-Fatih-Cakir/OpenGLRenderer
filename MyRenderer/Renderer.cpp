@@ -25,6 +25,7 @@ Renderer::~Renderer()
 	delete forwardRender;
 	delete deferredShading;
 	delete main_fb;
+	delete prev_fb;
 	delete bloom;
 }
 
@@ -52,7 +53,7 @@ void Renderer::render(float delta)
 	//// 1. GBuffer Pass: Generate geometry/color data into gBuffers
 	//
 
-	GBuffer->render(scene);
+	GBuffer->render(scene, total_frames);
 
 	//
 	//// Shadow pass: Get the depth map of the scene
@@ -115,6 +116,12 @@ void Renderer::render(float delta)
 	//
 
 	render_all(main_fb->get_color_texture());
+
+
+	// Store previous framebuffer
+	store_previous_framebuffer();
+
+	total_frames++;
 }
 
 // Initialize programs that are going to be used when rendering
@@ -145,6 +152,7 @@ void Renderer::init()
 
 	// Main framebuffer
 	main_fb = new MainFramebuffer();
+	prev_fb = new MainFramebuffer();
 
 	// Bloom
 	bloom = new Bloom();
@@ -157,6 +165,24 @@ void Renderer::init_uniforms()
 	render_program = initprogram(vertex_shader, fragment_shader);
 
 	loc_texture = glGetUniformLocation(render_program, "image");
+}
+
+void Renderer::store_previous_framebuffer()
+{
+	// Clear previous framebuffer
+	glBindFramebuffer(GL_FRAMEBUFFER, prev_fb->get_FBO());
+	glClear(GL_COLOR_BUFFER_BIT);
+	glClear(GL_DEPTH_BUFFER_BIT);
+	// Copy the depth buffer
+	glBindFramebuffer(GL_READ_FRAMEBUFFER, prev_fb->get_FBO());
+	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, main_fb->get_FBO());
+	glBlitFramebuffer(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT, 0, 0,
+		WINDOW_WIDTH, WINDOW_HEIGHT, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+
+	// Clear new framebuffer
+	glBindFramebuffer(GL_FRAMEBUFFER, main_fb->get_FBO());
+	glClear(GL_COLOR_BUFFER_BIT);
+	glClear(GL_DEPTH_BUFFER_BIT);
 }
 
 // Render the texture

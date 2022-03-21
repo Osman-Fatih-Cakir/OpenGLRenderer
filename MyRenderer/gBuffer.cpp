@@ -22,6 +22,9 @@ gBuffer::gBuffer()
 	// Initialize g-buffer framebuffer
 	create_framebuffer();
 
+	// Get Halton Sequence
+	init_halton_sequence();
+
 	// Get uniform locations
 	get_uniform_locations();
 }
@@ -129,6 +132,22 @@ void gBuffer::set_prev_view_matrix(mat4 mat)
 	glUniformMatrix4fv(loc_prev_view_matrix, 1, GL_FALSE, &mat[0][0]);
 }
 
+void gBuffer::set_halton_sequence()
+{
+	glUniform2fv(loc_halton_sequence, 6, &halton_sequence[0][0]);
+}
+
+void gBuffer::set_resolution(int x, int y)
+{
+	float ar[] = { (float)x, (float)y };
+	glUniform2fv(loc_resolution, 1,  &ar[0]);
+}
+
+void gBuffer::set_total_frames(int unsigned val)
+{
+	glUniform1ui(loc_total_frames, val);
+}
+
 unsigned int gBuffer::get_width()
 {
 	return gBuffer_width;
@@ -140,7 +159,7 @@ unsigned int gBuffer::get_height()
 }
 
 // Render the model
-void gBuffer::render_model(Camera* camera, Model* model)
+void gBuffer::render_model(Camera* camera, Model* model, unsigned int total_frames)
 {
 	// Cull backfaces
 	glEnable(GL_CULL_FACE);
@@ -150,16 +169,20 @@ void gBuffer::render_model(Camera* camera, Model* model)
 	set_projection_matrix(camera->get_projection_matrix());
 	set_view_matrix(camera->get_view_matrix());
 	set_prev_view_matrix(camera->get_prev_view_matrix());
+	set_halton_sequence();
+	set_resolution(gBuffer_width, gBuffer_height);
+	set_total_frames(total_frames);
 	camera->set_prev_view_matrix();
 	
 	// Draw call
+	
 	model->draw(program, camera->get_position());
 
 	glDisable(GL_CULL_FACE); // Disable culling when rendering is done
 }
 
 // Render scene
-void gBuffer::render(Scene* scene)
+void gBuffer::render(Scene* scene, unsigned int total_frames)
 {
 	start_program();
 
@@ -167,7 +190,7 @@ void gBuffer::render(Scene* scene)
 	for (unsigned int i = 0; i < scene->all_models.size(); i++)
 	{
 		// Draw model
-		render_model(scene->camera, scene->all_models[i]);
+		render_model(scene->camera, scene->all_models[i], total_frames);
 	}
 }
 
@@ -256,6 +279,31 @@ void gBuffer::create_framebuffer()
 	glBindFramebuffer(GL_FRAMEBUFFER, 0); // Prevent further modification
 }
 
+void gBuffer::init_halton_sequence()
+{
+	for (int iter = 0; iter < 6; iter++)
+	{
+		halton_sequence[iter] = 
+			vec2(create_halton_sequence(iter + 1, 2), create_halton_sequence(iter + 1, 3));
+	}
+}
+
+// Creates halton sequence
+float gBuffer::create_halton_sequence(unsigned int index, int base)
+{
+	float f = 1;
+	float r = 0;
+	int current = index;
+	do
+	{
+		f = f / base;
+		r = r + f * (current % base);
+		current = (int)glm::floor(current / base);
+	} while (current > 0);
+
+	return r;
+}
+
 // Gets uniform locations from the program and store
 void gBuffer::get_uniform_locations()
 {
@@ -264,4 +312,7 @@ void gBuffer::get_uniform_locations()
 	loc_model_matrix = glGetUniformLocation(program, "model_matrix");
 	loc_normal_matrix = glGetUniformLocation(program, "normal_matrix");
 	loc_prev_view_matrix = glGetUniformLocation(program, "prev_view_matrix");
+	loc_halton_sequence = glGetUniformLocation(program, "halton_sequence");
+	loc_resolution = glGetUniformLocation(program, "resolution");
+	loc_total_frames = glGetUniformLocation(program, "total_frames");
 }

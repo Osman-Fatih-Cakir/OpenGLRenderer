@@ -21,14 +21,12 @@ uniform mat4 normal_matrix;
 uniform mat4 prev_view_matrix;
 uniform mat4 prev_model_matrix;
 
+uniform vec2 halton_sequence[6];
+uniform vec2 resolution;
+uniform uint total_frames;
+
 void main()
 {
-    gl_Position = projection_matrix * view_matrix * model_matrix * vec4(vPos, 1.0);
-
-    // New and old positions
-    fnew_pos = gl_Position;
-    fold_pos = projection_matrix * prev_view_matrix * prev_model_matrix * vec4(vPos, 1.0);
-
     // I use world coordinates for light calculations
     fFragPos = (model_matrix * vec4(vPos, 1.0)).xyz;
     fTexCoord = vTexCoord;
@@ -38,4 +36,25 @@ void main()
     vec3 N = normalize(vec3(model_matrix * vec4(vNormal, 0.0)));
     TBN = mat3(T, B, N);
     fNormal = normalize(mat3(normal_matrix) * vNormal); // Multiply the normal with normal matrix
+
+    float deltaWidth = 1.0 / resolution.x;
+    float deltaHeight = 1.0 / resolution.y;
+
+    uint index = total_frames % 6;
+
+    vec2 jitter = vec2(halton_sequence[index].x * deltaWidth, halton_sequence[index].y * deltaHeight);
+
+    mat4 new_proj = projection_matrix;
+    //gl_Position = projection_matrix * view_matrix * model_matrix * vec4(vPos, 1.0);
+
+    mat4 jitter_mat = mat4(1.0);
+    jitter_mat[3][0] += jitter.x * deltaWidth;
+    jitter_mat[3][1] += jitter.y * deltaHeight;
+
+    // Jittered
+    gl_Position = jitter_mat * projection_matrix * view_matrix * model_matrix * vec4(vPos, 1.0);
+
+    // New and old positions
+    fnew_pos = gl_Position;
+    fold_pos = projection_matrix * prev_view_matrix * prev_model_matrix * vec4(vPos, 1.0);
 }

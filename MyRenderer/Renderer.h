@@ -27,6 +27,7 @@ private:
 
 	void init();
 	void init_uniforms();
+	void store_previous_framebuffer();
 	void render_all(GLuint texture);
 	void set_texture(GLuint id);
 	void render_quad();
@@ -38,9 +39,11 @@ private:
 	ForwardRender* forwardRender = nullptr;
 	DeferredShading* deferredShading = nullptr;
 	MainFramebuffer* main_fb = nullptr;
+	MainFramebuffer* prev_fb = nullptr;
 	Bloom* bloom = nullptr;
 	ForwardLitRender* forwardLitRender = nullptr;
 	unsigned long time = 0;
+	unsigned int total_frames = 0;
 
 	GLuint render_program;
 	GLuint loc_texture;
