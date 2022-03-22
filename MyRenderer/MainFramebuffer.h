@@ -15,12 +15,13 @@ public:
 
 	GLuint get_FBO();
 	GLuint get_color_texture();
+	GLuint get_depth_texture();
 
 private:
 	
 	GLuint FBO;
 	GLuint color_texture;
-	GLuint rbo_depth;
+	GLuint depth_texture;
 
 	unsigned int width = WINDOW_WIDTH;
 	unsigned int height = WINDOW_HEIGHT;

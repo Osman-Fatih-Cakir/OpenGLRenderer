@@ -83,5 +83,5 @@ void main()
 
 	// Velocity
 	// Multiply with 10, because the values are too low and the precision is not enough
-	gVelocity = (new_pos - old_pos) * 10.0;
+	gVelocity = (new_pos - old_pos); // * 100.0;
 }

@@ -39,7 +39,7 @@ void Renderer::render(float delta)
 	for (int i = 0; i < 1; i++)
 	{
 		//scene->all_models[i]->rotate(vec3(0.f, 0.f, 1.f), (float)(4 * (i + 1)), delta / 100.f);
-		scene->all_models[i]->rotate(vec3(0.f, 1.f, 0.f), (float)(4 * (i + 1)), delta / 800.f);
+		//scene->all_models[i]->rotate(vec3(0.f, 1.f, 0.f), (float)(4 * (i + 1)), delta / 800.f);
 		//scene->all_models[i]->translate(vec3(0.f, 0.f, 10.f), delta / 1000.f);
 	}
 	//////////////////////////////////////////////////////
@@ -97,26 +97,19 @@ void Renderer::render(float delta)
 	//// 5: Anti-aliasing
 	//
 
-	/*
-	- Get velocity buffer from GBuffer
-	*/
-
-	/*
-	taa->render(main_fb, camera, GBuffer);
-	*/
+	taa->render(main_fb, prev_fb, GBuffer);
 
 	//
 	//// 6: Post Processing
 	//
 
-	bloom->render(main_fb);
+	//bloom->render(main_fb);
 
 	//
 	//// 6. Render the scene after post process
 	//
 
 	render_all(main_fb->get_color_texture());
-
 
 	// Store previous framebuffer
 	store_previous_framebuffer();
@@ -156,6 +149,9 @@ void Renderer::init()
 
 	// Bloom
 	bloom = new Bloom();
+
+	// Temporal anti aliasing
+	taa = new TAA();
 }
 
 void Renderer::init_uniforms()
@@ -171,18 +167,20 @@ void Renderer::store_previous_framebuffer()
 {
 	// Clear previous framebuffer
 	glBindFramebuffer(GL_FRAMEBUFFER, prev_fb->get_FBO());
-	glClear(GL_COLOR_BUFFER_BIT);
-	glClear(GL_DEPTH_BUFFER_BIT);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
 	// Copy the depth buffer
-	glBindFramebuffer(GL_READ_FRAMEBUFFER, prev_fb->get_FBO());
-	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, main_fb->get_FBO());
+	glBindFramebuffer(GL_FRAMEBUFFER, main_fb->get_FBO());
+	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, prev_fb->get_FBO());
+	glBindFramebuffer(GL_READ_FRAMEBUFFER, main_fb->get_FBO());
 	glBlitFramebuffer(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT, 0, 0,
 		WINDOW_WIDTH, WINDOW_HEIGHT, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+	glBlitFramebuffer(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT, 0, 0,
+		WINDOW_WIDTH, WINDOW_HEIGHT, GL_COLOR_BUFFER_BIT, GL_NEAREST);
 
 	// Clear new framebuffer
 	glBindFramebuffer(GL_FRAMEBUFFER, main_fb->get_FBO());
-	glClear(GL_COLOR_BUFFER_BIT);
-	glClear(GL_DEPTH_BUFFER_BIT);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
 // Render the texture

@@ -126,7 +126,7 @@ void DeferredShading::render(gBuffer* GBuffer, MainFramebuffer* fb, Scene* scene
 	glBindFramebuffer(GL_FRAMEBUFFER, fb->get_FBO());
 	glViewport(0, 0, width, height);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	glClearColor(0.05f, 0.05f, 0.05f, 1.0f);
+	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
 	point_light_count = 0;
 	direct_light_count = 0;

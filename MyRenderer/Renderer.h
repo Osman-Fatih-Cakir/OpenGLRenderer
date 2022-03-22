@@ -12,6 +12,7 @@
 #include <MainFramebuffer.h>
 #include <Bloom.h>
 #include <ForwardLitRender.h>
+#include <TAA.h>
 
 class Renderer
 {
@@ -42,6 +43,7 @@ private:
 	MainFramebuffer* prev_fb = nullptr;
 	Bloom* bloom = nullptr;
 	ForwardLitRender* forwardLitRender = nullptr;
+	TAA* taa = nullptr;
 	unsigned long time = 0;
 	unsigned int total_frames = 0;
 

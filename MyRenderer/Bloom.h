@@ -15,7 +15,6 @@ public:
 
 private:
 
-
 	void take_hdr_image(GLuint texture);
 	void blur();
 	void converge(GLuint main_fb);

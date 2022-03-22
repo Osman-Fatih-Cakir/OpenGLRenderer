@@ -170,6 +170,7 @@
     <ClCompile Include="PointLight.cpp" />
     <ClCompile Include="Renderer.cpp" />
     <ClCompile Include="Scene.cpp" />
+    <ClCompile Include="TAA.cpp" />
     <ClCompile Include="Window.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -192,6 +193,7 @@
     <ClInclude Include="Renderer.h" />
     <ClInclude Include="Scene.h" />
     <ClInclude Include="Skybox.h" />
+    <ClInclude Include="TAA.h" />
     <ClInclude Include="Timer.h" />
     <ClInclude Include="Window.h" />
   </ItemGroup>
@@ -227,6 +229,8 @@
     <None Include="shaders\render_texture2D_vs.glsl" />
     <None Include="shaders\skybox_fs.glsl" />
     <None Include="shaders\skybox_vs.glsl" />
+    <None Include="shaders\TAA_fs.glsl" />
+    <None Include="shaders\TAA_vs.glsl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -44,7 +44,6 @@ void main()
 
     vec2 jitter = vec2(halton_sequence[index].x * deltaWidth, halton_sequence[index].y * deltaHeight);
 
-    mat4 new_proj = projection_matrix;
     //gl_Position = projection_matrix * view_matrix * model_matrix * vec4(vPos, 1.0);
 
     mat4 jitter_mat = mat4(1.0);
@@ -55,6 +54,6 @@ void main()
     gl_Position = jitter_mat * projection_matrix * view_matrix * model_matrix * vec4(vPos, 1.0);
 
     // New and old positions
-    fnew_pos = gl_Position;
+    fnew_pos = projection_matrix * view_matrix * model_matrix * vec4(vPos, 1.0);
     fold_pos = projection_matrix * prev_view_matrix * prev_model_matrix * vec4(vPos, 1.0);
 }

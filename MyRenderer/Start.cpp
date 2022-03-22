@@ -420,7 +420,7 @@ void render()
 	renderer->render(delta);
 
 	// Camera actions
-	float camera_speed = 10.f;
+	float camera_speed = 1.f;
 	float delta_over_t = delta / 1000;
 	float delta_over_h = delta / 100;
 	Camera* cam = scene->camera;
@@ -450,11 +450,11 @@ void render()
 	}
 	if (input->hold_key(Key::KEY_Z))
 	{
-		cam->rotate(vec3(0.f, 0.f, -1.f), 2.f, delta_over_t);
+		cam->rotate(vec3(0.f, 0.f, -1.f), 2.f*0.1f, delta_over_t);
 	}
 	if (input->hold_key(Key::KEY_C))
 	{
-		cam->rotate(vec3(0.f, -1.f, 0.f), 2.f, delta_over_h);
+		cam->rotate(vec3(0.f, -1.f, 0.f), 2.f*0.1f, delta_over_h);
 	}
 	if (input->press_key(Key::KEY_F))
 	{

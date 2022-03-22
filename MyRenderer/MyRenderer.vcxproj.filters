@@ -72,6 +72,9 @@
     <ClCompile Include="ForwardLitRender.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="TAA.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Mesh.h">
@@ -137,6 +140,9 @@
     <ClInclude Include="ForwardLitRender.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="TAA.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\gbuffer_vs.glsl" />
@@ -170,5 +176,7 @@
     <None Include="shaders\render_texture2D_fs.glsl" />
     <None Include="shaders\forward_lit_render_vs.glsl" />
     <None Include="shaders\forward_lit_render_fs.glsl" />
+    <None Include="shaders\TAA_vs.glsl" />
+    <None Include="shaders\TAA_fs.glsl" />
   </ItemGroup>
 </Project>

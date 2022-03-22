@@ -27,6 +27,7 @@ public:
 	GLuint get_gAlbedoSpec();
 	GLuint get_gPbr_materials();
 	GLuint get_emissive();
+	GLuint get_velocity();
 	GLuint get_fbo();
 	GLuint get_shader_program();
 
