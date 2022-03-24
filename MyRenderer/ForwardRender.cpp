@@ -10,25 +10,20 @@ ForwardRender::ForwardRender()
 
 	// Get uniform locations from program
 	get_uniform_locations();
+
+	init_depth_fbo();
 }
 
 // Destructor
 ForwardRender::~ForwardRender() 
 {
-	
+	glDeleteFramebuffers(1, &depth_fbo);
+	glDeleteTextures(1, &depth_texture);
 }
 
-void ForwardRender::start_program(gBuffer* _GBuffer, MainFramebuffer* fb)
+void ForwardRender::start_program(MainFramebuffer* fb)
 {
-	GBuffer = _GBuffer;
-	main_framebuffer = fb;
-
-	// Attach depth buffer to default framebuffer
-	glBindFramebuffer(GL_FRAMEBUFFER, GBuffer->get_fbo());
-	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, main_framebuffer->get_FBO()); // Write to default framebuffer
-	glBlitFramebuffer(0, 0, GBuffer->get_width(), GBuffer->get_height(), 0, 0,
-		GBuffer->get_width(), GBuffer->get_height(), GL_DEPTH_BUFFER_BIT, GL_NEAREST);
-
+	glBindFramebuffer(GL_FRAMEBUFFER, fb->get_FBO());
 	glUseProgram(program);
 }
 
@@ -77,9 +72,9 @@ void ForwardRender::render_model(Camera* camera, Model* model)
 	glBindVertexArray(0);
 }
 
-void ForwardRender::render(Scene* scene, MainFramebuffer* main_fb, gBuffer* GBuffer)
+void ForwardRender::render(Scene* scene, MainFramebuffer* main_fb)
 {
-	start_program(GBuffer, main_fb);
+	start_program(main_fb);
 
 	// Draw scene
 	for (unsigned int i = 0; i < scene->point_lights.size(); i++)
@@ -99,6 +94,20 @@ void ForwardRender::render(Scene* scene, MainFramebuffer* main_fb, gBuffer* GBuf
 			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 		}
 	}
+
+	// Copy depth buffer
+	copy_depth_buffer(main_fb);
+}
+
+// Return depth buffer framebuffer
+GLuint ForwardRender::get_depth_fbo()
+{
+	return depth_fbo;
+}
+
+GLuint ForwardRender::get_depth_texture()
+{
+	return depth_texture;
 }
 
 // Compiles the shaders and generates program
@@ -115,4 +124,37 @@ void ForwardRender::get_uniform_locations()
 	loc_projection_matrix = glGetUniformLocation(program, "projection_matrix");
 	loc_view_matrix = glGetUniformLocation(program, "view_matrix");
 	loc_color = glGetUniformLocation(program, "color");
+}
+
+// Create a framebuffer only has depth attachment
+void ForwardRender::init_depth_fbo()
+{
+	glGenFramebuffers(1, &depth_fbo);
+	glBindFramebuffer(GL_FRAMEBUFFER, depth_fbo);
+
+	// Depth as texture
+	glGenTextures(1, &depth_texture);
+	glBindTexture(GL_TEXTURE_2D, depth_texture);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32, width, height, 0, GL_DEPTH_COMPONENT,
+		GL_FLOAT, 0);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depth_texture, 0);
+
+	// Check if framebuffer is complete
+	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+		std::cout << "ERROR: Framebuffer not complete!" << std::endl;
+
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+// Copy depth buffer and store
+void ForwardRender::copy_depth_buffer(MainFramebuffer* main_fb)
+{
+	glBindFramebuffer(GL_READ_FRAMEBUFFER, main_fb->get_FBO());
+	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, depth_fbo);
+	glBlitFramebuffer(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT, 0, 0,
+		WINDOW_WIDTH, WINDOW_HEIGHT, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
 }

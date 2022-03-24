@@ -17,22 +17,25 @@ TAA::~TAA()
 }
 
 // Render
-void TAA::render(MainFramebuffer* main_fb, MainFramebuffer* prev_fb, gBuffer* GBuffer)
+void TAA::render(MainFramebuffer* main_fb, MainFramebuffer* prev_fb, gBuffer* GBuffer,
+    ForwardRender* forwardRender)
 {
     glUseProgram(taa_program);
     glViewport(0, 0, width, height);
 
-    set_uniforms(main_fb, prev_fb, GBuffer);
+    set_uniforms(main_fb, prev_fb, GBuffer, forwardRender);
     draw_quad();
 }
 
-void TAA::set_uniforms(MainFramebuffer* main_fb, MainFramebuffer* prev_fb, gBuffer* GBuffer)
+void TAA::set_uniforms(MainFramebuffer* main_fb, MainFramebuffer* prev_fb, gBuffer* GBuffer,
+    ForwardRender* forwardRender)
 {
     // Bind framebuffer
     glBindFramebuffer(GL_FRAMEBUFFER, main_fb->get_FBO());
 
     set_resolution();
-    set_cur_depth_map(main_fb->get_depth_texture());
+    //set_cur_depth_map(main_fb->get_depth_texture());
+    set_cur_depth_map(forwardRender->get_depth_texture());
     set_prev_depth_map(prev_fb->get_depth_texture());
     set_cur_color_map(main_fb->get_color_texture());
     set_prev_color_map(prev_fb->get_color_texture());
@@ -49,13 +52,24 @@ void TAA::set_cur_depth_map(GLuint map)
 {
     glUniform1i(loc_cur_depth_map, 0);
     glActiveTexture(GL_TEXTURE0 + 0);
+    if (!glIsTexture(map) || map == -1)
+    {
+        std::cout << "ERROR: This is not a texture" << std::endl;
+        return;
+    }
     glBindTexture(GL_TEXTURE_2D, map);
 }
 
 void TAA::set_prev_depth_map(GLuint map)
 {
-    glUniform1i(loc_prev_depth_map, 1);
+    
     glActiveTexture(GL_TEXTURE0 + 1);
+    glUniform1i(loc_prev_depth_map, 1);
+    if (!glIsTexture(map) || map == -1)
+    {
+        std::cout << "ERROR: This is not a texture" << std::endl;
+        return;
+    }
     glBindTexture(GL_TEXTURE_2D, map);
 }
 
@@ -63,6 +77,11 @@ void TAA::set_cur_color_map(GLuint map)
 {
     glUniform1i(loc_cur_color_map, 2);
     glActiveTexture(GL_TEXTURE0 + 2);
+    if (!glIsTexture(map) || map == -1)
+    {
+        std::cout << "ERROR: This is not a texture" << std::endl;
+        return;
+    }
     glBindTexture(GL_TEXTURE_2D, map);
 }
 
@@ -70,6 +89,11 @@ void TAA::set_prev_color_map(GLuint map)
 {
     glUniform1i(loc_prev_color_map, 3);
     glActiveTexture(GL_TEXTURE0 + 3);
+    if (!glIsTexture(map) || map == -1)
+    {
+        std::cout << "ERROR: This is not a texture" << std::endl;
+        return;
+    }
     glBindTexture(GL_TEXTURE_2D, map);
 }
 
@@ -77,6 +101,11 @@ void TAA::set_velocity_map(GLuint map)
 {
     glUniform1i(loc_velocity_map, 4);
     glActiveTexture(GL_TEXTURE0 + 4);
+    if (!glIsTexture(map) || map == -1)
+    {
+        std::cout << "ERROR: This is not a texture" << std::endl;
+        return;
+    }
     glBindTexture(GL_TEXTURE_2D, map);
 }
 

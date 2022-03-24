@@ -307,10 +307,9 @@ void init_models()
 	//scene->add_model(model);
 	//Model* model = new Model("mesh/test_scene/sponza/sponza.glb", false);
 	//scene->add_model(model);
-	//Model* model = new Model("mesh/test_scene/tree/scene.gltf", false);
-	//model->rotate(vec3(0.f, 1.f, 0.f), 180.f, 1.f);
-	//model->scale(0.5f, 0.5f, 0.5f, 1.f);
-	//scene->add_model(model);
+	Model* model = new Model("mesh/test_scene/tree/scene.gltf", false);
+	model->scale(0.5f, 0.5f, 0.5f, 1.f);
+	scene->add_model(model);
 	//Model* model = new Model("mesh/test_scene/fuel_glasses/scene.gltf", true);
 	//scene->add_model(model);
 }
@@ -420,7 +419,7 @@ void render()
 	renderer->render(delta);
 
 	// Camera actions
-	float camera_speed = 1.f;
+	float camera_speed = 4.f;
 	float delta_over_t = delta / 1000;
 	float delta_over_h = delta / 100;
 	Camera* cam = scene->camera;
@@ -450,7 +449,7 @@ void render()
 	}
 	if (input->hold_key(Key::KEY_Z))
 	{
-		cam->rotate(vec3(0.f, 0.f, -1.f), 2.f*0.1f, delta_over_t);
+		cam->rotate(vec3(0.f, 1.f, 0.f), 2.f*0.1f, delta_over_t);
 	}
 	if (input->hold_key(Key::KEY_C))
 	{

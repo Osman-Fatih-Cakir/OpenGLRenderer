@@ -94,9 +94,9 @@ void ForwardLitRender::init_uniforms()
 // Blit depth buffer of gBuffer
 void ForwardLitRender::blit_depth_buffer(gBuffer* GBuffer, MainFramebuffer* fb)
 {
-	// Attach depth buffer to default framebuffer
+	// Attach depth buffer to main framebuffer
 	glBindFramebuffer(GL_FRAMEBUFFER, GBuffer->get_fbo());
-	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fb->get_FBO()); // Write to default framebuffer
+	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fb->get_FBO());
 	glBlitFramebuffer(0, 0, GBuffer->get_width(), GBuffer->get_height(), 0, 0,
 		GBuffer->get_width(), GBuffer->get_height(), GL_DEPTH_BUFFER_BIT, GL_NEAREST);
 }

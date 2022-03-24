@@ -187,7 +187,7 @@ vec4 InsideResolve(vec2 velocity)
 	vec4 mixedMin = mix(rounded3x3Min, min2, 0.5);
 	vec4 mixedMax = mix(rounded3x3Max, max2, 0.5);
 
-	float testVel = 0.8 - (length(velocity) * 7.0);
+	float testVel = 0.9 - (length(velocity) * 10.0);
 	return mix(current2x2Colors[2], 
 		clip_aabb(mixedMin.rgb, mixedMax.rgb, current2x2Colors[2], ConstrainHistory(previous2x2Colors)), testVel);
 }
@@ -235,7 +235,7 @@ void main()
 
 	vec2 deltaRes = vec2(1.0 / resolution.x, 1.0 / resolution.y);
 
-	vec2 closestVec = (-texture2D(velocity_map, GetClosestUV(cur_depth_map)).rg/10);
+	vec2 closestVec = -(texture2D(velocity_map, GetClosestUV(cur_depth_map)).rg);
 
 	for (uint iter = 0; iter < kNeighborsCount; iter++)
 	{
@@ -247,3 +247,7 @@ void main()
 
 	outColor = CustomResolve(previousDepths, currentDepths, closestVec);
 }
+
+/**
+*	TODO: PREV_DEPTH_MAP IS OPTIMIZED OUT! WHY? WHYYYYYYYYYYYYYYYYYYYYYYYY?
+*/

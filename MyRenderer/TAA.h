@@ -5,6 +5,7 @@
 #include <Window.h>
 #include <MainFramebuffer.h>
 #include <gBuffer.h>
+#include <ForwardRender.h>
 
 class TAA
 {
@@ -13,7 +14,8 @@ public:
 	TAA();
 	~TAA();
 
-	void render(MainFramebuffer* main_fb, MainFramebuffer* prev_fb, gBuffer* GBuffer);
+	void render(MainFramebuffer* main_fb, MainFramebuffer* prev_fb, gBuffer* GBuffer,
+		ForwardRender* forwardRender);
 	
 private:
 
@@ -28,7 +30,8 @@ private:
 	void init_quad();
 	void draw_quad();
 	void get_uniform_locations();
-	void set_uniforms(MainFramebuffer* main_fb, MainFramebuffer* prev_fb, gBuffer* GBuffer);
+	void set_uniforms(MainFramebuffer* main_fb, MainFramebuffer* prev_fb, gBuffer* GBuffer,
+		ForwardRender* forwardRender);
 
 	GLuint taa_program;
 	GLuint loc_resolution;

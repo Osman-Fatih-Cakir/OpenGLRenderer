@@ -39,7 +39,7 @@ void Renderer::render(float delta)
 	for (int i = 0; i < 1; i++)
 	{
 		//scene->all_models[i]->rotate(vec3(0.f, 0.f, 1.f), (float)(4 * (i + 1)), delta / 100.f);
-		//scene->all_models[i]->rotate(vec3(0.f, 1.f, 0.f), (float)(4 * (i + 1)), delta / 800.f);
+		scene->all_models[i]->rotate(vec3(0.f, 1.f, 0.f), (float)(4 * (i + 1)), delta / 800.f);
 		//scene->all_models[i]->translate(vec3(0.f, 0.f, 10.f), delta / 1000.f);
 	}
 	//////////////////////////////////////////////////////
@@ -82,7 +82,7 @@ void Renderer::render(float delta)
 	//// 3: Draw light meshes (The meshes that are not lit but in the same scene with other meshes)
 	//
 
-	forwardRender->render(scene, main_fb, GBuffer);
+	forwardRender->render(scene, main_fb);
 
 	//
 	//// 4: Skybox rendering
@@ -97,7 +97,7 @@ void Renderer::render(float delta)
 	//// 5: Anti-aliasing
 	//
 
-	taa->render(main_fb, prev_fb, GBuffer);
+	taa->render(main_fb, prev_fb, GBuffer, forwardRender);
 
 	//
 	//// 6: Post Processing
@@ -109,10 +109,10 @@ void Renderer::render(float delta)
 	//// 6. Render the scene after post process
 	//
 
-	render_all(main_fb->get_color_texture());
+	render_all(main_fb);
 
 	// Store previous framebuffer
-	store_previous_framebuffer();
+	store_previous_framebuffer(forwardRender->get_depth_fbo());
 
 	total_frames++;
 }
@@ -163,18 +163,21 @@ void Renderer::init_uniforms()
 	loc_texture = glGetUniformLocation(render_program, "image");
 }
 
-void Renderer::store_previous_framebuffer()
+void Renderer::store_previous_framebuffer(GLuint depth_fbo)
 {
 	// Clear previous framebuffer
 	glBindFramebuffer(GL_FRAMEBUFFER, prev_fb->get_FBO());
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-	// Copy the depth buffer
-	glBindFramebuffer(GL_FRAMEBUFFER, main_fb->get_FBO());
+	glClear(GL_COLOR_BUFFER_BIT);// | GL_DEPTH_BUFFER_BIT);
+	
+	// Copy depth buffer
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, prev_fb->get_FBO());
-	glBindFramebuffer(GL_READ_FRAMEBUFFER, main_fb->get_FBO());
+	glBindFramebuffer(GL_READ_FRAMEBUFFER, depth_fbo);
 	glBlitFramebuffer(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT, 0, 0,
 		WINDOW_WIDTH, WINDOW_HEIGHT, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+
+	// Copy color buffer
+	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, prev_fb->get_FBO());
+	glBindFramebuffer(GL_READ_FRAMEBUFFER, main_fb->get_FBO());
 	glBlitFramebuffer(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT, 0, 0,
 		WINDOW_WIDTH, WINDOW_HEIGHT, GL_COLOR_BUFFER_BIT, GL_NEAREST);
 
@@ -184,7 +187,7 @@ void Renderer::store_previous_framebuffer()
 }
 
 // Render the texture
-void Renderer::render_all(GLuint texture)
+void Renderer::render_all(MainFramebuffer* main_fb)
 {
 	glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
 	glUseProgram(render_program);
@@ -192,9 +195,10 @@ void Renderer::render_all(GLuint texture)
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	set_texture(texture);
+	set_texture(main_fb->get_color_texture());
 
 	render_quad();
+	glBindFramebuffer(GL_FRAMEBUFFER, main_fb->get_FBO());
 }
 
 void Renderer::set_texture(GLuint id)

@@ -15,11 +15,6 @@ MainFramebuffer::~MainFramebuffer()
 	// Deallocate textures
 	glDeleteTextures(1, &color_texture);
 
-	/*
-	// Deallocte renderbuffer
-	glDeleteRenderbuffers(1, &rbo_depth);
-	*/
-
 	// Deallocate depth texture
 	glDeleteTextures(1, &depth_texture);
 }
@@ -47,7 +42,7 @@ void MainFramebuffer::create_framebuffer()
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depth_texture, 0);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depth_texture, 0);
 	
 	// Check if framebuffer is complete
 	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)

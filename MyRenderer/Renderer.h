@@ -28,8 +28,8 @@ private:
 
 	void init();
 	void init_uniforms();
-	void store_previous_framebuffer();
-	void render_all(GLuint texture);
+	void store_previous_framebuffer(GLuint depth_fbo);
+	void render_all(MainFramebuffer* main_fb);
 	void set_texture(GLuint id);
 	void render_quad();
 
