@@ -194,17 +194,7 @@ vec4 InsideResolve(vec2 velocity)
 
 vec4 CustomResolve(float preNeighborDepths[kNeighborsCount], float curNeighborDepths[kNeighborsCount], vec2 velocity)
 {
-	// Use the closest depth instead?
-	vec2 preMinMaxDepths = MinMaxDepths(preNeighborDepths);
-	vec2 curMinMaxDepths = MinMaxDepths(curNeighborDepths);
-
-	float highestDepth = min(preMinMaxDepths.x, curMinMaxDepths.x); //get the closest
-	float lowestDepth = max(preMinMaxDepths.x, curMinMaxDepths.x); //get the furthest
-
-	float depthFalloff = abs(highestDepth - lowestDepth);
-
 	vec4 res = vec4(0);
-
 	vec4 taa = InsideResolve(velocity);
 
 	float averageDepth = 0;
@@ -214,9 +204,7 @@ vec4 CustomResolve(float preNeighborDepths[kNeighborsCount], float curNeighborDe
 	}
 	averageDepth /= kNeighborsCount;
 
-	// For dithered edges, detect if the adge has been dithered? 
-	// Use a 3x3 grid to see if anything around it has high enough depth?
-	if (averageDepth < 1.0)
+	if (averageDepth < curNeighborDepths[4])
 	{
 		res = taa;
 	}
@@ -224,7 +212,6 @@ vec4 CustomResolve(float preNeighborDepths[kNeighborsCount], float curNeighborDe
 	{
 		res = texture2D(cur_color_map, fTexCoord);
 	}
-
 	return res;
 }
 
@@ -235,7 +222,7 @@ void main()
 
 	vec2 deltaRes = vec2(1.0 / resolution.x, 1.0 / resolution.y);
 
-	vec2 closestVec = -(texture2D(velocity_map, GetClosestUV(cur_depth_map)).rg);
+	vec2 closestVec = -(texture2D(velocity_map, GetClosestUV(cur_depth_map)).rg / 32.0);
 
 	for (uint iter = 0; iter < kNeighborsCount; iter++)
 	{
@@ -247,7 +234,3 @@ void main()
 
 	outColor = CustomResolve(previousDepths, currentDepths, closestVec);
 }
-
-/**
-*	TODO: PREV_DEPTH_MAP IS OPTIMIZED OUT! WHY? WHYYYYYYYYYYYYYYYYYYYYYYYY?
-*/

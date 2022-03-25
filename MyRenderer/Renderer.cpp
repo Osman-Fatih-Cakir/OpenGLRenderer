@@ -39,7 +39,7 @@ void Renderer::render(float delta)
 	for (int i = 0; i < 1; i++)
 	{
 		//scene->all_models[i]->rotate(vec3(0.f, 0.f, 1.f), (float)(4 * (i + 1)), delta / 100.f);
-		scene->all_models[i]->rotate(vec3(0.f, 1.f, 0.f), (float)(4 * (i + 1)), delta / 800.f);
+		scene->all_models[i]->rotate(vec3(0.f, 1.f, 0.f), (float)(4 * (i + 1)), delta / 400.f);
 		//scene->all_models[i]->translate(vec3(0.f, 0.f, 10.f), delta / 1000.f);
 	}
 	//////////////////////////////////////////////////////
@@ -94,19 +94,19 @@ void Renderer::render(float delta)
 		scene->get_render_skybox()->render(scene->camera);
 	
 	//
-	//// 5: Anti-aliasing
+	//// 7: Post Processing
 	//
 
-	taa->render(main_fb, prev_fb, GBuffer, forwardRender);
+	bloom->render(main_fb);
 
 	//
-	//// 6: Post Processing
+	//// 6: Anti-aliasing
 	//
-
-	//bloom->render(main_fb);
+	if (taa_on)
+		taa->render(main_fb, prev_fb, GBuffer, forwardRender);
 
 	//
-	//// 6. Render the scene after post process
+	//// 7. Render the scene
 	//
 
 	render_all(main_fb);
@@ -235,4 +235,13 @@ void Renderer::render_quad()
 	glBindVertexArray(quadVAO);
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 	glBindVertexArray(0);
+}
+
+void Renderer::toggle_taa()
+{
+	taa_on = !taa_on;
+	if (taa_on)
+		std::cout << "TAA on\n";
+	else
+		std::cout << "TAA off\n";
 }

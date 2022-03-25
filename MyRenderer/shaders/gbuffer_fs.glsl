@@ -82,6 +82,6 @@ void main()
 	vec2 old_pos = ((fold_pos.xy / fold_pos.w) * 0.5 + 0.5);
 
 	// Velocity
-	// Multiply with 10, because the values are too low and the precision is not enough
-	gVelocity = (new_pos - old_pos); // * 100.0;
+	// Multiply, because the values are too low and the precision is not enough
+	gVelocity = (new_pos - old_pos) * 32.0;
 }

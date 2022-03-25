@@ -3,6 +3,7 @@
 #include <fstream>
 #include <cstring>
 #include <string>
+#include <vector>
 #include <GL/glew.h>
 #include <GL/glut.h>
 
@@ -72,6 +73,21 @@ GLuint initprogram(GLuint vertexshader, GLuint fragmentshader)
     glAttachShader(program, vertexshader);
     glAttachShader(program, fragmentshader);
     glLinkProgram(program);
+
+    glValidateProgram(program);
+    GLint result;
+    glGetProgramiv(program, GL_VALIDATE_STATUS, &result);
+    if (result != GL_TRUE)
+    {
+        GLint length;
+        glGetProgramiv(program, GL_INFO_LOG_LENGTH, &length);
+        GLchar er[1024];
+        glGetProgramInfoLog(program, length, &length, er);
+        std::cerr << "Failed to validate the shader program!" << std::endl;
+        std::cerr << er << std::endl;
+        throw 3;
+    }
+
     glGetProgramiv(program, GL_LINK_STATUS, &linked);
     if (linked) glUseProgram(program);
     else {

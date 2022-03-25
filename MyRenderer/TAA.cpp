@@ -33,8 +33,9 @@ void TAA::set_uniforms(MainFramebuffer* main_fb, MainFramebuffer* prev_fb, gBuff
     // Bind framebuffer
     glBindFramebuffer(GL_FRAMEBUFFER, main_fb->get_FBO());
 
+    glClear(GL_DEPTH_BUFFER_BIT);
+
     set_resolution();
-    //set_cur_depth_map(main_fb->get_depth_texture());
     set_cur_depth_map(forwardRender->get_depth_texture());
     set_prev_depth_map(prev_fb->get_depth_texture());
     set_cur_color_map(main_fb->get_color_texture());
@@ -62,7 +63,6 @@ void TAA::set_cur_depth_map(GLuint map)
 
 void TAA::set_prev_depth_map(GLuint map)
 {
-    
     glActiveTexture(GL_TEXTURE0 + 1);
     glUniform1i(loc_prev_depth_map, 1);
     if (!glIsTexture(map) || map == -1)

@@ -174,36 +174,47 @@ void keyboard(unsigned char key, int x, int y)
 {
 	switch (key)
 	{
+	case 'W':
 	case 'w':
 		input->add_key(Key::KEY_W);
 		break;
+	case 'S':
 	case 's':
 		input->add_key(Key::KEY_S);
 		break;
+	case 'D':
 	case 'd':
 		input->add_key(Key::KEY_D);
 		break;
+	case 'A':
 	case 'a':
 		input->add_key(Key::KEY_A);
 		break;
+	case 'Q':
 	case 'q':
 		input->add_key(Key::KEY_Q);
 		break;
+	case 'E':
 	case 'e':
 		input->add_key(Key::KEY_E);
 		break;
+	case 'Z':
 	case 'z':
 		input->add_key(Key::KEY_Z);
 		break;
+	case 'C':
 	case 'c':
 		input->add_key(Key::KEY_C);
 		break;
+	case 'X':
 	case 'x':
 		input->add_key(Key::KEY_X);
 		break;
+	case 'F':
 	case 'f':
 		input->add_key(Key::KEY_F);
 		break;
+	case 'R':
 	case 'r':
 		input->add_key(Key::KEY_R);
 		break;
@@ -215,36 +226,47 @@ void keyboard_up(unsigned char key, int x, int y)
 {
 	switch (key)
 	{
+	case 'W':
 	case 'w':
 		input->remove_key(Key::KEY_W);
 		break;
+	case 'S':
 	case 's':
 		input->remove_key(Key::KEY_S);
 		break;
+	case 'D':
 	case 'd':
 		input->remove_key(Key::KEY_D);
 		break;
+	case 'A':
 	case 'a':
 		input->remove_key(Key::KEY_A);
 		break;
+	case 'Q':
 	case 'q':
 		input->remove_key(Key::KEY_Q);
 		break;
+	case 'E':
 	case 'e':
 		input->remove_key(Key::KEY_E);
 		break;
+	case 'Z':
 	case 'z':
 		input->remove_key(Key::KEY_Z);
 		break;
+	case 'C':
 	case 'c':
 		input->remove_key(Key::KEY_C);
 		break;
+	case 'X':
 	case 'x':
 		input->remove_key(Key::KEY_X);
 		break;
+	case 'F':
 	case 'f':
 		input->remove_key(Key::KEY_F);
 		break;
+	case 'R':
 	case 'r':
 		input->remove_key(Key::KEY_R);
 		break;
@@ -414,8 +436,7 @@ void render()
 	// Get delta time
 	float delta = timer->get_delta_time();
 
-	// During init, enable debug output
-	glEnable(GL_DEBUG_OUTPUT);
+	//glEnable(GL_DEBUG_OUTPUT);
 	renderer->render(delta);
 
 	// Camera actions
@@ -447,9 +468,9 @@ void render()
 	{
 		cam->translate(0.f, camera_speed, 0.f, delta_over_t);
 	}
-	if (input->hold_key(Key::KEY_Z))
+	if (input->press_key(Key::KEY_Z))
 	{
-		cam->rotate(vec3(0.f, 1.f, 0.f), 2.f*0.1f, delta_over_t);
+		renderer->toggle_taa();
 	}
 	if (input->hold_key(Key::KEY_C))
 	{

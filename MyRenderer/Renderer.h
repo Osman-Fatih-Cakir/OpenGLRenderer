@@ -17,14 +17,15 @@
 class Renderer
 {
 public:
-
-	Renderer() = delete;
 	Renderer(Scene* _scene);
 	~Renderer();
+
+	void toggle_taa();
 
 	void render(float delta);
 
 private:
+	Renderer();
 
 	void init();
 	void init_uniforms();
@@ -46,6 +47,8 @@ private:
 	TAA* taa = nullptr;
 	unsigned long time = 0;
 	unsigned int total_frames = 0;
+
+	bool taa_on = true;
 
 	GLuint render_program;
 	GLuint loc_texture;
