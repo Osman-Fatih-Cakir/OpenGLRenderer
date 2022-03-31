@@ -27,6 +27,7 @@ Since I am new to computer graphics, I would be happy to receive suggestions abo
 - Post Process
 	- Bloom
 - Transparent rendering
+- Temporal Anti-Alising on the way!
 
 ## Material files pipeline
 - Albedo map
