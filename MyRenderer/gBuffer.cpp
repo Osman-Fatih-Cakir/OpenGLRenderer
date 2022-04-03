@@ -116,6 +116,7 @@ void gBuffer::start_program()
 	glBindFramebuffer(GL_FRAMEBUFFER, gBuffer_fbo);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+	glViewport(0, 0, gBuffer_width, gBuffer_height);
 	glUseProgram(program);
 }
 
@@ -148,7 +149,7 @@ void gBuffer::set_resolution(int x, int y)
 	glUniform2fv(loc_resolution, 1,  &ar[0]);
 }
 
-void gBuffer::set_total_frames(int unsigned val)
+void gBuffer::set_total_frames(unsigned int val)
 {
 	glUniform1ui(loc_total_frames, val);
 }
@@ -177,7 +178,6 @@ void gBuffer::render_model(Camera* camera, Model* model, unsigned int total_fram
 	set_halton_sequence();
 	set_resolution(gBuffer_width, gBuffer_height);
 	set_total_frames(total_frames);
-	camera->set_prev_view_matrix();
 	
 	// Draw call
 	

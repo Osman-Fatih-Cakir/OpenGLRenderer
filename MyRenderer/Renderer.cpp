@@ -38,8 +38,8 @@ void Renderer::render(float delta)
 	//////////////////////////////////////////////////////
 	for (int i = 0; i < 1; i++)
 	{
-		//scene->all_models[i]->rotate(vec3(0.f, 0.f, 1.f), (float)(4 * (i + 1)), delta / 100.f);
-		scene->all_models[i]->rotate(vec3(0.f, 1.f, 0.f), (float)(4 * (i + 1)), delta / 400.f);
+		//scene->translucent_models[i]->rotate(vec3(0.f, 1.f, 0.f), (float)(4 * (i + 1)), delta / 400.f);
+		//scene->all_models[i]->rotate(vec3(0.f, 1.f, 0.f), (float)(4 * (i + 1)), delta / 400.f);
 		//scene->all_models[i]->translate(vec3(0.f, 0.f, 10.f), delta / 1000.f);
 	}
 	//////////////////////////////////////////////////////
@@ -76,7 +76,7 @@ void Renderer::render(float delta)
 	//
 
 	// Draw scene
-	forwardLitRender->render(GBuffer, main_fb, scene);
+	forwardLitRender->render(GBuffer, main_fb, scene, total_frames);
 
 	//
 	//// 3: Draw light meshes (The meshes that are not lit but in the same scene with other meshes)
@@ -91,17 +91,18 @@ void Renderer::render(float delta)
 	// If scene has a skybox, render
 	Skybox* skybox = scene->get_render_skybox();
 	if (skybox != nullptr)
-		scene->get_render_skybox()->render(scene->camera);
+		scene->get_render_skybox()->render(main_fb, scene->camera);
 	
 	//
-	//// 7: Post Processing
+	//// 6: Post Processing
 	//
 
 	bloom->render(main_fb);
 
 	//
-	//// 6: Anti-aliasing
+	//// 7: Anti-aliasing
 	//
+
 	if (taa_on)
 		taa->render(main_fb, prev_fb, GBuffer, forwardRender);
 
@@ -115,6 +116,7 @@ void Renderer::render(float delta)
 	store_previous_framebuffer(forwardRender->get_depth_fbo());
 
 	total_frames++;
+	scene->camera->set_prev_view_matrix();
 }
 
 // Initialize programs that are going to be used when rendering
@@ -178,6 +180,8 @@ void Renderer::store_previous_framebuffer(GLuint depth_fbo)
 	// Copy color buffer
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, prev_fb->get_FBO());
 	glBindFramebuffer(GL_READ_FRAMEBUFFER, main_fb->get_FBO());
+	glReadBuffer(GL_COLOR_ATTACHMENT0);
+	glDrawBuffer(GL_COLOR_ATTACHMENT0);
 	glBlitFramebuffer(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT, 0, 0,
 		WINDOW_WIDTH, WINDOW_HEIGHT, GL_COLOR_BUFFER_BIT, GL_NEAREST);
 

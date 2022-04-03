@@ -10,7 +10,11 @@ ForwardLitRender::ForwardLitRender()
 
 	// Initialize uniforms
 	init_uniforms();
+
+	// Init halton sequence
+	init_halton_sequence();
 }
+
 // Destructor
 ForwardLitRender::~ForwardLitRender()
 {
@@ -18,19 +22,24 @@ ForwardLitRender::~ForwardLitRender()
 }
 
 // Render scene
-void ForwardLitRender::render(gBuffer* GBuffer, MainFramebuffer* main_fb, Scene* scene)
+void ForwardLitRender::render(gBuffer* GBuffer, MainFramebuffer* main_fb, Scene* scene,
+	unsigned int total_frames)
 {
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
+	// In forward lit rendering, get the real depth buffer to main buffer
+	// Even there is no translucent model to render, this will work
 	blit_depth_buffer(GBuffer, main_fb);
+	
+	glBindFramebuffer(GL_FRAMEBUFFER, main_fb->get_FBO());
 
 	glUseProgram(program);
 
 	glViewport(0, 0, width, height);
 
 	// Set camera attributes
-	set_uniforms(scene);
+	set_uniforms(scene, total_frames);
 	
 	// Draw call for each object (forward rendering)
 	std::vector<Model*>::iterator itr;
@@ -87,6 +96,10 @@ void ForwardLitRender::init_uniforms()
 	loc_max_reflection_lod = glGetUniformLocation(program, "MAX_REFLECTION_LOD");
 	loc_point_light_count = glGetUniformLocation(program, "NUMBER_OF_POINT_LIGHTS");
 	loc_direct_light_count = glGetUniformLocation(program, "NUMBER_OF_DIRECT_LIGHTS");
+	loc_prev_view_matrix = glGetUniformLocation(program, "prev_view_matrix");
+	loc_halton_sequence = glGetUniformLocation(program, "halton_sequence");
+	loc_resolution = glGetUniformLocation(program, "resolution");
+	loc_total_frames = glGetUniformLocation(program, "total_frames");
 
 	static_texture_uniform_count = 3 + texture_uniform_starting_point;
 }
@@ -102,11 +115,15 @@ void ForwardLitRender::blit_depth_buffer(gBuffer* GBuffer, MainFramebuffer* fb)
 }
 
 // Set uniforms to shader
-void ForwardLitRender::set_uniforms(Scene* scene)
+void ForwardLitRender::set_uniforms(Scene* scene, unsigned int total_frames)
 {
 	// Set matrices
 	set_projection_matrix(scene->camera->get_projection_matrix());
 	set_view_matrix(scene->camera->get_view_matrix());
+	set_prev_view_matrix(scene->camera->get_prev_view_matrix());
+	set_halton_sequence();
+	set_resolution(width, height);
+	set_total_frames(total_frames);
 	set_viewer_position(scene->camera->get_position());
 
 	// Set IBL uniforms
@@ -298,4 +315,50 @@ void ForwardLitRender::set_is_ibl_active(bool id)
 void ForwardLitRender::set_viewer_position(vec3 vec)
 {
 	glUniform3fv(loc_viewer_pos, 1, &vec[0]);
+}
+
+void ForwardLitRender::set_prev_view_matrix(mat4 mat)
+{
+	glUniformMatrix4fv(loc_prev_view_matrix, 1, GL_FALSE, &mat[0][0]);
+}
+
+void ForwardLitRender::set_halton_sequence()
+{
+	glUniform2fv(loc_halton_sequence, 6, &halton_sequence[0][0]);
+}
+
+void ForwardLitRender::set_resolution(int w, int h)
+{
+	float ar[] = { (float)w, (float)h };
+	glUniform2fv(loc_resolution, 1, &ar[0]);
+}
+
+void ForwardLitRender::set_total_frames(unsigned int val)
+{
+	glUniform1ui(loc_total_frames, val);
+}
+
+// Creates halton sequence
+float ForwardLitRender::create_halton_sequence(unsigned int index, int base)
+{
+	float f = 1;
+	float r = 0;
+	int current = index;
+	do
+	{
+		f = f / base;
+		r = r + f * (current % base);
+		current = (int)glm::floor(current / base);
+	} while (current > 0);
+
+	return r;
+}
+
+void ForwardLitRender::init_halton_sequence()
+{
+	for (int iter = 0; iter < 6; iter++)
+	{
+		halton_sequence[iter] =
+			vec2(create_halton_sequence(iter + 1, 2), create_halton_sequence(iter + 1, 3));
+	}
 }

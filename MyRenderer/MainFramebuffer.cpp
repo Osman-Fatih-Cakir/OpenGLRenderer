@@ -34,6 +34,17 @@ void MainFramebuffer::create_framebuffer()
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, color_texture, 0);
 	
+	// Velocity texture
+	glGenTextures(1, &velocity_texture);
+	glBindTexture(GL_TEXTURE_2D, velocity_texture);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RG16, width, height, 0, GL_RG, GL_FLOAT, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, velocity_texture, 0);
+
+	GLuint attachments[2] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
+	glDrawBuffers(2, attachments);
+
 	// Depth as texture
 	glGenTextures(1, &depth_texture);
 	glBindTexture(GL_TEXTURE_2D, depth_texture);
@@ -59,6 +70,11 @@ GLuint MainFramebuffer::get_color_texture()
 GLuint MainFramebuffer::get_depth_texture()
 {
 	return depth_texture;
+}
+
+GLuint MainFramebuffer::get_velocity_texture()
+{
+	return velocity_texture;
 }
 
 GLuint MainFramebuffer::get_FBO()

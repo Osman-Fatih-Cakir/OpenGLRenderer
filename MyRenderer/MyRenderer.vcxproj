@@ -208,8 +208,8 @@
     <None Include="shaders\converge_2_image_vs.glsl" />
     <None Include="shaders\deferred_shading_fs.glsl" />
     <None Include="shaders\deferred_shading_vs.glsl" />
-    <None Include="shaders\deferred_unlit_meshes_fs.glsl" />
-    <None Include="shaders\deferred_unlit_meshes_vs.glsl" />
+    <None Include="shaders\forward_unlit_meshes_fs.glsl" />
+    <None Include="shaders\forward_unlit_meshes_vs.glsl" />
     <None Include="shaders\depth_vs.glsl" />
     <None Include="shaders\depth_fs.glsl" />
     <None Include="shaders\forward_lit_render_fs.glsl" />

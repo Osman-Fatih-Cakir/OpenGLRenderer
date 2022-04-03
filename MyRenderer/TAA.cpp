@@ -40,7 +40,7 @@ void TAA::set_uniforms(MainFramebuffer* main_fb, MainFramebuffer* prev_fb, gBuff
     set_prev_depth_map(prev_fb->get_depth_texture());
     set_cur_color_map(main_fb->get_color_texture());
     set_prev_color_map(prev_fb->get_color_texture());
-    set_velocity_map(GBuffer->get_velocity());
+    set_velocity_map(main_fb->get_velocity_texture());
 }
 
 void TAA::set_resolution()

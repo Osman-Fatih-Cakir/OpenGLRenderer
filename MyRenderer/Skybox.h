@@ -3,6 +3,7 @@
 #include <GL/glew.h>
 #include <GL/freeglut.h>
 #include <Camera.h>
+#include <MainFramebuffer.h>
 
 class Skybox
 {
@@ -11,7 +12,7 @@ public:
 	Skybox(const char* path, int id, bool _ibl, float _exposure);
 	~Skybox();
 
-	void render(Camera* camera);
+	void render(MainFramebuffer* main_fb, Camera* camera);
 	void toggle_IBL();
 
 	// Getters
@@ -74,6 +75,9 @@ private:
 	bool IBL = true;
 	float exposure = 1.f;
 	unsigned int max_mip_level = 5;
+
+	GLuint res_width = WINDOW_WIDTH;
+	GLuint res_height = WINDOW_HEIGHT;
 
 	GLuint width = 512;
 	GLuint height = 512;

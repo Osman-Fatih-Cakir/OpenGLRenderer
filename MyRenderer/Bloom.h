@@ -17,7 +17,7 @@ private:
 
 	void take_hdr_image(GLuint texture);
 	void blur();
-	void converge(GLuint main_fb);
+	void converge(MainFramebuffer* main_fb);
 
 	void create_framebuffers();
 	void init_shader();
@@ -29,6 +29,7 @@ private:
 	void set_horizontal(bool val);
 	void set_conv_img1(GLuint id);
 	void set_conv_img2(GLuint id);
+	void set_velocity_map(GLuint id);
 
 	GLuint hdr_program;
 	GLuint blur_program;
@@ -45,6 +46,7 @@ private:
 	GLuint loc_blur_image;
 	GLuint loc_conv_img1;
 	GLuint loc_conv_img2;
+	GLuint loc_velocity_map;
 
 	unsigned int width = WINDOW_WIDTH;
 	unsigned int height = WINDOW_HEIGHT;

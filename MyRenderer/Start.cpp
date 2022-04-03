@@ -329,9 +329,9 @@ void init_models()
 	//scene->add_model(model);
 	//Model* model = new Model("mesh/test_scene/sponza/sponza.glb", false);
 	//scene->add_model(model);
-	Model* model = new Model("mesh/test_scene/tree/scene.gltf", false);
-	model->scale(0.5f, 0.5f, 0.5f, 1.f);
-	scene->add_model(model);
+	//Model* model = new Model("mesh/test_scene/tree/scene.gltf", false);
+	//model->scale(0.5f, 0.5f, 0.5f, 1.f);
+	//scene->add_model(model);
 	//Model* model = new Model("mesh/test_scene/fuel_glasses/scene.gltf", true);
 	//scene->add_model(model);
 }

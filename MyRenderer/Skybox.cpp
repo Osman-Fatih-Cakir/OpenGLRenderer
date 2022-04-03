@@ -486,13 +486,18 @@ void Skybox::toggle_IBL()
     }
 }
 
-void Skybox::render(Camera* camera)
+void Skybox::render(MainFramebuffer* main_fb, Camera* camera)
 {
+    glBindFramebuffer(GL_FRAMEBUFFER, main_fb->get_FBO());
+    glViewport(0, 0, res_width, res_height);
+
     glUseProgram(render_program);
     glDepthFunc(GL_LEQUAL);
+
     set_projection_matrix(camera->get_projection_matrix());
     set_view_matrix(camera->get_view_matrix());
     set_skybox_map();
+
     render_cube();
     
     glDepthFunc(GL_LESS); // Return to default depth test

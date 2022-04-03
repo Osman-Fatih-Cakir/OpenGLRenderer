@@ -2,7 +2,8 @@
 
 in vec2 fTexCoord;
 
-out vec4 OutColor;
+layout(location = 0) out vec4 OutColor;
+layout(location = 1) out vec2 OutVelocity;
 
 uniform sampler2D gPosition;
 uniform sampler2D gNormal;
@@ -13,6 +14,7 @@ uniform sampler2D gEmissive;
 //	G component : Metallic
 //	B component : Ambient Occlusion
 uniform sampler2D gPbr_materials;
+uniform sampler2D gVelocity;
 uniform samplerCube irradiance_map;
 uniform samplerCube prefiltered_map;
 uniform sampler2D brdf_lut;
@@ -382,4 +384,7 @@ void main()
 	Lo = pow(Lo, vec3(1.0 / 2.2));
 	
 	OutColor = vec4(Lo, 1.0);
+
+	// Velocity
+	OutVelocity = texture(gVelocity, fTexCoord).rg;
 }

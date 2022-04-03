@@ -41,6 +41,7 @@ private:
 	void set_prefiltered_map(GLuint id);
 	void set_brdf_lut(GLuint id);
 	void set_emissive(GLuint id);
+	void set_velocity(GLuint id);
 	void set_max_reflection_lod(float val);
 	void set_is_ibl_active(bool val);
 
@@ -55,6 +56,7 @@ private:
 	GLuint loc_gAlbedoSpec;
 	GLuint loc_gPbr_materials;
 	GLuint loc_emissive;
+	GLuint loc_velocity;
 	GLuint loc_irradiance_map;
 	GLuint loc_prefiltered_map;
 	GLuint loc_brdf_lut;

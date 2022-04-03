@@ -108,6 +108,14 @@ void DeferredShading::set_emissive(GLuint id)
 	glBindTexture(GL_TEXTURE_2D, id);
 }
 
+// Sets velocity texture
+void DeferredShading::set_velocity(GLuint id)
+{
+	glUniform1i(loc_velocity, 8);
+	glActiveTexture(GL_TEXTURE0 + 8);
+	glBindTexture(GL_TEXTURE_2D, id);
+}
+
 // Set maximum lod of reflections
 void DeferredShading::set_max_reflection_lod(float val)
 {
@@ -128,9 +136,6 @@ void DeferredShading::render(gBuffer* GBuffer, MainFramebuffer* fb, Scene* scene
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
-	point_light_count = 0;
-	direct_light_count = 0;
-
 	glUseProgram(program);
 
 	// Set camera attributes
@@ -149,6 +154,7 @@ void DeferredShading::set_uniforms(Scene* scene, gBuffer* GBuffer)
 	set_gAlbedoSpec(GBuffer->get_gAlbedoSpec());
 	set_gPbr_materials(GBuffer->get_gPbr_materials());
 	set_emissive(GBuffer->get_emissive());
+	set_velocity(GBuffer->get_velocity());
 
 	// Set IBL textures
 	Skybox* skybox = scene->get_render_skybox();
@@ -178,6 +184,9 @@ void DeferredShading::set_uniforms(Scene* scene, gBuffer* GBuffer)
 // Sets light uniforms
 void DeferredShading::set_light_uniforms(Scene* scene)
 {
+	point_light_count = 0;
+	direct_light_count = 0;
+
 	GLuint last_valid_cubemap_id = -1;
 	std::vector<int> unassigned_cubemap_ids;
 	// Set point lights
@@ -325,6 +334,7 @@ void DeferredShading::get_uniform_locations()
 	loc_gAlbedoSpec = glGetUniformLocation(program, "gAlbedoSpec");
 	loc_gPbr_materials = glGetUniformLocation(program, "gPbr_materials");
 	loc_emissive = glGetUniformLocation(program, "gEmissive");
+	loc_velocity = glGetUniformLocation(program, "gVelocity");
 	loc_irradiance_map = glGetUniformLocation(program, "irradiance_map");
 	loc_prefiltered_map = glGetUniformLocation(program, "prefiltered_map");
 	loc_brdf_lut = glGetUniformLocation(program, "brdf_lut");
@@ -332,7 +342,7 @@ void DeferredShading::get_uniform_locations()
 	loc_point_light_count = glGetUniformLocation(program, "NUMBER_OF_POINT_LIGHTS");
 	loc_direct_light_count = glGetUniformLocation(program, "NUMBER_OF_DIRECT_LIGHTS");
 
-	static_texture_uniform_count = 8 + texture_uniform_starting_point;
+	static_texture_uniform_count = 9 + texture_uniform_starting_point;
 }
 
 // Initialize a quad

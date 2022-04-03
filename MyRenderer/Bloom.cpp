@@ -30,7 +30,6 @@ Bloom::~Bloom()
 
 void Bloom::render(MainFramebuffer* main_fb)
 {
-    GLuint fbo = main_fb->get_FBO();
     GLuint texture = main_fb->get_color_texture();
 
     // Take hdr image and bright image
@@ -40,7 +39,7 @@ void Bloom::render(MainFramebuffer* main_fb)
     blur();
 
     // Converge blurred image to hdr image
-    converge(fbo);
+    converge(main_fb);
 }
 
 void Bloom::take_hdr_image(GLuint texture)
@@ -85,19 +84,18 @@ void Bloom::blur()
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-void Bloom::converge(GLuint main_fb)
+void Bloom::converge(MainFramebuffer* main_fb)
 {
     // Converge blurred image to hdr image
     glUseProgram(converge_program);
-    glBindFramebuffer(GL_FRAMEBUFFER, main_fb);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glBindFramebuffer(GL_FRAMEBUFFER, main_fb->get_FBO());
+    //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     
     set_conv_img1(pingpong_textures[1]);
     set_conv_img2(color_buffers[0]);
+    set_velocity_map(main_fb->get_velocity_texture());
 
     render_quad();
-
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
 void Bloom::create_framebuffers()
@@ -186,7 +184,14 @@ void Bloom::set_conv_img1(GLuint id)
 void Bloom::set_conv_img2(GLuint id)
 {
     glUniform1i(loc_conv_img2, 1);
-    glActiveTexture(GL_TEXTURE1 + 0);
+    glActiveTexture(GL_TEXTURE0 + 1);
+    glBindTexture(GL_TEXTURE_2D, id);
+}
+
+void Bloom::set_velocity_map(GLuint id)
+{
+    glUniform1i(loc_velocity_map, 2);
+    glActiveTexture(GL_TEXTURE0 + 2);
     glBindTexture(GL_TEXTURE_2D, id);
 }
 
@@ -214,6 +219,7 @@ void Bloom::get_uniform_locations()
 
     loc_conv_img1 = glGetUniformLocation(converge_program, "image1");
     loc_conv_img2 = glGetUniformLocation(converge_program, "image2");
+    loc_velocity_map = glGetUniformLocation(converge_program, "velocity_map");
 }
 
 void Bloom::render_quad()

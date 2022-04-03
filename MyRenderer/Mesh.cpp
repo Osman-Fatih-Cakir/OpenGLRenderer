@@ -48,10 +48,8 @@ void Mesh::draw(GLuint shader_program, bool has_normal_map, bool has_ao_map, boo
 	glUniform1i(glGetUniformLocation(shader_program, "has_opacity_map"), has_opacity_map);
 	mat4 mt = model_matrix * transformation;
 	mat4 nmt = glm::transpose(glm::inverse(mt));
-	glUniformMatrix4fv(glGetUniformLocation(shader_program, "normal_matrix"), 1, GL_FALSE,
-		&nmt[0][0]);
-	glUniformMatrix4fv(glGetUniformLocation(shader_program, "model_matrix"), 1, GL_FALSE, 
-		&mt[0][0]);
+	glUniformMatrix4fv(glGetUniformLocation(shader_program, "normal_matrix"), 1, GL_FALSE, &nmt[0][0]);
+	glUniformMatrix4fv(glGetUniformLocation(shader_program, "model_matrix"), 1, GL_FALSE, &mt[0][0]);
 	glUniformMatrix4fv(glGetUniformLocation(shader_program, "prev_model_matrix"), 1, GL_FALSE,
 		&prev_total_transformation[0][0]);
 

@@ -4,8 +4,11 @@ in vec3 fFragPos;
 in vec2 fTexCoord;
 in vec3 fNormal;
 in mat3 TBN;
+in vec4 fnew_pos;
+in vec4 fold_pos;
 
-out vec4 OutColor;
+layout(location = 0) out vec4 OutColor;
+layout(location = 1) out vec2 OutVelocity;
 
 uniform sampler2D albedo_map;
 uniform sampler2D normal_map;
@@ -416,4 +419,13 @@ void main()
 	Lo = pow(Lo, vec3(1.0 / 2.2));
 
 	OutColor = vec4(Lo, albedo.a);
+
+	// Velocity
+
+	// Move to UV space
+	vec2 new_pos = ((fnew_pos.xy / fnew_pos.w) * 0.5 + 0.5);
+	vec2 old_pos = ((fold_pos.xy / fold_pos.w) * 0.5 + 0.5);
+
+	// Multiply, because the values are too low and the precision is not enough
+	OutVelocity = (new_pos - old_pos) * 32.0;
 }

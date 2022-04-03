@@ -113,8 +113,8 @@ GLuint ForwardRender::get_depth_texture()
 // Compiles the shaders and generates program
 void ForwardRender::init_shaders()
 {
-	GLuint vertex_shader = initshaders(GL_VERTEX_SHADER, "shaders/deferred_unlit_meshes_vs.glsl");
-	GLint fragment_shader = initshaders(GL_FRAGMENT_SHADER, "shaders/deferred_unlit_meshes_fs.glsl");
+	GLuint vertex_shader = initshaders(GL_VERTEX_SHADER, "shaders/forward_unlit_meshes_vs.glsl");
+	GLint fragment_shader = initshaders(GL_FRAGMENT_SHADER, "shaders/forward_unlit_meshes_fs.glsl");
 	program = initprogram(vertex_shader, fragment_shader);
 }
 

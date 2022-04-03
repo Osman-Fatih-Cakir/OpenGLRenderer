@@ -2,7 +2,7 @@
 
 in vec2 fTexCoord;
 
-out vec4 outColor;
+layout(location = 0) out vec4 OutColor;
 
 uniform vec2 resolution;
 uniform sampler2D cur_depth_map;
@@ -48,7 +48,7 @@ vec2 GetClosestUV(sampler2D depths)
 	{
 		vec2 newUV = fTexCoord + (kOffsets3x3[iter] * deltaRes);
 
-		float depth = texture2D(depths, newUV).x;
+		float depth = texture(depths, newUV).x;
 
 		if (depth < closestDepth)
 		{
@@ -160,9 +160,9 @@ vec4 InsideResolve(vec2 velocity)
 	{
 		vec2 newUV = fTexCoord + (kOffsets3x3[iter] * deltaRes);
 
-		current3x3Colors[iter] = texture2D(cur_color_map, newUV);
+		current3x3Colors[iter] = texture(cur_color_map, newUV);
 
-		previous3x3Colors[iter] = texture2D(prev_color_map, newUV + velocity);
+		previous3x3Colors[iter] = texture(prev_color_map, newUV + velocity);
 	}
 
 	vec4 rounded3x3Min = MinColors2(current3x3Colors);
@@ -175,9 +175,9 @@ vec4 InsideResolve(vec2 velocity)
 	{
 		vec2 newUV = fTexCoord + (kOffsets2x2[iter] * deltaRes);
 
-		current2x2Colors[iter] = texture2D(cur_color_map, newUV);
+		current2x2Colors[iter] = texture(cur_color_map, newUV);
 
-		previous2x2Colors[iter] = texture2D(prev_color_map, newUV + velocity);
+		previous2x2Colors[iter] = texture(prev_color_map, newUV + velocity);
 	}
 
 	vec4 min2 = MinColors(current2x2Colors);
@@ -210,7 +210,7 @@ vec4 CustomResolve(float preNeighborDepths[kNeighborsCount], float curNeighborDe
 	}
 	else
 	{
-		res = texture2D(cur_color_map, fTexCoord);
+		res = texture(cur_color_map, fTexCoord);
 	}
 	return res;
 }
@@ -222,15 +222,15 @@ void main()
 
 	vec2 deltaRes = vec2(1.0 / resolution.x, 1.0 / resolution.y);
 
-	vec2 closestVec = -(texture2D(velocity_map, GetClosestUV(cur_depth_map)).rg / 32.0);
+	vec2 closestVec = -(texture(velocity_map, GetClosestUV(cur_depth_map)).rg / 32.0);
 
 	for (uint iter = 0; iter < kNeighborsCount; iter++)
 	{
 		vec2 newUV = fTexCoord + (kOffsets3x3[iter] * deltaRes);
 
-		currentDepths[iter] = texture2D(cur_depth_map, newUV).x;
-		previousDepths[iter] = texture2D(prev_depth_map, newUV + closestVec).x;
+		currentDepths[iter] = texture(cur_depth_map, newUV).x;
+		previousDepths[iter] = texture(prev_depth_map, newUV + closestVec).x;
 	}
 
-	outColor = CustomResolve(previousDepths, currentDepths, closestVec);
+	OutColor = CustomResolve(previousDepths, currentDepths, closestVec);
 }
