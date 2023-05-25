@@ -55,4 +55,4 @@ Since I am new to computer graphics, I would be happy to receive suggestions abo
 - https://polyhaven.com/a/dreifaltigkeitsberg
 
 ## Note:
-There are memory leaks in project (which I assume caused by assimp library), I found no way to fix it. I will check that later since it has cost me so much time.
+There are memory leaks in the project. I will check that later.
